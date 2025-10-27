@@ -1,10 +1,10 @@
 /******/ (() => { // webpackBootstrap
 /******/ 	var __webpack_modules__ = ({
 
-/***/ "../../../node_modules/@group.one/gravity/dist/index.es.js":
-/*!*****************************************************************!*\
-  !*** ../../../node_modules/@group.one/gravity/dist/index.es.js ***!
-  \*****************************************************************/
+/***/ "./node_modules/@group.one/gravity/dist/index.es.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@group.one/gravity/dist/index.es.js ***!
+  \**********************************************************/
 /***/ (() => {
 
 var __defProp = Object.defineProperty;
@@ -3554,6 +3554,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _components_MarketPlace__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/MarketPlace */ "./src/components/MarketPlace.jsx");
+/* harmony import */ var _components_ProductBanner__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/ProductBanner */ "./src/components/ProductBanner.jsx");
+
 
 
 
@@ -3564,24 +3566,41 @@ const MarketplaceApp = ({
   enableDefaultStyles,
   assetsBaseUrl
 }) => {
+  // Track detail page visibility with state
+  const [isDetailPage, setIsDetailPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin"));
+
+  // Listen for URL changes (both popstate and custom events)
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    const checkDetailPage = () => {
+      const hasPlugin = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin");
+      setIsDetailPage(!!hasPlugin);
+    };
+
+    // Listen for browser back/forward
+    window.addEventListener('popstate', checkDetailPage);
+
+    // Listen for programmatic URL changes (from pushState)
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function (...args) {
+      originalPushState.apply(this, args);
+      checkDetailPage();
+    };
+    return () => {
+      window.removeEventListener('popstate', checkDetailPage);
+      window.history.pushState = originalPushState;
+    };
+  }, []);
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "marketplace-container gv-p-lg"
+    className: "gv-activated"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gv-content-container gv-p-lg gv-flex-column-md",
-    style: {
-      background: "#F3F4F0"
-    }
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
-    className: "gv-heading-lg"
-  }, "one.com WP marketplace"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
-    className: "gv-text-sm"
-  }, "Your place to find recommended and relevant plugins for your site.")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_MarketPlace__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    className: "marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid "
+  }, !isDetailPage && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ProductBanner__WEBPACK_IMPORTED_MODULE_2__["default"], null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_MarketPlace__WEBPACK_IMPORTED_MODULE_1__["default"], {
     apiBaseUrl: apiBaseUrl,
     useWPHandlers: useWPHandlers,
     wpConfig: wpConfig,
     enableDefaultStyles: enableDefaultStyles,
     assetsBaseUrl: assetsBaseUrl
-  }));
+  })));
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (MarketplaceApp);
 
@@ -3601,10 +3620,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _normalised_plugins__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./normalised-plugins */ "./src/components/normalised-plugins.jsx");
-/* harmony import */ var _PluginActions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PluginActions */ "./src/components/PluginActions.jsx");
-/* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @group.one/gravity */ "../../../node_modules/@group.one/gravity/dist/index.es.js");
-/* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_group_one_gravity__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var react_i18next__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! react-i18next */ "./node_modules/react-i18next/dist/es/index.js");
+/* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @group.one/gravity */ "./node_modules/@group.one/gravity/dist/index.es.js");
+/* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_group_one_gravity__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react_i18next__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-i18next */ "./node_modules/react-i18next/dist/es/index.js");
+/* harmony import */ var _ProductDetail__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ProductDetail */ "./src/components/ProductDetail.jsx");
 
 
 
@@ -3622,9 +3641,29 @@ function Marketplace({
   const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
   const [pluginInAction, setPluginInAction] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
   const [downloadingPlugins, setDownloadingPlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [selectedPlugin, setSelectedPlugin] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+
+  // Determine if a plugin slug is in the URL
+  const pluginFromQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
+
+  // Get base page URL (without plugin parameter)
+  const getBaseUrl = () => {
+    if (typeof window === "undefined") return "";
+    const url = new URL(window.location.href);
+    url.searchParams.delete("plugin");
+    return url.toString();
+  };
+
+  // After plugins load, select plugin from query if present
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (pluginFromQuery && plugins.length) {
+      const match = plugins.find(p => p.slug === pluginFromQuery);
+      if (match) setSelectedPlugin(match);
+    }
+  }, [pluginFromQuery, plugins]);
   const {
     t
-  } = (0,react_i18next__WEBPACK_IMPORTED_MODULE_4__.useTranslation)();
+  } = (0,react_i18next__WEBPACK_IMPORTED_MODULE_3__.useTranslation)();
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
     async function fetchPlugins() {
       try {
@@ -3697,7 +3736,36 @@ function Marketplace({
       }));
     }, 2000);
   };
+  const openDetail = (plugin, e) => {
+    // Debug to confirm click
+    console.log("Opening detail for plugin:", plugin.slug);
+    setSelectedPlugin(plugin);
+  };
+
+  // Debug: log whenever selectedPlugin changes
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (selectedPlugin) {
+      console.log("Selected plugin state now:", selectedPlugin.slug);
+    }
+  }, [selectedPlugin]);
   if (loading) return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Loading plugins...");
+
+  // Early return: show full page detail instead of list
+  if (selectedPlugin && pluginFromQuery) {
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      plugin: selectedPlugin,
+      onClose: () => {
+        // Return to listing (clear selection and URL)
+        setSelectedPlugin(null);
+        window.location.href = getBaseUrl();
+      },
+      assetsBaseUrl: assetsBaseUrl,
+      useWPHandlers: useWPHandlers,
+      pluginInAction: pluginInAction,
+      onAction: handlePluginAction,
+      usePortal: false
+    });
+  }
 
   // Group plugins by a single, specific category (first category), avoid duplicates across headings
   const categoryMap = new Map();
@@ -3717,50 +3785,59 @@ function Marketplace({
     className: "marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-mt-fluid"
   }, categories.map(([cat, list]) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
     key: cat,
-    className: ""
+    className: "category-section"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
     className: "gv-heading-md gv-mb-sm"
-  }, cat), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-2"
-  }, list.map(plugin => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: "#",
+  }, cat), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "A range of versatile plugins to enhance your WordPress experience and add new functionality with ease."), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg"
+  }, list.map(plugin => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     key: plugin.slug,
-    className: "gv-shortcut-tile gv-surface-bright",
-    onClick: e => e.preventDefault()
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("gv-tile", {
-    "aria-hidden": "true",
-    src: `${assetsBaseUrl || window.marketplaceConfig && window.marketplaceConfig.assetsBaseUrl || ''}assets/icons/placeholder.svg`
-  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gv-content"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
-    className: "gv-title"
-  }, plugin.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, plugin.description ? plugin.description : plugin.shortDescription), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "gv-price"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gv-price-prefix"
-  }, t("migratorMail_hi")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gv-price-text"
-  }, plugin.priceCurrency, " ", plugin.priceAmount), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
-    className: "gv-period"
-  }, "/mo"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("gv-icon", {
-    "aria-hidden": "true",
-    src: `${assetsBaseUrl || window.marketplaceConfig && window.marketplaceConfig.assetsBaseUrl || ''}assets/icons/arrow_forward.svg`
-  }), useWPHandlers ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_PluginActions__WEBPACK_IMPORTED_MODULE_2__["default"], {
-    plugin: plugin,
+    className: "gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-span-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    className: "gv-tile",
+    src: "https://gravity.group.one/icons/add_box.svg",
+    alt: "Performance Cache"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-span-9"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "gv-text-lg"
+  }, plugin.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "oc-card-content"
+  }, " ", plugin.description ? plugin.description : plugin.shortDescription, " "), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-text-sm"
+  }, plugin.priceCurrency, " ", plugin.priceAmount)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-span-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: `${getBaseUrl()}&plugin=${plugin.slug}`,
+    className: "gv-reset-button",
+    style: {
+      display: "inline-block"
+    },
+    "aria-label": `View details for ${plugin.name}`,
+    onClick: e => {
+      e.preventDefault();
+      setSelectedPlugin(plugin);
+      const url = new URL(window.location.href);
+      url.searchParams.set("plugin", plugin.slug);
+      window.history.pushState({}, '', url.toString());
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    className: "gv-tile",
+    src: "https://gravity.group.one/icons/arrow_forward.svg",
+    alt: `View ${plugin.name} details`,
+    style: {
+      minWidth: "24px"
+    }
+  })))))))), selectedPlugin && !pluginFromQuery && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    plugin: selectedPlugin,
+    onClose: () => setSelectedPlugin(null),
+    assetsBaseUrl: assetsBaseUrl,
+    useWPHandlers: useWPHandlers,
     pluginInAction: pluginInAction,
     onAction: handlePluginAction
-  }) : plugin.download && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "plugin-actions gv-card-content gv-flex gv-gap-sm gv-mt-md"
-  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
-    href: plugin.download,
-    download: true,
-    className: "gv-button gv-button-secondary",
-    onClick: e => handleDownloadClick(e, plugin),
-    style: {
-      pointerEvents: downloadingPlugins[plugin.slug] ? 'none' : 'auto',
-      opacity: downloadingPlugins[plugin.slug] ? 0.6 : 1
-    }
-  }, downloadingPlugins[plugin.slug] ? marketplaceConfig?.labels?.downloading || 'Downloading...' : marketplaceConfig?.labels?.download || 'Download'))))))));
+  }));
 }
 
 /***/ }),
@@ -3789,7 +3866,7 @@ function PluginActions({
     onAction(action, plugin);
   };
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
-    className: "plugin-actions gv-card-content gv-flex gv-gap-sm gv-mt-md"
+    className: "plugin-actions gv-mt-md"
   }, plugin.installed ? plugin.activated ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
     className: "gv-button gv-button-secondary",
     disabled: pluginInAction[plugin.slug],
@@ -3803,6 +3880,231 @@ function PluginActions({
     disabled: pluginInAction[plugin.slug],
     onClick: () => handleClick("install")
   }, pluginInAction[plugin.slug] ? marketplaceConfig?.labels?.installing || 'Installing...' : marketplaceConfig?.labels?.install || 'Install'));
+}
+
+/***/ }),
+
+/***/ "./src/components/ProductBanner.jsx":
+/*!******************************************!*\
+  !*** ./src/components/ProductBanner.jsx ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const ProductBanner = () => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
+    className: "gv-product-header"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content gv-stack-space-md gv-text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "gv-title gv-header-lg"
+  }, "one.com WP Marketplace"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Your place to find plugins, themes, and services for your site."), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    className: "gv-button gv-button-secondary"
+  }, "Learn more")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-image"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("picture", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("source", {
+    media: "(min-width: 600px)",
+    srcSet: " https://gravity.group.one/guide-images/product-image@2x.png 2x, https://gravity.group.one/guide-images/product-image.png    1x "
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    src: "https://gravity.group.one/guide-images/product-image-mobile.png",
+    srcSet: " https://gravity.group.one/guide-images/product-image-mobile@2x.png 2x, https://gravity.group.one/guide-imagesproduct-image-mobile.png    1x ",
+    alt: "Product image"
+  }))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ProductBanner);
+
+/***/ }),
+
+/***/ "./src/components/ProductDetail.jsx":
+/*!******************************************!*\
+  !*** ./src/components/ProductDetail.jsx ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ProductDetail)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "react-dom");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _PluginActions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PluginActions */ "./src/components/PluginActions.jsx");
+
+
+
+
+function ProductDetail({
+  plugin,
+  onClose,
+  assetsBaseUrl,
+  useWPHandlers,
+  pluginInAction,
+  onAction,
+  usePortal = true
+}) {
+  if (!plugin) return null;
+  const assetBase = assetsBaseUrl || typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl || "";
+  const imageURL = typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL || assetBase;
+  const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
+  const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+
+  // Extract data with fallbacks
+  const title = plugin.name || 'Product';
+  const description = plugin.description || plugin.shortDescription || 'No description available.';
+  const price = plugin.priceCurrency && plugin.priceAmount ? `${plugin.priceCurrency} ${plugin.priceAmount}` : '€ 0,-';
+
+  // Derive features from description or plugin data
+  const rawFeatureSource = plugin.features && plugin.features.length ? plugin.features : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
+  const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
+  while (keyFeatures.length < 3) keyFeatures.push('Sample feature');
+  const benefits = [keyFeatures[0], keyFeatures[1] || 'Improves performance', keyFeatures[2] || 'Easy setup'];
+  const coreFeatures = [{
+    name: keyFeatures[0],
+    desc: description.substring(0, 150) || 'Feature description'
+  }, {
+    name: keyFeatures[1],
+    desc: 'Enhances your WordPress experience with reliable performance'
+  }, {
+    name: keyFeatures[2],
+    desc: 'Easy to set up and configure with minimal technical knowledge'
+  }];
+  const content = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: usePortal ? "gv-surface-dim" : "gv-surface-dim"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("article", {
+    className: "gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
+    className: "gv-breadcrumbs gv-area-nav"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: "#",
+    onClick: e => {
+      e.preventDefault();
+      if (onClose) onClose();
+    },
+    className: "gv-flex gv-items-center gv-gap-xs"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    style: {
+      minWidth: "24px"
+    },
+    className: "gv-tile",
+    src: "https://gravity.group.one/icons/chevron_left.svg",
+    alt: "Back to plugins"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, "Back"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
+    className: "gv-product-header gv-area-header"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content gv-stack-space-md gv-text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "gv-title gv-header-lg"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description), plugin.author && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "gv-text-xs gv-mt-sm"
+  }, "Author: ", plugin.authorUrl ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: plugin.authorUrl
+  }, plugin.author) : plugin.author)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-image"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("picture", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("source", {
+    media: "(min-width: 600px)",
+    srcSet: `${mainImage} 1x, ${mainImage} 2x`
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    src: mainImage,
+    srcSet: `${mainImage} 1x, ${mainImage} 2x`,
+    alt: `${title} image`
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-product-table gv-features-table gv-products-1 gv-area-table"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table",
+    role: "table"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-header",
+    role: "rowgroup"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-row",
+    role: "row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-product",
+    role: "columnheader"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description.substring(0, 120), description.length > 120 ? '…' : '')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-bottom"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-price-text"
+  }, price), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-period"
+  }, "/mo"))), useWPHandlers ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_PluginActions__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    plugin: plugin,
+    pluginInAction: pluginInAction,
+    onAction: onAction
+  }) : plugin.download && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: plugin.download,
+    download: true,
+    className: "gv-button gv-button-secondary"
+  }, "Download"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-section",
+    role: "rowgroup"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-section-header gv-table-row",
+    role: "row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "gv-title"
+  }, "Key features"))), keyFeatures.map((f, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-row",
+    role: "row",
+    key: i
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-cell-text"
+  }, f)))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-area-details gv-grid gv-gap-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Key benefits"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ul", {
+    className: "gv-list-items gv-list-check gv-mode-condensed"
+  }, benefits.map((b, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
+    key: i
+  }, b)))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-text-max gv-text-sm gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Why choose ", title, "?"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "This plugin helps you enhance your site with reliable performance and simplicity. It is designed to integrate smoothly and scale as your needs grow."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-area-content gv-grid gv-gap-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-text-sm gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Core features overview"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3"
+  }, coreFeatures.map((cf, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-item gv-stack-space-sm",
+    key: i
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title gv-text-bold gv-text-sm"
+  }, cf.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, cf.desc))))))));
+  return usePortal ? (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createPortal)(content, document.body) : content;
 }
 
 /***/ }),

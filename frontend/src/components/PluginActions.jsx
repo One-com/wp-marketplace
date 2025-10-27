@@ -6,7 +6,7 @@ export default function PluginActions({ plugin, pluginInAction, onAction }) {
     };
 
     return (
-        <div className="plugin-actions gv-card-content gv-flex gv-gap-sm gv-mt-md">
+        <div className="plugin-actions gv-mt-md">
             {plugin.installed ? (
                 plugin.activated ? (
                     <button

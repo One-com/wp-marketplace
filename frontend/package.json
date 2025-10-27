@@ -41,6 +41,7 @@
   "author": "One.com",
   "license": "GPL-2.0-or-later",
   "dependencies": {
+    "@group.one/gravity": "^5.22.1",
     "react-i18next": "^15.7.3"
   }
 }

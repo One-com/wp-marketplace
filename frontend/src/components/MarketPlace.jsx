@@ -1,14 +1,37 @@
 import React, { useState, useEffect } from "react";
 import {normalizePlugins} from "./normalised-plugins";
-import PluginActions from "./PluginActions";
 import "@group.one/gravity";
 import { useTranslation } from "react-i18next";
+import ProductDetail from "./ProductDetail";
 
 export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) {
     const [plugins, setPlugins] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pluginInAction, setPluginInAction] = useState({});
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
+    const [selectedPlugin, setSelectedPlugin] = useState(null);
+    
+    // Determine if a plugin slug is in the URL
+    const pluginFromQuery = typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("plugin")
+        : null;
+    
+    // Get base page URL (without plugin parameter)
+    const getBaseUrl = () => {
+        if (typeof window === "undefined") return "";
+        const url = new URL(window.location.href);
+        url.searchParams.delete("plugin");
+        return url.toString();
+    };
+    
+    // After plugins load, select plugin from query if present
+    useEffect(() => {
+        if (pluginFromQuery && plugins.length) {
+            const match = plugins.find(p => p.slug === pluginFromQuery);
+            if (match) setSelectedPlugin(match);
+        }
+    }, [pluginFromQuery, plugins]);
+    
     const {t} = useTranslation();
 
     useEffect(() => {
@@ -80,7 +103,39 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
         }, 2000);
     };
 
+    const openDetail = (plugin, e) => {
+        // Debug to confirm click
+        console.log("Opening detail for plugin:", plugin.slug);
+        setSelectedPlugin(plugin);
+    };
+
+    // Debug: log whenever selectedPlugin changes
+    useEffect(() => {
+        if (selectedPlugin) {
+            console.log("Selected plugin state now:", selectedPlugin.slug);
+        }
+    }, [selectedPlugin]);
+
     if (loading) return <p>Loading plugins...</p>;
+
+    // Early return: show full page detail instead of list
+    if (selectedPlugin && pluginFromQuery) {
+        return (
+            <ProductDetail
+                plugin={selectedPlugin}
+                onClose={() => {
+                    // Return to listing (clear selection and URL)
+                    setSelectedPlugin(null);
+                    window.location.href = getBaseUrl();
+                }}
+                assetsBaseUrl={assetsBaseUrl}
+                useWPHandlers={useWPHandlers}
+                pluginInAction={pluginInAction}
+                onAction={handlePluginAction}
+                usePortal={false}
+            />
+        );
+    }
 
     // Group plugins by a single, specific category (first category), avoid duplicates across headings
     const categoryMap = new Map();
@@ -102,54 +157,60 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
     return (
         <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-mt-fluid">
             {categories.map(([cat, list]) => (
-                <section key={cat} className="">
+                <section key={cat} className="category-section">
                     <h2 className="gv-heading-md gv-mb-sm">{cat}</h2>
-                    <div className="gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-2">
+                    <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>
+                     { /* description && <p>{description}</p> */ } 
+                    <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg">
                         {list.map((plugin) => (
-                            <a href="#" key={plugin.slug} className="gv-shortcut-tile gv-surface-bright" onClick={(e) => e.preventDefault()}>
-                                <gv-tile aria-hidden="true" src={`${assetsBaseUrl || (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig.assetsBaseUrl) || ''}assets/icons/placeholder.svg`}></gv-tile>
-                                <div className="gv-content">
-                                    <h3 className="gv-title">{plugin.name}</h3>
-                                        <p>{plugin.description ? plugin.description : plugin.shortDescription}</p>
-                                        <div className="gv-price">
-                                            <span className="gv-price-prefix">{t("migratorMail_hi")}</span>
-                                            <span className="gv-price-text">{plugin.priceCurrency} {plugin.priceAmount}</span>
-                                            <span className="gv-period">/mo</span>
-                                        </div></div>
-                                        <gv-icon aria-hidden="true" src={`${assetsBaseUrl || (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig && window.marketplaceConfig.assetsBaseUrl) || ''}assets/icons/arrow_forward.svg`}></gv-icon>
-
-
-                                {useWPHandlers ? (
-                                    <PluginActions
-                                        plugin={plugin}
-                                        pluginInAction={pluginInAction}
-                                        onAction={handlePluginAction}
-                                    />
-                                ) : (
-                                    plugin.download && (
-                                        <div className="plugin-actions gv-card-content gv-flex gv-gap-sm gv-mt-md">
-                                            <a
-                                                href={plugin.download}
-                                                download
-                                                className="gv-button gv-button-secondary"
-                                                onClick={(e) => handleDownloadClick(e, plugin)}
-                                                style={{ 
-                                                    pointerEvents: downloadingPlugins[plugin.slug] ? 'none' : 'auto',
-                                                    opacity: downloadingPlugins[plugin.slug] ? 0.6 : 1
-                                                }}
-                                            >
-                                                {downloadingPlugins[plugin.slug]
-                                                    ? ((typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.labels?.downloading) || 'Downloading...')
-                                                    : ((typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.labels?.download) || 'Download')}
-                                            </a>
-                                        </div>
-                                    )
-                                )}
-                            </a>
+                            <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12">
+                                <div className="gv-span-2">
+                                    <img className="gv-tile" src="https://gravity.group.one/icons/add_box.svg"
+                                        alt="Performance Cache" />
+                                </div>
+                                <div className="gv-span-9">
+                                    <p className="gv-text-lg">{plugin.name}</p>
+                                    <p className="oc-card-content"> {plugin.description ? plugin.description : plugin.shortDescription} </p>
+                                    <span className="gv-text-sm">{plugin.priceCurrency} {plugin.priceAmount}</span>
+                                </div>
+                                <div className="gv-span-1">
+                                    <a
+                                        href={`${getBaseUrl()}&plugin=${plugin.slug}`}
+                                        className="gv-reset-button"
+                                        style={{ display: "inline-block" }}
+                                        aria-label={`View details for ${plugin.name}`}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setSelectedPlugin(plugin);
+                                            const url = new URL(window.location.href);
+                                            url.searchParams.set("plugin", plugin.slug);
+                                            window.history.pushState({}, '', url.toString());
+                                        }}
+                                    >
+                                        <img
+                                            className="gv-tile"
+                                            src="https://gravity.group.one/icons/arrow_forward.svg"
+                                            alt={`View ${plugin.name} details`}
+                                            style={{ minWidth: "24px" }}
+                                        />
+                                    </a>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </section>
             ))}
+            {/* Remove overlay render (keep for non-query usage) */}
+            {selectedPlugin && !pluginFromQuery && (
+                <ProductDetail
+                    plugin={selectedPlugin}
+                    onClose={() => setSelectedPlugin(null)}
+                    assetsBaseUrl={assetsBaseUrl}
+                    useWPHandlers={useWPHandlers}
+                    pluginInAction={pluginInAction}
+                    onAction={handlePluginAction}
+                />
+            )}
         </div>
     );
 }
