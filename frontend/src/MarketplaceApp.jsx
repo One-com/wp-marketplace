@@ -1,13 +1,42 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Marketplace from "./components/MarketPlace";
+import ProductBanner from "./components/ProductBanner";
 
 const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
+    // Track detail page visibility with state
+    const [isDetailPage, setIsDetailPage] = useState(
+        typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin")
+    );
+
+    // Listen for URL changes (both popstate and custom events)
+    useEffect(() => {
+        const checkDetailPage = () => {
+            const hasPlugin = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin");
+            setIsDetailPage(!!hasPlugin);
+        };
+
+        // Listen for browser back/forward
+        window.addEventListener('popstate', checkDetailPage);
+
+        // Listen for programmatic URL changes (from pushState)
+        const originalPushState = window.history.pushState;
+        window.history.pushState = function(...args) {
+            originalPushState.apply(this, args);
+            checkDetailPage();
+        };
+
+        return () => {
+            window.removeEventListener('popstate', checkDetailPage);
+            window.history.pushState = originalPushState;
+        };
+    }, []);
+
     return (
-        <div className="marketplace-container gv-p-lg">
-            <div className="gv-content-container gv-p-lg gv-flex-column-md" style={{ background: "#F3F4F0" }}>
-                <h2 className="gv-heading-lg">one.com WP marketplace</h2>
-                <p className="gv-text-sm">Your place to find recommended and relevant plugins for your site.</p>
-            </div>
+        <div className="gv-activated">
+            <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
+
+                {!isDetailPage && <ProductBanner />}
+
                 <Marketplace
                     apiBaseUrl={apiBaseUrl}
                     useWPHandlers={useWPHandlers}
@@ -16,7 +45,8 @@ const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyl
                     assetsBaseUrl={assetsBaseUrl}
                 />
             </div>
-            );
-            };
+        </div>
+    );
+};
 
-            export default MarketplaceApp;
+export default MarketplaceApp;
