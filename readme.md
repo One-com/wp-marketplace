@@ -88,9 +88,25 @@ Example of a complete composer.json (replace `YourPlugin` with your plugin's nam
 }
 ```
 
-2) Run Mozart to prefix and copy assets into your plugin
+2) Install dependencies and run Mozart
+
+When adding this module to a plugin that already has a composer.json and composer.lock:
+- First time (after adding the dependency): run `composer update groupone/marketplace` to update your lock file and install the package. You can also run `composer update` if you want to update all dependencies.
+- On CI or environments using an existing lock file: run `composer install`.
+
+Either command will trigger the defined Composer scripts (mozart-compose and copy-assets).
+
+Examples:
 
 ```bash
+# First time after adding groupone/marketplace
+composer update groupone/marketplace
+# or update everything (broader)
+composer update
+```
+
+```bash
+# Subsequent installs when composer.lock is present (CI, deployments)
 composer install
 ```
 
