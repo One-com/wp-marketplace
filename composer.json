@@ -2,7 +2,6 @@
   "name": "groupone/marketplace",
   "description": "Marketplace Module for WordPress plugins",
   "type": "library",
-  "version": "1.0.0",
   "autoload": {
     "psr-4": {
       "Groupone\\Marketplace\\": "backend/src/"
