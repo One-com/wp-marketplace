@@ -197,8 +197,8 @@ When booted, the module:
 
 How to reference assets
 
-- If you keep the default structure suggested in the example composer.json, assets_path can be omitted because auto-detection will locate the package root.
-- If you move files to a custom location, pass assets_path explicitly so the module can find frontend/build/index.js and related files.
+- If you keep the default structure suggested in the example `composer.json`, `assets_path` can be omitted because auto-detection will locate the package root.
+- If you move files to a custom location, pass `assets_path` explicitly so the module can find `frontend/build/index.js` and related files.
 
 ---
 
