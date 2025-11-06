@@ -4,6 +4,18 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 
 ---
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation with Mozart ](#installation-with-mozart-recommended-for-distributable-plugins)
+- [Configuration Options](#configuration-options)
+- [Assets Path Configuration](#assets-path-configuration)
+- [How It Works](#how-it-works)
+- [Asset Copying](#asset-copying)
+
+---
+
 ## Features
 
 - React-based frontend for displaying plugin listings
@@ -22,18 +34,6 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 - WordPress >= 5.8
 - Composer (for development and building)
 - Mozart (for wrapping namespaces and copying assets)
-
----
-
-## Table of Contents
-
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation with Mozart (Recommended for Distributable Plugins)](#installation-with-mozart-recommended-for-distributable-plugins)
-- [Configuration Options](#configuration-options)
-- [Assets Path Configuration](#assets-path-configuration)
-- [How It Works](#how-it-works)
-- [Asset Copying](#asset-copying)
 
 ---
 
