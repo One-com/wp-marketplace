@@ -169,7 +169,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 ## Assets Path Configuration
 
-- Explicit: Pass `assets_path` in the config.`(optional) if you are not following the path as mentioned in composer json & moved assets to a custom path` Example:
+- Explicit: Pass `assets_path` in the config.`(optional) if you are not following the path as mentioned in composer json & moved assets to a custom path` 
+Example:
 
 ```php
 '\YourPlugin\Dependencies\Groupone\Marketplace\Marketplace'::run([
