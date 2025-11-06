@@ -16,6 +16,27 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 
 ---
 
+## Requirements
+
+- PHP >= 8.0
+- WordPress >= 5.8
+- Composer (for development and building)
+- Mozart (for wrapping namespaces and copying assets)
+
+---
+
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation with Mozart (Recommended for Distributable Plugins)](#installation-with-mozart-recommended-for-distributable-plugins)
+- [Configuration Options](#configuration-options)
+- [Assets Path Configuration](#assets-path-configuration)
+- [How It Works](#how-it-works)
+- [Asset Copying](#asset-copying)
+
+---
+
 ## Installation with Mozart (Recommended for Distributable Plugins)
 
 This module is designed to work when your plugin uses the Mozart tool to prefix namespaces and copy assets at build time.
@@ -177,15 +198,6 @@ How to reference assets
 
 - If you keep the default structure suggested in the example composer.json, assets_path can be omitted because auto-detection will locate the package root.
 - If you move files to a custom location, pass assets_path explicitly so the module can find frontend/build/index.js and related files.
-
----
-
-## Requirements
-
-- PHP >= 8.0
-- WordPress >= 5.8
-- Composer (for development and building)
-- Mozart (for wrapping namespaces and copying assets)
 
 ---
 
