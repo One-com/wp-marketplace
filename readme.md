@@ -24,12 +24,12 @@ Step-by-step
 
 1) Add repository details (under repositories) and other dependencies to your plugin's composer.json
 
-`Note`: Example of a complete composer.json (replace `YourPlugin` with your plugin's namespace and path in`copy-assets` where you want to copy assets ):
+`Note:`  Example of a complete composer.json (replace `YourPlugin` with your plugin's namespace and path in`copy-assets` where you want to copy assets ):
 
 ```json
 {
-  "name": "YourPlugin",
-  "type": "wordpress-plugin",
+  "name": "<YourPlugin>",
+  "type": "<wordpress-plugin>",
   "require": {
     "php": ">=8.0",
     "groupone/marketplace": "^1.0"
@@ -90,7 +90,7 @@ Step-by-step
 
 2) Install dependencies and run Mozart
 
-When adding this module to a plugin that already has a composer.json and composer.lock:
+When adding this module to a plugin that already has a `composer.json` and `composer.lock`:
 - First time (after adding the dependency): run `composer update groupone/marketplace` to update your lock file and install the package. You can also run `composer update` if you want to update all dependencies.
 - On CI or environments using an existing lock file: run `composer install`.
 
