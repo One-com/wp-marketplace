@@ -13,6 +13,7 @@ module.exports = {
 		},
 		clean: true,
 	},
+	mode: "production",
 	resolve: {
 		extensions: [".js", ".jsx"],
 		alias: {
