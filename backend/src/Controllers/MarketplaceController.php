@@ -261,17 +261,17 @@ class MarketplaceController {
 			if ( empty( $plugin['slug'] ) ) {
 				return $plugin;
 			}
-			$plugin_file = $plugin['slug'] . '/' . $plugin['slug'] . '.php';
-			$plugin['installed'] = file_exists( WP_PLUGIN_DIR . '/' . $plugin['slug'] );
-			$plugin['activated'] = function_exists('is_plugin_active') ? is_plugin_active( $plugin_file ) : false;
+			// Resolve actual plugin main file for cases like 'seo-by-rank-math/rank-math.php'
+			$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
+			$plugin['installed'] = ! empty( $plugin_file );
+			$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
 			return $plugin;
 		};
 
-		// Handle supported shapes in order of preference:
-		// 1) data.sections[].items[] (new shared response)
-		// 2) sections[].items[] (alternate shape)
-		// 3) data.ui_json (legacy)
-		if ( ! empty( $plugins['data']['sections'] ) && is_array( $plugins['data']['sections'] ) ) {
+		if ( isset( $plugins['data'] ) && is_array( $plugins['data'] ) && ( array_values( $plugins['data'] ) === $plugins['data'] ) ) {
+			// data is a numerically-indexed list of plugins
+			$plugins['data'] = array_map( $add_state, $plugins['data'] );
+		} elseif ( ! empty( $plugins['data']['sections'] ) && is_array( $plugins['data']['sections'] ) ) {
 			foreach ( $plugins['data']['sections'] as $si => $section ) {
 				if ( empty( $section['items'] ) || ! is_array( $section['items'] ) ) {
 					continue;
@@ -334,6 +334,43 @@ class MarketplaceController {
 	 */
 	private function is_installed( $slug = '' ): bool {
 		return file_exists( WP_PLUGIN_DIR . '/' .  $slug  );
+	}
+
+	/**
+	 * Resolve the plugin's main file by slug by scanning installed plugins.
+	 * Handles cases like 'seo-by-rank-math/rank-math.php' where the main file
+	 * does not match slug/slug.php.
+	 *
+	 * @param string $slug
+	 * @return string Plugin file path relative to plugins dir, or empty string if not found.
+	 */
+	private function resolve_plugin_file_by_slug( $slug ): string {
+		if ( empty( $slug ) ) {
+			return '';
+		}
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugins = get_plugins();
+
+		// If incoming "slug" already looks like a plugin file (contains a slash or ends with .php),
+		// try an exact match first.
+		if ( strpos( $slug, '/' ) !== false || substr( $slug, -4 ) === '.php' ) {
+			if ( isset( $plugins[ $slug ] ) ) {
+				return $slug;
+			}
+			// Also try trimming any leading slashes just in case
+			$trimmed = ltrim( $slug, '/' );
+			if ( isset( $plugins[ $trimmed ] ) ) {
+				return $trimmed;
+			}
+		}
+
+		// Otherwise, treat input as directory slug and try common patterns.
+		foreach ( $plugins as $file => $data ) {
+			if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
+				return $file;
+			}
+		}
+		return '';
 	}
 
 	public function ajax_activate_plugin() {
