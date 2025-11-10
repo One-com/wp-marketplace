@@ -1,30 +1,33 @@
 export function normalizePlugins(rawResponse) {
-  // Prefer new shape at data.sections; fallback to top-level sections
-  const sections = Array.isArray(rawResponse?.data?.sections)
-    ? rawResponse.data.sections
-    : Array.isArray(rawResponse?.sections)
-      ? rawResponse.sections
-      : null;
+  // Only support the new response shape:
+  // { error: null, success: true, data: [ { ...plugin }, ... ] }
 
-  if (!sections) return [];
+  if (!rawResponse || !Array.isArray(rawResponse.data)) {
+    // Log a clear error when the response is not supported
+    // Keeping a minimal, non-crashing fallback of returning an empty list
+    console.error("Unsupported marketplace response shape. Expected { data: [ ... ] }.", rawResponse);
+    return [];
+  }
 
-  // Only include sections that represent plugins (avoid e.g., "dashboard" sections)
-  const pluginSections = sections.filter((s) => !s.type || s.type === "plugin");
-
-  const items = pluginSections
-    .flatMap((s) => (Array.isArray(s.items) ? s.items : []))
-    .filter((p) => p && (p.slug || p.name));
+  const items = rawResponse.data;
 
   if (items.length === 0) return [];
 
-  // Map to normalized structure first
+  // Map to normalized structure
   const normalized = items.map((plugin) => {
-    const description = typeof plugin?.description === "object" && plugin.description !== null
-      ? (plugin.description["en-gb"] || Object.values(plugin.description)[0] || "")
-      : (plugin?.description || "");
+    // Prefer description coming from textKeys.description, then fallback to description field
+    const descriptionFromTextKeys = plugin?.textKeys?.description;
+    const description =
+      (typeof descriptionFromTextKeys === "string" && descriptionFromTextKeys)
+        ? descriptionFromTextKeys
+        : (typeof plugin?.description === "object" && plugin.description !== null
+            ? (plugin.description["en-gb"] || Object.values(plugin.description)[0] || "")
+            : (plugin?.description || "")
+          );
 
     const download = plugin?.download || plugin?.download_url || plugin?.downloadUrl || "";
 
+    // Author may be a string or an object { name, url }
     const authorName = typeof plugin?.author === "object" && plugin.author !== null
       ? (plugin.author.name || "")
       : (plugin?.author || "");

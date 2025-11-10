@@ -4,6 +4,18 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 
 ---
 
+## Table of Contents
+
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation with Mozart ](#installation-with-mozart-recommended-for-distributable-plugins)
+- [Configuration Options](#configuration-options)
+- [Assets Path Configuration](#assets-path-configuration)
+- [How It Works](#how-it-works)
+- [Asset Copying](#asset-copying)
+
+---
+
 ## Features
 
 - React-based frontend for displaying plugin listings
@@ -16,20 +28,29 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 
 ---
 
+## Requirements
+
+- PHP >= 8.0
+- WordPress >= 5.8
+- Composer (for development and building)
+- Mozart (for wrapping namespaces and copying assets)
+
+---
+
 ## Installation with Mozart (Recommended for Distributable Plugins)
 
 This module is designed to work when your plugin uses the Mozart tool to prefix namespaces and copy assets at build time.
 
 Step-by-step
 
-1) Add repository and dependency to your plugin's composer.json
+1) Add repository details (under repositories) and other dependencies to your plugin's composer.json
 
-Example of a complete composer.json (replace `YourPlugin` with your plugin's namespace and path in`copy-assets` where you want to copy assets ):
+`Note:`  Example of a complete composer.json (replace `YourPlugin` with your plugin's namespace and path in`copy-assets` where you want to copy assets ):
 
 ```json
 {
-  "name": "your-vendor/your-plugin",
-  "type": "wordpress-plugin",
+  "name": "<YourPlugin>",
+  "type": "<wordpress-plugin>",
   "require": {
     "php": ">=8.0",
     "groupone/marketplace": "^1.0"
@@ -42,7 +63,7 @@ Example of a complete composer.json (replace `YourPlugin` with your plugin's nam
   },
   "autoload": {
     "psr-4": {
-      "YourPlugin\\Vendor\\": "/inc/Dependencies/YourPlugin/"
+      "YourPlugin\\Dependencies\\": "/inc/Dependencies/YourPlugin/"
     },
     "classmap": [
       "inc/Dependencies/YourPlugin/"
@@ -90,7 +111,7 @@ Example of a complete composer.json (replace `YourPlugin` with your plugin's nam
 
 2) Install dependencies and run Mozart
 
-When adding this module to a plugin that already has a composer.json and composer.lock:
+When adding this module to a plugin that already has a `composer.json` and `composer.lock`:
 - First time (after adding the dependency): run `composer update groupone/marketplace` to update your lock file and install the package. You can also run `composer update` if you want to update all dependencies.
 - On CI or environments using an existing lock file: run `composer install`.
 
@@ -117,7 +138,7 @@ composer install
 require_once __DIR__ . '/vendor/autoload.php';
 
 // Using the Mozart-prefixed class name after Composer autoload is registered
-\YourPlugin\Dependencies\Groupone\Marketplace\Marketplace::run([
+'\YourPlugin\Dependencies\Groupone\Marketplace\Marketplace'::run([
     'parent_menu_slug' => 'your-menu-slug',
     'page_title'       => 'Plugin Marketplace',
     'menu_title'       => 'Marketplace',
@@ -133,26 +154,27 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 ## Configuration Options
 
-- parent_menu_slug: WordPress menu slug under which the module submenu will be added. Default: options-general.php
-- page_title: Page title for the Marketplace screen. Default: Plugin Marketplace
-- menu_title: Menu title for the submenu. Default: Marketplace
-- menu_slug: Slug used for the submenu and page. Default: plugin-marketplace
-- api_url: External API endpoint returning marketplace data. Default: ""
-- brand: Optional brand identifier used when constructing marketplace API requests. Can be used to filter or customize marketplace content based on brand. Default: ""
-- css_url: URL to a custom CSS file that styles the frontend. Default: ""
-- css_handle: WordPress style handle when registering/enqueuing styles. Default: marketplace-frontend-style
-- assets_path: Filesystem path to the package root containing the frontend/ directory. If empty, the module auto-detects it (see below).
-- register_menu: Boolean flag to control automatic menu registration. Set to `false` to skip menu registration when your plugin handles it manually (prevents duplicate menus). Default: true
+- `parent_menu_slug`: WordPress menu slug under which the module submenu will be added. Default: options-general.php
+- `page_title`: Page title for the Marketplace screen. Default: Plugin Marketplace
+- `menu_title`: Menu title for the submenu. Default: Marketplace
+- `menu_slug`: Slug used for the submenu and page. Default: plugin-marketplace
+- `api_url`: External API endpoint returning marketplace data. Default: ""
+- `brand`: Optional brand identifier used when constructing marketplace API requests. Can be used to filter or customize marketplace content based on brand. Default: ""
+- `css_url`: URL to a custom CSS file that styles the frontend. Default: ""
+- `css_handle`: WordPress style handle when registering/enqueuing styles. Default: marketplace-frontend-style
+- `assets_path`: Filesystem path to the package root containing the frontend/ directory. If empty, the module auto-detects it (see below).
+- `register_menu`: Boolean flag to control automatic menu registration. Set to `false` to skip menu registration when your plugin handles it manually (prevents duplicate menus). Default: true
 
 ---
 
 ## Assets Path Configuration
 
-- Explicit: Pass assets_path in the config. Example:
+- Explicit: Pass `assets_path` in the config.`(optional) if you are not following the path as mentioned in composer json & moved assets to a custom path` 
+Example:
 
 ```php
-\Groupone\Marketplace\Marketplace::run([
-  'assets_path' => WP_PLUGIN_DIR . '/your-plugin/inc/Dependencies/YourPlugin/'
+'\YourPlugin\Dependencies\Groupone\Marketplace\Marketplace'::run([
+  'assets_path' => WP_PLUGIN_DIR . '/your-plugin/inc/Dependencies/YourPlugin/assets/'
 ]);
 ```
 
@@ -163,10 +185,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 When booted, the module:
 
-- Registers a submenu page under the provided parent_menu_slug
-- Enqueues the React frontend (frontend/build assets)
+- Registers a submenu page under the provided `parent_menu_slug`
+- Enqueues the React frontend (`frontend/build` assets)
 - Localizes configuration and labels to JavaScript
-- Registers a REST route at /wp-json/marketplace/v1/plugins
+- Registers a REST route at `/wp-json/marketplace/v1/plugins`
 - Provides AJAX handlers to install, activate, and deactivate plugins
 
 ---
@@ -175,17 +197,8 @@ When booted, the module:
 
 How to reference assets
 
-- If you keep the default structure suggested in the example composer.json, assets_path can be omitted because auto-detection will locate the package root.
-- If you move files to a custom location, pass assets_path explicitly so the module can find frontend/build/index.js and related files.
-
----
-
-## Requirements
-
-- PHP >= 8.0
-- WordPress >= 5.8
-- Composer (for development and building)
-- Mozart (for wrapping namespaces and copying assets)
+- If you keep the default structure suggested in the example `composer.json`, `assets_path` can be omitted because auto-detection will locate the package root.
+- If you move files to a custom location, pass `assets_path` explicitly so the module can find `frontend/build/index.js` and related files.
 
 ---
 
