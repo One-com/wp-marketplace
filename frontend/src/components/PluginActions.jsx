@@ -13,11 +13,13 @@ export default function PluginActions({ plugin, pluginInAction, onAction }) {
             const event = new CustomEvent("onecom-plugin-provision", {
                 detail: {
                     slug: plugin.slug,
-                    action: action,
-                    plugin: plugin
-                }
+                },
+                bubbles: true,
+                cancelable: true,
+                composed: true
             });
-            window.dispatchEvent(event);
+            // Dispatch on document so listeners using document.addEventListener receive it
+            document.dispatchEvent(event);
             return;
         }
         
