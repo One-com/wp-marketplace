@@ -213,6 +213,7 @@ class MarketplaceController {
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
 			'apiUrl'     => $this->config['api_url'],
 			'locale' => get_locale(),
+			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
 			'wpConfig' => [
 				'ajax_url' => admin_url( 'admin-ajax.php' ),

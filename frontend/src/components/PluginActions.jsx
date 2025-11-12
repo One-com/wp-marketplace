@@ -2,6 +2,26 @@ import React from "react";
 
 export default function PluginActions({ plugin, pluginInAction, onAction }) {
     const handleClick = (action) => {
+        // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
+        const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+        const isOnecomBrand = brand === "onecom";
+        const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
+        const isNotInstalled = !plugin.installed;
+        
+        if (isOnecomBrand && isSpecialPlugin && isNotInstalled && action === "install") {
+            // Dispatch custom event instead of calling onAction
+            const event = new CustomEvent("onecom-plugin-provision", {
+                detail: {
+                    slug: plugin.slug,
+                    action: action,
+                    plugin: plugin
+                }
+            });
+            window.dispatchEvent(event);
+            return;
+        }
+        
+        // Default behavior
         onAction(action, plugin);
     };
 
