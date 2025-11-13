@@ -12,8 +12,14 @@ class MarketplaceModel {
 		$this->api_url = $api_url;
 	}
 
-	public function fetch_plugins(): array {
-		$response = wp_remote_get( $this->api_url );
+	public function fetch_plugins( array $payload = [] ): array {
+		$args = [];
+
+		if ( ! empty( $payload ) ) {
+			$args['headers'] = $payload;
+		}
+
+		$response = wp_remote_get( $this->api_url, $args );
 
 		if ( is_wp_error( $response ) ) {
 			return [];

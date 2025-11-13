@@ -33,6 +33,7 @@ class MarketplaceController {
 			'css_url'          => '', //  optional
 			'css_handle'       => 'marketplace-frontend-style',
 			'assets_path'      => '', //  Optional: explicit path to package root containing frontend/ directory
+			'payload'          => [], //  Optional: key-value array passed as headers for API authentication
 		] );
 
 		// Defer model and asset initialization until needed (optimization for multi-plugin installs)
@@ -251,7 +252,7 @@ class MarketplaceController {
 
 	public function get_plugins( $request ) {
 		// Lazy-load model only when REST endpoint is called (optimization)
-		$plugins = $this->get_model()->fetch_plugins();
+		$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
 
 		if ( is_wp_error( $plugins ) ) {
 			return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
