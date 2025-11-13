@@ -145,9 +145,9 @@ require_once __DIR__ . '/vendor/autoload.php';
     'menu_slug'        => 'plugin-marketplace',
     'api_url'          => 'https://example.com/marketplace.json',
     'brand'            => 'your_brand_name', // Optional: brand identifier for API filtering
-    'payload'          => [                  // Optional: headers for API authentication
-        'Authorization' => 'Bearer your-token-here',
-        'X-API-Key'     => 'your-api-key',
+    'payload'          => [                  // Optional: request body data for API payload
+        'locale' => 'en_US',
+        'action'     => '',
     ],
     // Optional: Explicitly set assets path if auto-detection doesn't work
     'assets_path'      => __DIR__ . '/inc/Dependencies/YourPlugin/Groupone/Marketplace/',
@@ -164,7 +164,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 - `menu_slug`: Slug used for the submenu and page. Default: plugin-marketplace
 - `api_url`: External API endpoint returning marketplace data. Default: ""
 - `brand`: Optional brand identifier used when constructing marketplace API requests. Can be used to filter or customize marketplace content based on brand. Default: ""
-- `payload`: Optional key-value array passed as headers for API authentication when fetching plugins. Can be used to include authentication tokens, API keys, or other custom headers required by the marketplace API. Default: []
+- `payload`: Optional key-value array passed in the request body for API authentication when fetching plugins. Can be used to include authentication tokens, API keys, or other custom data required by the marketplace API. Default: []
 - `css_url`: URL to a custom CSS file that styles the frontend. Default: ""
 - `css_handle`: WordPress style handle when registering/enqueuing styles. Default: marketplace-frontend-style
 - `assets_path`: Filesystem path to the package root containing the frontend/ directory. If empty, the module auto-detects it (see below).
