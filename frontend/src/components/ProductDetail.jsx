@@ -48,14 +48,20 @@ export default function ProductDetail({
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
             <article className="gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
-                <nav className="gv-breadcrumbs gv-area-nav">
+                <nav className="gv-breadcrumbs gv-area-nav test-">
                     <a
                         href="#"
                         onClick={e => {
                             e.preventDefault();
-                            if (onClose) onClose();
+                            if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+                                window.history.back();
+                            } else if (onClose) {
+                                onClose();
+                            }
                         }}
                         className="gv-flex gv-items-center gv-gap-xs"
+                        role="button"
+                        aria-label="Go back"
                     >
                         <img style={{ minWidth: "24px" }} className="gv-tile" src="https://gravity.group.one/icons/chevron_left.svg"
                                         alt="Back to plugins" />
