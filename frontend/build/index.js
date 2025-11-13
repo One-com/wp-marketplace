@@ -4005,14 +4005,20 @@ function ProductDetail({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("article", {
     className: "gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
-    className: "gv-breadcrumbs gv-area-nav"
+    className: "gv-breadcrumbs gv-area-nav test-"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
     href: "#",
     onClick: e => {
       e.preventDefault();
-      if (onClose) onClose();
+      if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+        window.history.back();
+      } else if (onClose) {
+        onClose();
+      }
     },
-    className: "gv-flex gv-items-center gv-gap-xs"
+    className: "gv-flex gv-items-center gv-gap-xs",
+    role: "button",
+    "aria-label": "Go back"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
     style: {
       minWidth: "24px"
