@@ -3624,6 +3624,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_group_one_gravity__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var react_i18next__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-i18next */ "./node_modules/react-i18next/dist/es/index.js");
 /* harmony import */ var _ProductDetail__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ProductDetail */ "./src/components/ProductDetail.jsx");
+/* harmony import */ var _ProductDetailRankMath__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./ProductDetailRankMath */ "./src/components/ProductDetailRankMath.jsx");
+
 
 
 
@@ -3748,11 +3750,21 @@ function Marketplace({
       console.log("Selected plugin state now:", selectedPlugin.slug);
     }
   }, [selectedPlugin]);
+
+  // Helper function to determine if we should use ProductDetailRankMath
+  const shouldUseRankMathDetail = plugin => {
+    if (!plugin) return false;
+    const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+    const isOnecomBrand = brand === "onecom";
+    const isRankMathPlugin = plugin.slug === "rank-math-pro" || plugin.slug === "seo-by-rank-math";
+    return isOnecomBrand && isRankMathPlugin;
+  };
   if (loading) return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Loading plugins...");
 
   // Early return: show full page detail instead of list
   if (selectedPlugin && pluginFromQuery) {
-    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? _ProductDetailRankMath__WEBPACK_IMPORTED_MODULE_5__["default"] : _ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"];
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(DetailComponent, {
       plugin: selectedPlugin,
       onClose: () => {
         // Return to listing (clear selection and URL)
@@ -3763,7 +3775,8 @@ function Marketplace({
       useWPHandlers: useWPHandlers,
       pluginInAction: pluginInAction,
       onAction: handlePluginAction,
-      usePortal: false
+      usePortal: false,
+      apiBaseUrl: apiBaseUrl
     });
   }
 
@@ -3830,14 +3843,18 @@ function Marketplace({
     style: {
       minWidth: "24px"
     }
-  })))))))), selectedPlugin && !pluginFromQuery && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {
-    plugin: selectedPlugin,
-    onClose: () => setSelectedPlugin(null),
-    assetsBaseUrl: assetsBaseUrl,
-    useWPHandlers: useWPHandlers,
-    pluginInAction: pluginInAction,
-    onAction: handlePluginAction
-  }));
+  })))))))), selectedPlugin && !pluginFromQuery && (() => {
+    const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? _ProductDetailRankMath__WEBPACK_IMPORTED_MODULE_5__["default"] : _ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"];
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(DetailComponent, {
+      plugin: selectedPlugin,
+      onClose: () => setSelectedPlugin(null),
+      assetsBaseUrl: assetsBaseUrl,
+      useWPHandlers: useWPHandlers,
+      pluginInAction: pluginInAction,
+      onAction: handlePluginAction,
+      apiBaseUrl: apiBaseUrl
+    });
+  })());
 }
 
 /***/ }),
@@ -4118,6 +4135,285 @@ function ProductDetail({
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
     className: "gv-title gv-text-bold gv-text-lg"
   }, "Why choose ", title, "?"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "This plugin helps you enhance your site with reliable performance and simplicity. It is designed to integrate smoothly and scale as your needs grow."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-area-content gv-grid gv-gap-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-text-sm gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Core features overview"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3"
+  }, coreFeatures.map((cf, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-item gv-stack-space-sm",
+    key: i
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title gv-text-bold gv-text-sm"
+  }, cf.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, cf.desc))))))));
+  return usePortal ? (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createPortal)(content, document.body) : content;
+}
+
+/***/ }),
+
+/***/ "./src/components/ProductDetailRankMath.jsx":
+/*!**************************************************!*\
+  !*** ./src/components/ProductDetailRankMath.jsx ***!
+  \**************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ProductDetailRankMath)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "react-dom");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _PluginActions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PluginActions */ "./src/components/PluginActions.jsx");
+
+
+
+
+function ProductDetailRankMath({
+  plugin,
+  onClose,
+  assetsBaseUrl,
+  useWPHandlers,
+  pluginInAction,
+  onAction,
+  usePortal = true,
+  apiBaseUrl
+}) {
+  if (!plugin) return null;
+  const [proPlugin, setProPlugin] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
+
+  // Fetch rank-math-pro plugin data
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    async function fetchProPlugin() {
+      try {
+        if (!apiBaseUrl) {
+          setLoading(false);
+          return;
+        }
+        const res = await fetch(`${apiBaseUrl}`);
+        const json = await res.json();
+
+        // Find rank-math-pro in the response
+        let proPluginData = null;
+        if (Array.isArray(json)) {
+          proPluginData = json.find(p => p.slug === "rank-math-pro");
+        } else if (json.data && Array.isArray(json.data)) {
+          proPluginData = json.data.find(p => p.slug === "rank-math-pro");
+        }
+        setProPlugin(proPluginData);
+      } catch (e) {
+        console.error("Failed to fetch rank-math-pro plugin", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProPlugin();
+  }, [apiBaseUrl]);
+  const assetBase = assetsBaseUrl || typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl || "";
+  const imageURL = typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL || assetBase;
+  const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
+  const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+
+  // Extract data with fallbacks for free version (current plugin)
+  const title = plugin.name || 'Product';
+  const description = plugin.description || plugin.shortDescription || 'No description available.';
+
+  // Extract data for pro version
+  const proTitle = proPlugin?.name || title;
+  const proDescription = proPlugin?.description || proPlugin?.shortDescription || description;
+  const proPrice = proPlugin?.priceCurrency && proPlugin?.priceAmount ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}` : '€ 0,-';
+
+  // Derive features from description or plugin data
+  const rawFeatureSource = plugin.features && plugin.features.length ? plugin.features : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
+  const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
+  while (keyFeatures.length < 3) keyFeatures.push('Sample feature');
+  const benefits = [keyFeatures[0], keyFeatures[1] || 'Improves performance', keyFeatures[2] || 'Easy setup'];
+  const coreFeatures = [{
+    name: keyFeatures[0],
+    desc: description.substring(0, 150) || 'Feature description'
+  }, {
+    name: keyFeatures[1],
+    desc: 'Enhances your WordPress experience with reliable performance'
+  }, {
+    name: keyFeatures[2],
+    desc: 'Easy to set up and configure with minimal technical knowledge'
+  }];
+  const content = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-surface-dim"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("article", {
+    className: "gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
+    className: "gv-breadcrumbs gv-area-nav"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: "#",
+    onClick: e => {
+      e.preventDefault();
+      if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+        window.history.back();
+      } else if (onClose) {
+        onClose();
+      }
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("gv-icon", {
+    "aria-hidden": "true",
+    src: "https://gravity.group.one/icons/chevron_left.svg"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, "Back"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
+    className: "gv-product-header gv-area-header"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content gv-stack-space-md gv-text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "gv-title gv-header-lg"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-image"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("picture", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("source", {
+    media: "(min-width: 600px)",
+    srcSet: `${mainImage} 2x, ${mainImage} 1x`
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    src: mainImage,
+    srcSet: `${mainImage} 2x, ${mainImage} 1x`,
+    alt: "Product image"
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-product-table gv-features-table gv-products-2 gv-area-table"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-dots-scroll-area"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-slider-nav"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    className: "gv-nav-button gv-previous gv-disabled"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("gv-icon", {
+    "aria-hidden": "true",
+    src: "https://gravity.group.one/icons/chevron_left.svg"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    className: "gv-nav-button gv-next"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("gv-icon", {
+    "aria-hidden": "true",
+    src: "https://gravity.group.one/icons/chevron_right.svg"
+  }))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-slider"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table",
+    role: "table"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-header",
+    role: "rowgroup"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-row",
+    role: "row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-product",
+    role: "columnheader"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description.substring(0, 120), description.length > 120 ? '…' : '')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-bottom"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-price-text"
+  }, "Free"))), useWPHandlers ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_PluginActions__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    plugin: plugin,
+    pluginInAction: pluginInAction,
+    onAction: onAction
+  }) : plugin.download && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    className: "gv-button gv-button-secondary"
+  }, "Install"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-product",
+    role: "columnheader"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title"
+  }, proTitle), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, proDescription.substring(0, 120), proDescription.length > 120 ? '…' : '')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-bottom"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-price-text"
+  }, proPrice), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-period"
+  }, "/mo"))), useWPHandlers && proPlugin ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_PluginActions__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    plugin: proPlugin,
+    pluginInAction: pluginInAction,
+    onAction: onAction
+  }) : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    className: "gv-button gv-button-secondary"
+  }, "Select"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-section",
+    role: "rowgroup"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-section-header gv-table-row",
+    role: "row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "gv-title"
+  }, "Key features")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "gv-title"
+  }, "Key features"))), keyFeatures.map((f, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-row",
+    role: "row",
+    key: i
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-cell-text"
+  }, f)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-cell-text"
+  }, f)))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-slider-pagination gv-state-top"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-dots",
+    role: "tablist"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-dot gv-active",
+    role: "tab",
+    "aria-selected": "true",
+    "aria-label": "Go to slide 1"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-dot",
+    role: "tab",
+    "aria-selected": "false",
+    "aria-label": "Go to slide 2"
+  }))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-area-details gv-grid gv-gap-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Key benefits"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ul", {
+    className: "gv-list-items gv-list-check gv-mode-condensed"
+  }, benefits.map((b, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
+    key: i
+  }, b)))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-text-max gv-text-sm gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gv-area-content gv-grid gv-gap-fluid"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
     className: "gv-text-sm gv-stack-space-md"

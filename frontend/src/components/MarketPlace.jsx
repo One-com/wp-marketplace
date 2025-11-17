@@ -3,6 +3,7 @@ import {normalizePlugins} from "./normalised-plugins";
 import "@group.one/gravity";
 import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
+import ProductDetailRankMath from "./ProductDetailRankMath";
 
 export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) {
     const [plugins, setPlugins] = useState([]);
@@ -116,12 +117,22 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
         }
     }, [selectedPlugin]);
 
+    // Helper function to determine if we should use ProductDetailRankMath
+    const shouldUseRankMathDetail = (plugin) => {
+        if (!plugin) return false;
+        const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+        const isOnecomBrand = brand === "onecom";
+        const isRankMathPlugin = plugin.slug === "rank-math-pro" || plugin.slug === "seo-by-rank-math";
+        return isOnecomBrand && isRankMathPlugin;
+    };
+
     if (loading) return <p>Loading plugins...</p>;
 
     // Early return: show full page detail instead of list
     if (selectedPlugin && pluginFromQuery) {
+        const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
         return (
-            <ProductDetail
+            <DetailComponent
                 plugin={selectedPlugin}
                 onClose={() => {
                     // Return to listing (clear selection and URL)
@@ -133,6 +144,7 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                 pluginInAction={pluginInAction}
                 onAction={handlePluginAction}
                 usePortal={false}
+                apiBaseUrl={apiBaseUrl}
             />
         );
     }
@@ -201,16 +213,20 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                 </section>
             ))}
             {/* Remove overlay render (keep for non-query usage) */}
-            {selectedPlugin && !pluginFromQuery && (
-                <ProductDetail
-                    plugin={selectedPlugin}
-                    onClose={() => setSelectedPlugin(null)}
-                    assetsBaseUrl={assetsBaseUrl}
-                    useWPHandlers={useWPHandlers}
-                    pluginInAction={pluginInAction}
-                    onAction={handlePluginAction}
-                />
-            )}
+            {selectedPlugin && !pluginFromQuery && (() => {
+                const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
+                return (
+                    <DetailComponent
+                        plugin={selectedPlugin}
+                        onClose={() => setSelectedPlugin(null)}
+                        assetsBaseUrl={assetsBaseUrl}
+                        useWPHandlers={useWPHandlers}
+                        pluginInAction={pluginInAction}
+                        onAction={handlePluginAction}
+                        apiBaseUrl={apiBaseUrl}
+                    />
+                );
+            })()}
         </div>
     );
 }

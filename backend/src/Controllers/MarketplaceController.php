@@ -30,7 +30,7 @@ class MarketplaceController {
 			'menu_slug'        => 'plugin-marketplace',
 			'api_url'          => '', // default to empty, React can decide
 			'brand'            => '', // optional brand identifier for marketplace API
-			'css_url'          => '', //  optional
+			'css_url'          => '', //  optional additional CSS
 			'css_handle'       => 'marketplace-frontend-style',
 			'assets_path'      => '', //  Optional: explicit path to package root containing frontend/ directory
 			'payload'          => [], //  Optional: key-value array passed as headers for API authentication
