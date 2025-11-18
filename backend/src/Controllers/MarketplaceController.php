@@ -340,6 +340,9 @@ class MarketplaceController {
 	 * It handles both simple directory slugs (e.g., 'akismet') and full plugin file paths
 	 * (e.g., 'seo-by-rank-math-pro/rank-math-pro.php').
 	 *
+	 * For cases where the slug doesn't match the directory name exactly (e.g., slug "rank-math-pro"
+	 * but installed as "seo-by-rank-math-pro/rank-math-pro.php"), the function will scan installed
+	 * plugins to find matches based on the main plugin file name.
 	 *
 	 * @param string $slug Plugin slug or plugin file path (e.g., 'akismet' or 'dirname/filename.php').
 	 * @return boolean True if the plugin is installed, false otherwise.
@@ -376,6 +379,32 @@ class MarketplaceController {
 		$plugin_file = WP_PLUGIN_DIR . '/' . $slug . '.php';
 		if ( file_exists( $plugin_file ) ) {
 			return true;
+		}
+
+		// Fallback: scan installed plugins for partial matches
+		// This handles cases like slug "rank-math-pro" installed as "seo-by-rank-math-pro/rank-math-pro.php"
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugins = get_plugins();
+
+		foreach ( $plugins as $file => $data ) {
+			// Check if the main plugin file name (without directory) matches the slug pattern
+			$parts = explode( '/', $file );
+			if ( count( $parts ) === 2 ) {
+				$main_file = $parts[1];
+				// Remove .php extension
+				$file_slug = str_replace( '.php', '', $main_file );
+
+				// Check if the file slug matches our search slug
+				if ( $file_slug === $slug ) {
+					return true;
+				}
+			} elseif ( count( $parts ) === 1 ) {
+				// Single file plugin
+				$file_slug = str_replace( '.php', '', $parts[0] );
+				if ( $file_slug === $slug ) {
+					return true;
+				}
+			}
 		}
 
 		return false;
