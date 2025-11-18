@@ -340,6 +340,9 @@ class MarketplaceController {
 	 * It handles both simple directory slugs (e.g., 'akismet') and full plugin file paths
 	 * (e.g., 'seo-by-rank-math-pro/rank-math-pro.php').
 	 *
+	 * For cases where the slug doesn't match the directory name exactly (e.g., slug "rank-math-pro"
+	 * but installed as "seo-by-rank-math-pro/rank-math-pro.php"), the function will scan installed
+	 * plugins to find matches based on the main plugin file name.
 	 *
 	 * @param string $slug Plugin slug or plugin file path (e.g., 'akismet' or 'dirname/filename.php').
 	 * @return boolean True if the plugin is installed, false otherwise.
@@ -376,6 +379,38 @@ class MarketplaceController {
 		$plugin_file = WP_PLUGIN_DIR . '/' . $slug . '.php';
 		if ( file_exists( $plugin_file ) ) {
 			return true;
+		}
+
+ 	// Fallback: scan installed plugins for partial matches
+		// This handles cases like:
+		// 1. slug "seo-by-rank-math" matching "seo-by-rank-math-pro/rank-math-pro.php" (directory prefix)
+		// 2. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugins = get_plugins();
+
+		foreach ( $plugins as $file => $data ) {
+			$parts = explode( '/', $file );
+			if ( count( $parts ) === 2 ) {
+				$directory = $parts[0];
+				$main_file = $parts[1];
+
+				// Check if directory starts with the slug (handles prefix matches)
+				if ( strpos( $directory, $slug ) === 0 ) {
+					return true;
+				}
+
+				// Check if the main plugin file name matches the slug
+				$file_slug = str_replace( '.php', '', $main_file );
+				if ( $file_slug === $slug ) {
+					return true;
+				}
+			} elseif ( count( $parts ) === 1 ) {
+				// Single file plugin
+				$file_slug = str_replace( '.php', '', $parts[0] );
+				if ( $file_slug === $slug ) {
+					return true;
+				}
+			}
 		}
 
 		return false;
@@ -420,16 +455,23 @@ class MarketplaceController {
 			}
 		}
 
-		// Fallback: scan installed plugins for partial matches by main file name
-		// This handles cases like slug "rank-math-pro" installed as "seo-by-rank-math-pro/rank-math-pro.php"
+ 	// Fallback: scan installed plugins for partial matches
+		// This handles cases like:
+		// 1. slug "seo-by-rank-math" matching "seo-by-rank-math-pro/rank-math-pro.php" (directory prefix)
+		// 2. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
 		foreach ( $plugins as $file => $data ) {
 			$parts = explode( '/', $file );
 			if ( count( $parts ) === 2 ) {
+				$directory = $parts[0];
 				$main_file = $parts[1];
-				// Remove .php extension
-				$file_slug = str_replace( '.php', '', $main_file );
 
-				// Check if the file slug matches our search slug
+				// Check if directory starts with the slug (handles prefix matches)
+				if ( strpos( $directory, $slug ) === 0 ) {
+					return $file;
+				}
+
+				// Check if the main plugin file name matches the slug
+				$file_slug = str_replace( '.php', '', $main_file );
 				if ( $file_slug === $slug ) {
 					return $file;
 				}
@@ -458,21 +500,17 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Missing plugin slug.', 'text-domain' ) ] );
 		}
 
-		// Load the list of installed plugins
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugins = get_plugins();
-
-		// Try to find the plugin main file by slug
-		$plugin_file = '';
-		foreach ( $plugins as $file => $data ) {
-			if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
-				$plugin_file = $file;
-				break;
-			}
+		// Check if plugin is installed first
+		if ( ! $this->is_installed( $slug ) ) {
+			wp_send_json_error( [ 'message' => __( 'Plugin not installed.', 'text-domain' ) ] );
 		}
 
+		// Resolve the plugin file using the enhanced helper function
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+
 		if ( empty( $plugin_file ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin not installed.', 'text-domain' ) ] );
+			wp_send_json_error( [ 'message' => __( 'Plugin file not found.', 'text-domain' ) ] );
 		}
 
 		$result = activate_plugin( $plugin_file );
@@ -500,16 +538,17 @@ class MarketplaceController {
 			wp_send_json_error([ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ]);
 		}
 
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugins = get_plugins();
+		// Check if plugin is installed first
+		if ( ! $this->is_installed( $slug ) ) {
+			wp_send_json_error([ 'message' => __( 'Plugin not installed', 'onecom-wp' ) ]);
+		}
 
-		// Try to find the plugin main file by slug
-		$plugin_file = '';
-		foreach ( $plugins as $file => $data ) {
-			if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
-				$plugin_file = $file;
-				break;
-			}
+		// Resolve the plugin file using the enhanced helper function
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+
+		if ( empty( $plugin_file ) ) {
+			wp_send_json_error([ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ]);
 		}
 
 		deactivate_plugins( $plugin_file, false, is_multisite() );
