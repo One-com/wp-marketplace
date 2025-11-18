@@ -263,10 +263,15 @@ class MarketplaceController {
 			if ( empty( $plugin['slug'] ) ) {
 				return $plugin;
 			}
-			// Resolve actual plugin main file for cases like 'seo-by-rank-math/rank-math.php'
-			$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
-			$plugin['installed'] = ! empty( $plugin_file );
-			$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
+			// Check if plugin is installed
+			$plugin['installed'] = $this->is_installed( $plugin['slug'] );
+
+			// Only resolve plugin file if we need to check activation status
+			$plugin['activated'] = false;
+			if ( $plugin['installed'] ) {
+				$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
+				$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
+			}
 			return $plugin;
 		};
 
@@ -331,17 +336,88 @@ class MarketplaceController {
 	/**
 	 * Check if plugin is installed.
 	 *
-	 * @param string $slug Plugin slug if found.
-	 * @return boolean
+	 * This function checks whether a plugin is physically installed in the WordPress plugins directory.
+	 * It handles both simple directory slugs (e.g., 'akismet') and full plugin file paths
+	 * (e.g., 'seo-by-rank-math-pro/rank-math-pro.php').
+	 *
+	 * For cases where the slug doesn't match the directory name exactly (e.g., slug "rank-math-pro"
+	 * but installed as "seo-by-rank-math-pro/rank-math-pro.php"), the function will scan installed
+	 * plugins to find matches based on the main plugin file name.
+	 *
+	 * @param string $slug Plugin slug or plugin file path (e.g., 'akismet' or 'dirname/filename.php').
+	 * @return boolean True if the plugin is installed, false otherwise.
 	 */
 	private function is_installed( $slug = '' ): bool {
-		return file_exists( WP_PLUGIN_DIR . '/' .  $slug  );
+		if ( empty( $slug ) ) {
+			return false;
+		}
+
+		// If slug contains a slash, it's likely a full plugin file path like 'dirname/filename.php'
+		if ( strpos( $slug, '/' ) !== false ) {
+			// Check if the full plugin file exists
+			$plugin_file_path = WP_PLUGIN_DIR . '/' . $slug;
+			if ( file_exists( $plugin_file_path ) ) {
+				return true;
+			}
+
+			// Also check if just the directory exists (handles edge cases)
+			$plugin_dir = dirname( $plugin_file_path );
+			if ( file_exists( $plugin_dir ) && is_dir( $plugin_dir ) ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		// For simple slugs, check if directory exists
+		$plugin_dir = WP_PLUGIN_DIR . '/' . $slug;
+		if ( file_exists( $plugin_dir ) && is_dir( $plugin_dir ) ) {
+			return true;
+		}
+
+		// Also check if it's a single-file plugin (slug.php)
+		$plugin_file = WP_PLUGIN_DIR . '/' . $slug . '.php';
+		if ( file_exists( $plugin_file ) ) {
+			return true;
+		}
+
+		// Fallback: scan installed plugins for partial matches
+		// This handles cases like slug "rank-math-pro" installed as "seo-by-rank-math-pro/rank-math-pro.php"
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugins = get_plugins();
+
+		foreach ( $plugins as $file => $data ) {
+			// Check if the main plugin file name (without directory) matches the slug pattern
+			$parts = explode( '/', $file );
+			if ( count( $parts ) === 2 ) {
+				$main_file = $parts[1];
+				// Remove .php extension
+				$file_slug = str_replace( '.php', '', $main_file );
+
+				// Check if the file slug matches our search slug
+				if ( $file_slug === $slug ) {
+					return true;
+				}
+			} elseif ( count( $parts ) === 1 ) {
+				// Single file plugin
+				$file_slug = str_replace( '.php', '', $parts[0] );
+				if ( $file_slug === $slug ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
 	 * Resolve the plugin's main file by slug by scanning installed plugins.
 	 * Handles cases like 'seo-by-rank-math/rank-math.php' where the main file
 	 * does not match slug/slug.php.
+	 *
+	 * For cases where the slug doesn't match the directory name exactly (e.g., slug "rank-math-pro"
+	 * but installed as "seo-by-rank-math-pro/rank-math-pro.php"), the function will scan installed
+	 * plugins to find matches based on the main plugin file name.
 	 *
 	 * @param string $slug
 	 * @return string Plugin file path relative to plugins dir, or empty string if not found.
@@ -372,6 +448,29 @@ class MarketplaceController {
 				return $file;
 			}
 		}
+
+		// Fallback: scan installed plugins for partial matches by main file name
+		// This handles cases like slug "rank-math-pro" installed as "seo-by-rank-math-pro/rank-math-pro.php"
+		foreach ( $plugins as $file => $data ) {
+			$parts = explode( '/', $file );
+			if ( count( $parts ) === 2 ) {
+				$main_file = $parts[1];
+				// Remove .php extension
+				$file_slug = str_replace( '.php', '', $main_file );
+
+				// Check if the file slug matches our search slug
+				if ( $file_slug === $slug ) {
+					return $file;
+				}
+			} elseif ( count( $parts ) === 1 ) {
+				// Single file plugin
+				$file_slug = str_replace( '.php', '', $parts[0] );
+				if ( $file_slug === $slug ) {
+					return $file;
+				}
+			}
+		}
+
 		return '';
 	}
 

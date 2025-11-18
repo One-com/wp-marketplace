@@ -16,6 +16,7 @@ export default function ProductDetail({
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
+    const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
     const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
     // Extract data with fallbacks
@@ -63,7 +64,7 @@ export default function ProductDetail({
                         role="button"
                         aria-label="Go back"
                     >
-                        <img style={{ minWidth: "24px" }} className="gv-tile" src="https://gravity.group.one/icons/chevron_left.svg"
+                        <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}chevron_left.svg`}
                                         alt="Back to plugins" />
                         <span>Back</span>
                     </a>
