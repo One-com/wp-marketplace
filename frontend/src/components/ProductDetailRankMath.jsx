@@ -1,48 +1,72 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
-import SuccessNotice from "./SuccessNotice";
-import ErrorToast from "./ErrorToast";
-import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function ProductDetailRankMath({
     plugin,
     onClose,
-    usePortal = true
+    assetsBaseUrl,
+    useWPHandlers,
+    pluginInAction,
+    onAction,
+    usePortal = true,
+    apiBaseUrl
 }) {
-    const {
-        assetsBaseUrl,
-        useWPHandlers,
-        pluginInAction,
-        plugins
-    } = useMarketplace();
     if (!plugin) return null;
 
-    // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
-    const freePlugin = plugins.find(p => p.slug === "seo-by-rank-math") || null;
-    const proPlugin = plugins.find(p => p.slug === "rank-math-pro") || null;
+    const [proPlugin, setProPlugin] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Use the clicked plugin for header/main content, but always use freePlugin for first column
+    // Fetch rank-math-pro plugin data
+    useEffect(() => {
+        async function fetchProPlugin() {
+            try {
+                if (!apiBaseUrl) {
+                    setLoading(false);
+                    return;
+                }
+                const res = await fetch(`${apiBaseUrl}`);
+                const json = await res.json();
+                
+                // Find rank-math-pro in the response
+                let proPluginData = null;
+                if (Array.isArray(json)) {
+                    proPluginData = json.find(p => p.slug === "rank-math-pro");
+                } else if (json.data && Array.isArray(json.data)) {
+                    proPluginData = json.data.find(p => p.slug === "rank-math-pro");
+                }
+                
+                setProPlugin(proPluginData);
+            } catch (e) {
+                console.error("Failed to fetch rank-math-pro plugin", e);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchProPlugin();
+    }, [apiBaseUrl]);
+
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
-    const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+    const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
-    // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
-    const title = freePlugin?.name || plugin.name || 'Product';
-    const description = freePlugin?.description || freePlugin?.shortDescription || plugin.description || plugin.shortDescription || 'No description available.';
+    // Extract data with fallbacks for free version (current plugin)
+    const title = plugin.name || 'Product';
+    const description = plugin.description || plugin.shortDescription || 'No description available.';
     
-    // Extract data for pro version (second column - always rank-math-pro)
-    const proTitle = proPlugin?.name || 'Rank Math Pro';
-    const proDescription = proPlugin?.description || proPlugin?.shortDescription || 'Advanced SEO features for professionals';
+    // Extract data for pro version
+    const proTitle = proPlugin?.name || title;
+    const proDescription = proPlugin?.description || proPlugin?.shortDescription || description;
     const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount) 
         ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}`
         : '€ 0,-';
 
     // Derive features from description or plugin data
-    const rawFeatureSource = (freePlugin?.features && freePlugin.features.length)
-        ? freePlugin.features
+    const rawFeatureSource = plugin.features && plugin.features.length
+        ? plugin.features
         : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
 
     const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
@@ -79,9 +103,6 @@ export default function ProductDetailRankMath({
                         <span>Back</span>
                     </a>
                 </nav>
-
-                <SuccessNotice plugin={plugin} />
-                <ErrorToast plugin={plugin} />
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
@@ -129,13 +150,15 @@ export default function ProductDetailRankMath({
                                                             <span className="gv-price-text">Free</span>
                                                         </div>
                                                     </div>
-                                                    {useWPHandlers && freePlugin ? (
+                                                    {useWPHandlers ? (
                                                         <PluginActions
-                                                            plugin={freePlugin}
+                                                            plugin={plugin}
+                                                            pluginInAction={pluginInAction}
+                                                            onAction={onAction}
                                                         />
                                                     ) : (
-                                                        freePlugin?.download && (
-                                                            <button type="button" className="gv-button gv-button-secondary">{freePlugin?.textKeys?.installButton || 'Install'}</button>
+                                                        plugin.download && (
+                                                            <button type="button" className="gv-button gv-button-secondary">Install</button>
                                                         )
                                                     )}
                                                 </div>
@@ -155,9 +178,11 @@ export default function ProductDetailRankMath({
                                                     {useWPHandlers && proPlugin ? (
                                                         <PluginActions
                                                             plugin={proPlugin}
+                                                            pluginInAction={pluginInAction}
+                                                            onAction={onAction}
                                                         />
                                                     ) : (
-                                                        <button type="button" className="gv-button gv-button-primary">Select</button>
+                                                        <button type="button" className="gv-button gv-button-secondary">Select</button>
                                                     )}
                                                 </div>
                                             </div>
@@ -166,10 +191,10 @@ export default function ProductDetailRankMath({
                                     <div className="gv-section" role="rowgroup">
                                         <div className="gv-section-header gv-table-row" role="row">
                                             <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{freePlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
+                                                <h4 className="gv-title">Key features</h4>
                                             </div>
                                             <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{proPlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
+                                                <h4 className="gv-title">Key features</h4>
                                             </div>
                                         </div>
                                         {keyFeatures.map((f, i) => (
@@ -197,7 +222,7 @@ export default function ProductDetailRankMath({
 
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.benefitHeading || 'Key benefits'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">Key benefits</h2>
                         <ul className="gv-list-items gv-list-check gv-mode-condensed">
                             {benefits.map((b, i) => <li key={i}>{b}</li>)}
                         </ul>
@@ -210,7 +235,7 @@ export default function ProductDetailRankMath({
 
                 <div className="gv-area-content gv-grid gv-gap-fluid">
                     <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.featureOverviewHeading || 'Core features overview'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">Core features overview</h2>
                         <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                             {coreFeatures.map((cf, i) => (
                                 <div className="gv-item gv-stack-space-sm" key={i}>
