@@ -3643,6 +3643,10 @@ function Marketplace({
   const [downloadingPlugins, setDownloadingPlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
   const [selectedPlugin, setSelectedPlugin] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
 
+  // Construct icon base URL with fallback logic
+  const assetBase = assetsBaseUrl || typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl || "";
+  const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+
   // Determine if a plugin slug is in the URL
   const pluginFromQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
 
@@ -3797,7 +3801,7 @@ function Marketplace({
     className: "gv-span-2"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
     className: "gv-tile",
-    src: "https://gravity.group.one/icons/add_box.svg",
+    src: `${iconBase}add_box.svg`,
     alt: "Performance Cache"
   })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
     className: "gv-span-9"
@@ -3825,7 +3829,7 @@ function Marketplace({
     }
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
     className: "gv-tile",
-    src: "https://gravity.group.one/icons/arrow_forward.svg",
+    src: `${iconBase}arrow_forward.svg`,
     alt: `View ${plugin.name} details`,
     style: {
       minWidth: "24px"
@@ -3978,6 +3982,7 @@ function ProductDetail({
   const assetBase = assetsBaseUrl || typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl || "";
   const imageURL = typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL || assetBase;
   const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
+  const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
   const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
   // Extract data with fallbacks
@@ -4024,7 +4029,7 @@ function ProductDetail({
       minWidth: "24px"
     },
     className: "gv-tile",
-    src: "https://gravity.group.one/icons/chevron_left.svg",
+    src: `${iconBase}chevron_left.svg`,
     alt: "Back to plugins"
   }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, "Back"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
     className: "gv-product-header gv-area-header"

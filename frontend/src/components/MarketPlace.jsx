@@ -11,6 +11,10 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
     const [selectedPlugin, setSelectedPlugin] = useState(null);
     
+    // Construct icon base URL with fallback logic
+    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
+    const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+    
     // Determine if a plugin slug is in the URL
     const pluginFromQuery = typeof window !== "undefined"
         ? new URLSearchParams(window.location.search).get("plugin")
@@ -165,7 +169,7 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                         {list.map((plugin) => (
                             <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12">
                                 <div className="gv-span-2">
-                                    <img className="gv-tile" src="https://gravity.group.one/icons/add_box.svg"
+                                    <img className="gv-tile" src={`${iconBase}add_box.svg`}
                                         alt="Performance Cache" />
                                 </div>
                                 <div className="gv-span-9">
@@ -189,7 +193,7 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                                     >
                                         <img
                                             className="gv-tile"
-                                            src="https://gravity.group.one/icons/arrow_forward.svg"
+                                            src={`${iconBase}arrow_forward.svg`}
                                             alt={`View ${plugin.name} details`}
                                             style={{ minWidth: "24px" }}
                                         />
