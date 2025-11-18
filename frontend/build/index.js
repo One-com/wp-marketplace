@@ -1,2 +1,4549 @@
-(()=>{var e={27:(e,t,i)=>{"use strict";i.d(t,{A:()=>s});var a=i(609);const s=()=>(0,a.createElement)("header",{className:"gv-product-header"},(0,a.createElement)("div",{className:"gv-content gv-stack-space-md gv-text-sm"},(0,a.createElement)("h1",{className:"gv-title gv-header-lg"},"one.com WP Marketplace"),(0,a.createElement)("p",null,"Your place to find plugins, themes, and services for your site."),(0,a.createElement)("button",{type:"button",className:"gv-button gv-button-secondary"},"Learn more")),(0,a.createElement)("div",{className:"gv-image"},(0,a.createElement)("picture",null,(0,a.createElement)("source",{media:"(min-width: 600px)",srcSet:" https://gravity.group.one/guide-images/product-image@2x.png 2x, https://gravity.group.one/guide-images/product-image.png    1x "}),(0,a.createElement)("img",{src:"https://gravity.group.one/guide-images/product-image-mobile.png",srcSet:" https://gravity.group.one/guide-images/product-image-mobile@2x.png 2x, https://gravity.group.one/guide-imagesproduct-image-mobile.png    1x ",alt:"Product image"}))))},36:(e,t,i)=>{"use strict";var a=i(635),s=i(291);const r={en_GB:{translation:i(823)},da_DK:{translation:i(491)},de_DE:{translation:i(205)},es_ES:{translation:i(591)},fi_FI:{translation:i(461)},fr_FR:{translation:i(811)},it_IT:{translation:i(529)},nl_NL:{translation:i(199)},no_NO:{translation:i(333)},pt_PT:{translation:i(383)},sv_SE:{translation:i(300)}};a.default.use(s.r9).init({resources:r,lng:"en_GB",fallbackLng:"en_GB",interpolation:{escapeValue:!1}})},103:(e,t,i)=>{"use strict";function a(e){if(!e||!Array.isArray(e.data))return console.error("Unsupported marketplace response shape. Expected { data: [ ... ] }.",e),[];const t=e.data;if(0===t.length)return[];const i=t.map(e=>{var t,i;const a=e?.textKeys?.description,s="string"==typeof a&&a?a:"object"==typeof e?.description&&null!==e.description?e.description["en-gb"]||Object.values(e.description)[0]||"":e?.description||"",r=e?.download||e?.download_url||e?.downloadUrl||"",o="object"==typeof e?.author&&null!==e.author?e.author.name||"":e?.author||"",n="object"==typeof e?.author&&null!==e.author&&e.author.url||"",l="object"==typeof e?.price&&null!==e.price?e.price.amount:void 0,c="object"==typeof e?.price&&null!==e.price?e.price.currency:void 0;return{...e,name:e?.name||"Unknown",slug:e?.slug||"",thumbnail:e?.thumbnail||"",description:s,download:r,author:o,authorUrl:n,priceAmount:l,priceCurrency:c,installed:null!==(t=e?.installed)&&void 0!==t&&t,activated:null!==(i=e?.activated)&&void 0!==i&&i,textKeys:e?.textKeys||{}}}),a=new Set;return i.filter(e=>{const t=e.slug||e.name||JSON.stringify(e);return!a.has(t)&&(a.add(t),!0)})}i.d(t,{i:()=>a})},176:(e,t,i)=>{"use strict";i(437)},199:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Neem vandaag nog contact met ons op","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Algemene voorwaarden","migratorMail_footer_footer-link-3_title":"Privacybeleid","migratorMail_footer_visitSite_title":"Website bezoeken","migratorMail_hi":"Hallo,","migratorMail_typeFail_bodyIntro":"Er is iets mis gegaan tijdens de migratie van uw site van {oldsite} naar {newsite}.","migratorMail_typeFail_button_title":"Migratie opnieuw proberen","migratorMail_typeFail_errorText":"Fout: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fout: Interne fout ({fail_reason})","migratorMail_typeFail_failTime":"Migratie niet gelukt: {dateandtime}","migratorMail_typeFail_footer_title":"Hebt u hulp nodig bij het migreren van uw site naar one.com? We helpen u graag.","migratorMail_typeFail_subject":"Migratie niet gelukt","migratorMail_typeFail_title":"WordPress migratie niet gelukt","migratorMail_typeSuccess_bodyIntro":"De migratie van uw site van {oldsite} naar {newsite} is nu voltooid.","migratorMail_typeSuccess_brokenPlugins":"Daarnaast is na de migratie gebleken dat de volgende plugin(s) fouten veroorzaken en zijn gedeactiveerd op de gemigreerde site: {plugins}.","migratorMail_typeSuccess_button_title":"Naar uw site gaan","migratorMail_typeSuccess_excludedDirs":"Let op: Om een soepele migratie te garanderen, zijn de volgende mappen uitgesloten van de migratie: {directories}. Indien nodig kun je deze gegevens handmatig naar je webruimte verplaatsen.","migratorMail_typeSuccess_finishTime":"Migratie voltooid: {dateandtime}","migratorMail_typeSuccess_footer_title":"Hebt u een vraag? We helpen u graag.","migratorMail_typeSuccess_startTime":"Migratie gestart: {dateandtime}","migratorMail_typeSuccess_subject":"Migratie is geslaagd","migratorMail_typeSuccess_title":"WordPress migratie voltooid"}')},205:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Kontaktieren Sie uns noch heute","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"AGB","migratorMail_footer_footer-link-3_title":"Datenschutzrichtlinie","migratorMail_footer_visitSite_title":"Website besuchen","migratorMail_hi":"Hallo,","migratorMail_typeFail_bodyIntro":"Bei der Migration Ihrer Website von {oldsite} zu {newsite} ist leider etwas schiefgelaufen.","migratorMail_typeFail_button_title":"Migration erneut versuchen","migratorMail_typeFail_errorText":"Fehler: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fehler: Interner Fehler ({fail_reason})","migratorMail_typeFail_failTime":"Migration fehlgeschlagen: {dateandtime}","migratorMail_typeFail_footer_title":"Benötigen Sie Hilfe bei der Migration Ihrer Website zu one.com? Wir helfen Ihnen gerne.","migratorMail_typeFail_subject":"Migration fehlgeschlagen","migratorMail_typeFail_title":"WordPress-Migration fehlgeschlagen","migratorMail_typeSuccess_bodyIntro":"Die Migration Ihrer Website von {oldsite} zu {newsite} ist nun abgeschlossen.","migratorMail_typeSuccess_brokenPlugins":"Darüber hinaus wurden nach der Migration die folgenden Plugins gefunden, die Fehler verursachen und auf der migrierten Website deaktiviert wurden: {plugins}.","migratorMail_typeSuccess_button_title":"Zu Ihrer Website gehen","migratorMail_typeSuccess_excludedDirs":"Bitte beachten Sie: Um einen reibungslosen Ablauf der Migration zu gewährleisten, wurden die folgenden Verzeichnisse von der Migration ausgeschlossen: {directories}. Sie können diese Daten bei Bedarf manuell auf Ihren Webspace verschieben.","migratorMail_typeSuccess_finishTime":"Migration abgeschlossen: {dateandtime}","migratorMail_typeSuccess_footer_title":"Haben Sie Fragen? Wir helfen Ihnen gerne.","migratorMail_typeSuccess_startTime":"Migration gestartet: {dateandtime}","migratorMail_typeSuccess_subject":"Migration erfolgreich","migratorMail_typeSuccess_title":"WordPress-Migration abgeschlossen"}')},227:(e,t,i)=>{"use strict";i(609),i(674),i(352),i(454)},258:(e,t,i)=>{"use strict";i.d(t,{A:()=>r});var a=i(609),s=i(979);function r(){const{plugins:e,assetsBaseUrl:t}=(0,s.D)(),[i,r]=(0,a.useState)(0),[o,n]=(0,a.useState)(2),[l,c]=(0,a.useState)(!1),g=(0,a.useRef)(null);(0,a.useEffect)(()=>{const e=()=>{window.innerWidth>1024?n(2):(window.innerWidth,n(1))};return e(),window.addEventListener("resize",e),()=>window.removeEventListener("resize",e)},[]);const u=e.filter(e=>!0===e.featured&&!0!==e.activated),d=t||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",p=d?`${d}assets/icons/`:"",m=u.length,h=Math.max(0,m-o),f=[...u.slice(-o),...u,...u.slice(0,o)],v=i+o;return(0,a.useEffect)(()=>{const e=()=>{c(!1),i>=m?r(0):i<0&&r(m-1)},t=g.current;if(t)return t.addEventListener("transitionend",e),()=>t.removeEventListener("transitionend",e)},[i,m]),u&&0!==u.length?(0,a.createElement)("section",{className:"gv-featured-carousel gv-w-full gv-mt-fluid"},(0,a.createElement)("div",{className:"gv-carousel-header gv-mb-md"},(0,a.createElement)("h5",{className:"gv-title gv-heading-sm"},"Recommended for you")),(0,a.createElement)("div",{className:"gv-carousel-container",style:{position:"relative",overflow:"hidden"}},(0,a.createElement)("div",{ref:g,className:"gv-carousel-track",style:{display:"flex",transition:l?"transform 0.3s ease-in-out":"none",transform:`translateX(calc(-${v} * ((100% - ${o-1}rem) / ${o} + 1rem)))`,gap:"1rem"}},f.map((e,t)=>{const i=e.name||"Product",s=e.description||e.shortDescription||"No description available.",r="free"===e.licenseType?"Free":e.priceCurrency&&e.priceAmount?`${e.priceCurrency} ${e.priceAmount}`:"€ 0,-",n=e.bannerUrl||e.image||e.thumbnail||"https://gravity.group.one/guide-images/product-image@2x.png";return(0,a.createElement)("div",{key:`slide-${t}`,className:"gv-carousel-slide",style:{minWidth:`calc((100% - ${o-1}rem) / ${o})`,maxWidth:`calc((100% - ${o-1}rem) / ${o})`,flex:"0 0 auto",backgroundColor:"#E8F4F8",borderRadius:"6px",display:"flex",justifyContent:"space-between",maxHeight:"380px"}},(0,a.createElement)("header",{className:"gv-product-header gv-area-header"},(0,a.createElement)("div",{className:"gv-content gv-stack-space-md gv-text-sm",style:{display:"flex",flexDirection:"column",overflow:"hidden"}},(0,a.createElement)("h5",{className:"gv-title gv-header-sm",style:{overflow:"hidden",display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",textOverflow:"ellipsis"}},i),(0,a.createElement)("p",{style:{overflow:"hidden",display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",textOverflow:"ellipsis"}},s),(0,a.createElement)("div",{className:"gv-slide-footer gv-mt-lg gv-flex gv-align-center"},(0,a.createElement)("button",{onClick:()=>(e=>{if("undefined"!=typeof window){const t=new URL(window.location.href);t.searchParams.set("plugin",e.slug),window.history.pushState({},"",t.toString()),window.dispatchEvent(new PopStateEvent("popstate"))}})(e),className:"gv-button gv-button-secondary"},"Read more"),(0,a.createElement)("span",{className:"gv-price gv-text-bold gv-text-md gv-ml-md"},r))),(0,a.createElement)("div",{className:"gv-image"},(0,a.createElement)("picture",null,(0,a.createElement)("source",{media:"(min-width: 600px)",srcSet:`${n} 1x, ${n} 2x`}),(0,a.createElement)("img",{src:n,srcSet:`${n} 1x, ${n} 2x`,alt:`${i} image`})))))}))),m>o&&(0,a.createElement)("div",{className:"gv-carousel-nav-wrapper gv-flex gv-justify-center gv-align-center gv-mt-sm gv-gap-fluid"},(0,a.createElement)("button",{onClick:()=>{l||(c(!0),r(e=>e-1))},className:"gv-carousel-nav gv-carousel-nav-prev",style:{display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",opacity:1},"aria-label":"Previous slide"},(0,a.createElement)("img",{src:`${p}chevron_left.svg`,alt:"Previous",style:{width:"24px",height:"24px"}})),(0,a.createElement)("div",{className:"gv-carousel-dots",style:{display:"flex",justifyContent:"center",gap:"0.5rem"}},Array.from({length:h+1}).map((e,t)=>(0,a.createElement)("button",{key:t,onClick:()=>(e=>{l||(c(!0),r(Math.min(e,h)))})(t),className:"gv-carousel-dot",style:{width:"12px",height:"12px",borderRadius:"50%",border:"none",background:i===t?"#0066CC":"#D0D0D0",cursor:"pointer",padding:0},"aria-label":`Go to slide ${t+1}`}))),(0,a.createElement)("button",{onClick:()=>{l||(c(!0),r(e=>e+1))},className:"gv-carousel-nav gv-carousel-nav-next",style:{display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",opacity:1},"aria-label":"Next slide"},(0,a.createElement)("img",{src:`${p}chevron_right.svg`,alt:"Next",style:{width:"24px",height:"24px"}})))):null}},273:(e,t,i)=>{"use strict";i(609),i(352)},291:(e,t,i)=>{"use strict";i.d(t,{Bd:()=>a.B,r9:()=>s.r}),i(829),i(814);var a=i(437),s=(i(648),i(176),i(273),i(227),i(674),i(831));i(565),i(352)},300:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Kontakta oss idag","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Villkor","migratorMail_footer_footer-link-3_title":"Sekretesspolicy","migratorMail_footer_visitSite_title":"Besök webbplatsen","migratorMail_hi":"Hej!","migratorMail_typeFail_bodyIntro":"Någonting gick fel när din hemsida skulle migreras från {oldsite} till {newsite}.","migratorMail_typeFail_button_title":"Starta om migrering","migratorMail_typeFail_errorText":"Fel: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fel: Internt fel ({fail_reason})","migratorMail_typeFail_failTime":"Migrering misslyckades: {dateandtime}","migratorMail_typeFail_footer_title":"Behöver du hjälp med att migrera din hemsida till one.com? Vi hjälper dig gärna.","migratorMail_typeFail_subject":"Migrering misslyckades","migratorMail_typeFail_title":"WordPress-migreringen misslyckades","migratorMail_typeSuccess_bodyIntro":"Migreringen av din hemsida från {oldsite} till {newsite} är nu slutförd.","migratorMail_typeSuccess_brokenPlugins":"Efter migreringen visade det sig dessutom att följande plugin orsakade fel och har avaktiverats på den migrerade webbplatsen: {plugins}.","migratorMail_typeSuccess_button_title":"Gå till din hemsida","migratorMail_typeSuccess_excludedDirs":"Observera: För att säkerställa en smidig migreringsprocess uteslöts följande kataloger från migreringen: {directories}. Du kan manuellt flytta dessa data till ditt webbutrymme om det behövs.","migratorMail_typeSuccess_finishTime":"Migrering slutfördes: {dateandtime}","migratorMail_typeSuccess_footer_title":"Har du några frågor? Vi hjälper dig gärna.","migratorMail_typeSuccess_startTime":"Migrering startades: {dateandtime}","migratorMail_typeSuccess_subject":"Migrering lyckades","migratorMail_typeSuccess_title":"WordPress-migrering är slutförd"}')},333:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Kontakt oss i dag","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Betingelser","migratorMail_footer_footer-link-3_title":"Personvernerklæring","migratorMail_footer_visitSite_title":"Besøk nettstedet","migratorMail_hi":"Hei,","migratorMail_typeFail_bodyIntro":"Noe gikk galt med migreringen av siden din fra {oldsite} til {newsite}.","migratorMail_typeFail_button_title":"Prøv migrering på nytt","migratorMail_typeFail_errorText":"Feil: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Feil: Intern feil ({fail_reason})","migratorMail_typeFail_failTime":"Migrering mislyktes: {dateandtime}","migratorMail_typeFail_footer_title":"Trenger du hjelp med å migrere siden din til one.com? Vi er her for å hjelpe deg.","migratorMail_typeFail_subject":"Migreringen mislyktes","migratorMail_typeFail_title":"WordPress-migreringen mislyktes","migratorMail_typeSuccess_bodyIntro":"Migreringen av siden din fra {oldsite} til {newsite} er fullført.","migratorMail_typeSuccess_brokenPlugins":"I tillegg ble det oppdaget feil i følgende plugin(er) etter migreringen, og disse er deaktivert på det migrerte nettstedet: {plugins}.","migratorMail_typeSuccess_button_title":"Gå til siden din","migratorMail_typeSuccess_excludedDirs":"Vennligst merk: For å sikre en smidig migreringsprosess ble følgende kataloger utelatt fra migreringen: {directories}. Du kan manuelt flytte disse dataene til webhotellet ditt om nødvendig.","migratorMail_typeSuccess_finishTime":"Migrering ferdig: {dateandtime}","migratorMail_typeSuccess_footer_title":"Har du spørsmål? Vi er her for å hjelpe deg.","migratorMail_typeSuccess_startTime":"Migrering startet: {dateandtime}","migratorMail_typeSuccess_subject":"Migreringen var vellykket","migratorMail_typeSuccess_title":"WordPress-migreringen er fullført"}')},338:(e,t,i)=>{"use strict";i.d(t,{A:()=>r});var a=i(609),s=i(979);function r({plugin:e}){const{assetsBaseUrl:t,pluginInAction:i,subscriptionStatus:r,isCheckingSubscription:o,isOnecomBrand:n,handlePluginAction:l}=(0,s.D)(),c="wp-rocket"===e.slug||"rank-math-pro"===e.slug,g=r[e.slug],u=o[e.slug],d=t||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",p=d?`${d}assets/`:"",m=t=>{const i=!e.installed;if(n&&c&&i&&"install"===t){const t=new CustomEvent("onecom-plugin-provision",{detail:{slug:e.slug},bubbles:!0,cancelable:!0,composed:!0});return void document.dispatchEvent(t)}l(t,e)},h=n&&c&&!e.installed&&!1===g,f=n&&c&&!e.installed&&(u||void 0===g);return(0,a.createElement)("div",{className:"plugin-actions gv-mt-md"},f?(0,a.createElement)("div",{className:"gv-skeleton gv-heading-md"}):h?(0,a.createElement)("button",{type:"button",className:"gv-button gv-button-primary",onClick:()=>{const t=new CustomEvent("onecom-subscribe-addon",{detail:{slug:e.slug},bubbles:!0,cancelable:!0,composed:!0});document.dispatchEvent(t)},disabled:u},"Select"):e.installed?e.activated?(0,a.createElement)("button",{type:"button",className:"gv-button gv-button-primary",onClick:()=>{const t={"wp-rocket":"wp-rocket","rank-math-pro":"rank-math","seo-by-rank-math":"rank-math",akismet:"akismet-key-config",jetpack:"jetpack",wordfence:"Wordfence",yoast:"wpseo_dashboard"}[e.slug]||e.slug,i=void 0!==window.marketplaceConfig&&window.marketplaceConfig?.wpConfig?.adminUrl;window.location.href=i?`${i}admin.php?page=${t}`:"/wp-admin/plugins.php"}},(0,a.createElement)("span",null,"Manage"),(0,a.createElement)("gv-icon",{"aria-hidden":"true",src:`${p}icons/arrow_right.svg`})):(0,a.createElement)("button",{className:"gv-button gv-button-primary",disabled:i[e.slug],onClick:()=>m("activate")},i[e.slug]?marketplaceConfig?.labels?.activating||"Activating...":e.textKeys?.activateButton||"Activate"):(0,a.createElement)("button",{className:"gv-button gv-button-secondary",disabled:i[e.slug],onClick:()=>m("install")},i[e.slug]?marketplaceConfig?.labels?.installing||"Installing...":e.textKeys?.installButton||"Install"))}},352:(e,t,i)=>{"use strict";i.d(t,{TO:()=>r.T,gJ:()=>o,hz:()=>n,rV:()=>s.r});var a=i(609),s=i(565),r=i(484);i(831);const o=(0,a.createContext)();class n{constructor(){this.usedNamespaces={}}addUsedNamespaces(e){e.forEach(e=>{this.usedNamespaces[e]||(this.usedNamespaces[e]=!0)})}getUsedNamespaces(){return Object.keys(this.usedNamespaces)}}},383:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Contacte-nos hoje","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Termos","migratorMail_footer_footer-link-3_title":"Política de Privacidade","migratorMail_footer_visitSite_title":"Visitar o sítio","migratorMail_hi":"Olá,","migratorMail_typeFail_bodyIntro":"Ocorreu um erro ao migrar o seu website de {oldsite} para {newsite}.","migratorMail_typeFail_button_title":"Voltar a tentar a migração","migratorMail_typeFail_errorText":"Erro: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Erro: Erro interno ({fail_reason})","migratorMail_typeFail_failTime":"A migração falhou: {dateandtime}","migratorMail_typeFail_footer_title":"Precisa de ajuda para migrar o seu website para a one.com? Estamos aqui para ajudar.","migratorMail_typeFail_subject":"Falha na migração","migratorMail_typeFail_title":"Falha na migração para o WordPress","migratorMail_typeSuccess_bodyIntro":"A migração do seu website de {oldsite} para {newsite} foi concluída.","migratorMail_typeSuccess_brokenPlugins":"Além disso, após a migração, verificou-se que o(s) seguinte(s) plugin(s) causava(m) erros e foi(ram) desativado(s) no site migrado: {plugins}.","migratorMail_typeSuccess_button_title":"Aceda ao seu website","migratorMail_typeSuccess_excludedDirs":"Queira ter em atenção: para garantir um processo de migração suave, os seguintes diretórios foram removidos da migração: {directories}. Pode mover manualmente esses dados para o seu espaço web, se necessário.","migratorMail_typeSuccess_finishTime":"Fim da migração: {dateandtime}","migratorMail_typeSuccess_footer_title":"Tem dúvidas? Estamos aqui para ajudar.","migratorMail_typeSuccess_startTime":"A migração começou: {dateandtime}","migratorMail_typeSuccess_subject":"Migração bem-sucedida","migratorMail_typeSuccess_title":"Migração para WordPress concluída"}')},437:(e,t,i)=>{"use strict";i.d(t,{B:()=>n});var a=i(609),s=i(352),r=i(454);const o=(e,t,i,a)=>e.getFixedT(t,i,a),n=(e,t={})=>{const{i18n:i}=t,{i18n:n,defaultNS:l}=(0,a.useContext)(s.gJ)||{},c=i||n||(0,s.TO)();if(c&&!c.reportNamespaces&&(c.reportNamespaces=new s.hz),!c){(0,r.mc)(c,"NO_I18NEXT_INSTANCE","useTranslation: You will need to pass in an i18next instance by using initReactI18next");const e=(e,t)=>(0,r.Kg)(t)?t:(0,r.Gv)(t)&&(0,r.Kg)(t.defaultValue)?t.defaultValue:Array.isArray(e)?e[e.length-1]:e,t=[e,{},!1];return t.t=e,t.i18n={},t.ready=!1,t}c.options.react?.wait&&(0,r.mc)(c,"DEPRECATED_OPTION","useTranslation: It seems you are still using the old wait option, you may migrate to the new useSuspense behaviour.");const g={...(0,s.rV)(),...c.options.react,...t},{useSuspense:u,keyPrefix:d}=g;let p=e||l||c.options?.defaultNS;p=(0,r.Kg)(p)?[p]:p||["translation"],c.reportNamespaces.addUsedNamespaces?.(p);const m=(c.isInitialized||c.initializedStoreOnce)&&p.every(e=>(0,r.NM)(e,c,g)),h=((e,t,i,s)=>(0,a.useCallback)(o(e,t,i,s),[e,t,i,s]))(c,t.lng||null,"fallback"===g.nsMode?p:p[0],d),f=()=>h,v=()=>o(c,t.lng||null,"fallback"===g.nsMode?p:p[0],d),[y,_]=(0,a.useState)(f);let b=p.join();t.lng&&(b=`${t.lng}${b}`);const w=((e,t)=>{const i=(0,a.useRef)();return(0,a.useEffect)(()=>{i.current=e},[e,t]),i.current})(b),k=(0,a.useRef)(!0);(0,a.useEffect)(()=>{const{bindI18n:e,bindI18nStore:i}=g;k.current=!0,m||u||(t.lng?(0,r.GA)(c,t.lng,p,()=>{k.current&&_(v)}):(0,r.dM)(c,p,()=>{k.current&&_(v)})),m&&w&&w!==b&&k.current&&_(v);const a=()=>{k.current&&_(v)};return e&&c?.on(e,a),i&&c?.store.on(i,a),()=>{k.current=!1,c&&e&&e?.split(" ").forEach(e=>c.off(e,a)),i&&c&&i.split(" ").forEach(e=>c.store.off(e,a))}},[c,b]),(0,a.useEffect)(()=>{k.current&&m&&_(f)},[c,d,m]);const x=[y,c,m];if(x.t=y,x.i18n=c,x.ready=m,m)return x;if(!m&&!u)return x;throw new Promise(e=>{t.lng?(0,r.GA)(c,t.lng,p,()=>e()):(0,r.dM)(c,p,()=>e())})}},454:(e,t,i)=>{"use strict";i.d(t,{GA:()=>n,Gv:()=>g,Kg:()=>c,NM:()=>l,dM:()=>o,mc:()=>s});const a={},s=(e,t,i,s)=>{c(i)&&a[i]||(c(i)&&(a[i]=new Date),((e,t,i,a)=>{const s=[i,{code:t,...a||{}}];if(e?.services?.logger?.forward)return e.services.logger.forward(s,"warn","react-i18next::",!0);c(s[0])&&(s[0]=`react-i18next:: ${s[0]}`),e?.services?.logger?.warn?e.services.logger.warn(...s):console?.warn&&console.warn(...s)})(e,t,i,s))},r=(e,t)=>()=>{if(e.isInitialized)t();else{const i=()=>{setTimeout(()=>{e.off("initialized",i)},0),t()};e.on("initialized",i)}},o=(e,t,i)=>{e.loadNamespaces(t,r(e,i))},n=(e,t,i,a)=>{if(c(i)&&(i=[i]),e.options.preload&&e.options.preload.indexOf(t)>-1)return o(e,i,a);i.forEach(t=>{e.options.ns.indexOf(t)<0&&e.options.ns.push(t)}),e.loadLanguages(t,r(e,a))},l=(e,t,i={})=>t.languages&&t.languages.length?t.hasLoadedNamespace(e,{lng:i.lng,precheck:(t,a)=>{if(i.bindI18n&&i.bindI18n.indexOf("languageChanging")>-1&&t.services.backendConnector.backend&&t.isLanguageChangingTo&&!a(t.isLanguageChangingTo,e))return!1}}):(s(t,"NO_LANGUAGES","i18n.languages were undefined or empty",{languages:t.languages}),!0),c=e=>"string"==typeof e,g=e=>"object"==typeof e&&null!==e},461:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Ota meihin yhteyttä","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Palvelun käyttöehdot","migratorMail_footer_footer-link-3_title":"Tietosuojakäytäntö","migratorMail_footer_visitSite_title":"Vieraile sivustolla","migratorMail_hi":"Hei,","migratorMail_typeFail_bodyIntro":"Jokin meni pieleen sivustosi siirrossa kohteesta {oldsite} kohteeseen {newsite}.","migratorMail_typeFail_button_title":"Yritä siirtoa uudelleen","migratorMail_typeFail_errorText":"Virhe: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Virhe: Sisäinen virhe ({fail_reason})","migratorMail_typeFail_failTime":"Siirto epäonnistui: {dateandtime}","migratorMail_typeFail_footer_title":"Tarvitsetko apua sivustosi siirtämisessä one.comille? Autamme mielellämme.","migratorMail_typeFail_subject":"Siirto epäonnistui","migratorMail_typeFail_title":"WordPress-siirto epäonnistui","migratorMail_typeSuccess_bodyIntro":"Sivustosi siirto kohteesta {oldsite} kohteeseen {newsite} on nyt valmis.","migratorMail_typeSuccess_brokenPlugins":"Lisäksi siirron jälkeen havaittiin, että seuraavat lisäosat aiheuttavat virheitä, ja ne on poistettu käytöstä siirretyllä sivustolla: {plugins}.","migratorMail_typeSuccess_button_title":"Siirry sivustollesi","migratorMail_typeSuccess_excludedDirs":"Huomaa: Sujuvan siirtoprosessin varmistamiseksi seuraavat hakemistot jätettiin siirron ulkopuolelle: {directories}. Voit tarvittaessa siirtää nämä tiedot manuaalisesti verkkolevytilaasi.","migratorMail_typeSuccess_finishTime":"Siirto valmistui: {dateandtime}","migratorMail_typeSuccess_footer_title":"Onko sinulla kysyttävää? Autamme mielellämme.","migratorMail_typeSuccess_startTime":"Siirto aloitettu: {dateandtime}","migratorMail_typeSuccess_subject":"Siirto onnistui","migratorMail_typeSuccess_title":"WordPress-siirto onnistui"}')},469:(e,t,i)=>{"use strict";i.d(t,{A:()=>r});var a=i(609),s=i(979);function r({plugin:e}){const{assetsBaseUrl:t,noticeState:i,setNoticeState:r,handlePluginAction:o}=(0,s.D)();if(!i||!i.visible||i.pluginSlug!==e?.slug)return null;const n=t||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",l=n?`${n}assets/`:"",c="installed"===i.type,g="activated"===i.type;return(0,a.createElement)("div",{className:"gv-notice gv-notice-success gv-p-lg gv-max-mob-pt-lg gv-mb-0 gv-mt-lg",style:{gridColumn:"1 / -1",width:"100%"}},(0,a.createElement)("img",{className:"gv-notice-icon",src:`${l}icons/success.svg`,alt:"Success"}),(0,a.createElement)("div",{className:"gv-notice-content"},(0,a.createElement)("div",{className:"gv-notice-title"},c&&"Plugin was installed.",g&&"Plugin was activated."),(0,a.createElement)("p",null,c&&"Activate it now to start using it.",g&&"You can start using it.")),c&&(0,a.createElement)("button",{type:"button",className:"gv-action gv-button gv-button-neutral",onClick:()=>{o("activate",e)}},"Activate"),g&&(0,a.createElement)("button",{type:"button",className:"gv-action gv-button gv-button-neutral",onClick:()=>{const t={"wp-rocket":"wp-rocket","rank-math-pro":"rank-math","seo-by-rank-math":"rank-math",akismet:"akismet-key-config",jetpack:"jetpack",wordfence:"Wordfence",yoast:"wpseo_dashboard"}[e.slug]||e.slug,i=void 0!==window.marketplaceConfig&&window.marketplaceConfig?.wpConfig?.adminUrl;window.location.href=i?`${i}admin.php?page=${t}`:"/wp-admin/plugins.php"}},"Manage"),(0,a.createElement)("button",{type:"button",className:"gv-notice-close","aria-label":"Close",onClick:()=>{r({visible:!1,type:null,pluginSlug:null})}},(0,a.createElement)("gv-icon",{"aria-hidden":"true",src:`${l}icons/close.svg`})))}},484:(e,t,i)=>{"use strict";let a;i.d(t,{T:()=>r,V:()=>s});const s=e=>{a=e},r=()=>a},491:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Kontakt os i dag","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Vilkår","migratorMail_footer_footer-link-3_title":"Privatlivspolitik","migratorMail_footer_visitSite_title":"Besøg siden","migratorMail_hi":"Hej","migratorMail_typeFail_bodyIntro":"Noget gik galt med flytningen af din hjemmeside fra {oldsite} til {newsite}.","migratorMail_typeFail_button_title":"Prøv igen","migratorMail_typeFail_errorText":"Fejl: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fejl: Intern fejl ({fail_reason})","migratorMail_typeFail_failTime":"Migrering mislykkedes {dateandtime}","migratorMail_typeFail_footer_title":"Behøver du hjælp til at migrere din hjemmeside til one.com? Vi er her for at hjælpe.","migratorMail_typeFail_subject":"Migrering mislykkedes","migratorMail_typeFail_title":"WordPress-migrering mislykkedes","migratorMail_typeSuccess_bodyIntro":"Migreringen af din hjemmeside fra {oldsite} til {newsite} er nu fuldendt.","migratorMail_typeSuccess_brokenPlugins":"Efter migreringen viste det sig desuden, at følgende plugin(s) forårsagede fejl og er blevet deaktiveret på det migrerede websted: {plugins}.","migratorMail_typeSuccess_button_title":"Gå til din hjemmeside","migratorMail_typeSuccess_excludedDirs":"Bemærk: For at sikre en problemfri migreringsproces blev følgende mapper udelukket fra migreringen: {directories}. Du kan manuelt flytte disse data til din hjemmeside, hvis det er nødvendigt.","migratorMail_typeSuccess_finishTime":"Migrering afsluttet {dateandtime}","migratorMail_typeSuccess_footer_title":"Har du spørgsmål? Vi er her for at hjælpe.","migratorMail_typeSuccess_startTime":"Migrering startet {dateandtime}","migratorMail_typeSuccess_subject":"Migrering lykkedes","migratorMail_typeSuccess_title":"WordPress-migration fuldendt"}')},526:(e,t,i)=>{"use strict";i.d(t,{A:()=>r});var a=i(609),s=i(979);function r(){const{loadingAction:e,loadingPlugin:t,assetsBaseUrl:i}=(0,s.D)();if(!e||!t)return null;const r=`${i||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||""}assets/images/spinner.svg`;return(0,a.createElement)("div",{className:"loading-overlay show"},(0,a.createElement)("div",{className:"gv-loader-container gv-pos-center gv-pos-absolute"},(0,a.createElement)("gv-loader",{src:r}),(0,a.createElement)("p",null,e," ",t)))}},529:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Contattaci oggi stesso","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Condizioni","migratorMail_footer_footer-link-3_title":"Informativa sulla privacy","migratorMail_footer_visitSite_title":"Visita il sito","migratorMail_hi":"Salve,","migratorMail_typeFail_bodyIntro":"Qualcosa non ha funzionato con la migrazione del tuo sito da {oldsite} a {newsite}.","migratorMail_typeFail_button_title":"Ritenta la migrazione","migratorMail_typeFail_errorText":"Errore: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Errore: Errore interno ({fail_reason})","migratorMail_typeFail_failTime":"Migrazione non riuscita: {dateandtime}","migratorMail_typeFail_footer_title":"Hai bisogno di assistenza per migrare il tuo sito verso one.com? Siamo qui per aiutarti.","migratorMail_typeFail_subject":"Migrazione non riuscita","migratorMail_typeFail_title":"Migrazione WordPress non riuscita","migratorMail_typeSuccess_bodyIntro":"La migrazione del tuo sito da {oldsite} a {newsite} è ora completata.","migratorMail_typeSuccess_brokenPlugins":"Inoltre, dopo la migrazione, i seguenti plugin hanno causato errori e sono stati disattivati sul sito migrato: {plugins}.","migratorMail_typeSuccess_button_title":"Visita il tuo sito","migratorMail_typeSuccess_excludedDirs":"Nota: per garantire un processo di migrazione ottimizzato, le seguenti directory sono state escluse dalla migrazione: {directories}. Se necessario, puoi spostare manualmente questi dati sul tuo spazio web.","migratorMail_typeSuccess_finishTime":"Migrazione finita: {dateandtime}","migratorMail_typeSuccess_footer_title":"Hai delle domande? Siamo qui per aiutarti.","migratorMail_typeSuccess_startTime":"Migrazione iniziata: {dateandtime}","migratorMail_typeSuccess_subject":"Migrazione riuscita","migratorMail_typeSuccess_title":"Migrazione WordPress completata"}')},530:()=>{var e=Object.defineProperty,t=(t,i,a)=>(((t,i,a)=>{i in t?e(t,i,{enumerable:!0,configurable:!0,writable:!0,value:a}):t[i]=a})(t,"symbol"!=typeof i?i+"":i,a),a);const i={};async function a(e){if(i.hasOwnProperty(e))return i[e];let t;return t=e.startsWith("data:")||!("caches"in self)?fetch(e).then(e=>e.text()):caches.open("gravity").then(async t=>{let i=await t.match(e);return i||(i=await fetch(e),i.ok&&await t.put(e,i.clone())),i.text()}),i[e]=t,t}class s extends HTMLElement{static get observedAttributes(){return["src"]}fetchFlag(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchFlag(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchFlag(i)}}t(s,"TAG_NAME","gv-flag");class r extends HTMLElement{static get observedAttributes(){return["src"]}fetchIcon(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchIcon(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchIcon(i)}}t(r,"TAG_NAME","gv-icon");class o extends HTMLElement{static get observedAttributes(){return["src"]}fetchIllustration(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchIllustration(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchIllustration(i)}}t(o,"TAG_NAME","gv-illustration");class n extends HTMLElement{static get observedAttributes(){return["src"]}fetchIndicator(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchIndicator(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchIndicator(i)}}t(n,"TAG_NAME","gv-indicator");class l extends HTMLElement{static get observedAttributes(){return["src"]}fetchLoader(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchLoader(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchLoader(i)}}t(l,"TAG_NAME","gv-loader");class c extends HTMLElement{static get observedAttributes(){return["src"]}fetchLogo(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchLogo(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchLogo(i)}}t(c,"TAG_NAME","gv-logo");class g extends HTMLElement{static get observedAttributes(){return["src"]}fetchPayIcon(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchPayIcon(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchPayIcon(i)}}t(g,"TAG_NAME","gv-pay-icon");class u extends HTMLElement{static get observedAttributes(){return["src"]}fetchTile(e){e&&a(e).then(e=>this.innerHTML=e)}connectedCallback(){this.fetchTile(this.getAttribute("src"))}attributeChangedCallback(e,t,i){"src"===e&&t!==i&&this.fetchTile(i)}}function d(e,t){customElements.get(e)||customElements.define(e,t)}t(u,"TAG_NAME","gv-tile"),d(s.TAG_NAME,s),d(r.TAG_NAME,r),d(o.TAG_NAME,o),d(n.TAG_NAME,n),d(l.TAG_NAME,l),d(c.TAG_NAME,c),d(g.TAG_NAME,g),d(u.TAG_NAME,u)},565:(e,t,i)=>{"use strict";i.d(t,{P:()=>s,r:()=>r});let a={bindI18n:"languageChanged",bindI18nStore:"",transEmptyNodeValue:"",transSupportBasicHtmlNodes:!0,transWrapTextNodes:"",transKeepBasicHtmlNodesFor:["br","strong","i","p"],useSuspense:!0,unescape:i(875).x};const s=(e={})=>{a={...a,...e}},r=()=>a},591:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Póngase en contacto con nosotros hoy mismo","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Términos","migratorMail_footer_footer-link-3_title":"Política de privacidad","migratorMail_footer_visitSite_title":"Visitar el sitio","migratorMail_hi":"Hola:","migratorMail_typeFail_bodyIntro":"Se ha producido un error al migrar su sitio de {oldsite} a {newsite}.","migratorMail_typeFail_button_title":"Reintentar migración","migratorMail_typeFail_errorText":"Error: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Error: Error interno ({fail_reason})","migratorMail_typeFail_failTime":"Error en la migración: {dateandtime}","migratorMail_typeFail_footer_title":"¿Necesita ayuda para migrar su sitio a one.com? Estamos aquí para ayudarle.","migratorMail_typeFail_subject":"Error en la migración","migratorMail_typeFail_title":"Error en la migración de WordPress","migratorMail_typeSuccess_bodyIntro":"La migración de su sitio de {oldsite} a {newsite} se ha completado.","migratorMail_typeSuccess_brokenPlugins":"Además, tras la migración, se descubrió que los siguientes plugins causaban errores y se desactivaron en el sitio migrado: {plugins}.","migratorMail_typeSuccess_button_title":"Ir a su sitio","migratorMail_typeSuccess_excludedDirs":"Nota: para garantizar un proceso de migración sin problemas, se han excluido de la migración los siguientes directorios: {directories}. Puedes mover manualmente estos datos a tu espacio web en caso de que sea necesario.","migratorMail_typeSuccess_finishTime":"Fin de la migración: {dateandtime}","migratorMail_typeSuccess_footer_title":"¿Tiene alguna pregunta? Estamos aquí para ayudarle.","migratorMail_typeSuccess_startTime":"Inicio de la migración: {dateandtime}","migratorMail_typeSuccess_subject":"Migración realizada con éxito","migratorMail_typeSuccess_title":"Migración de WordPress completada"}')},598:(e,t,i)=>{"use strict";i.d(t,{A:()=>c});var a=i(609),s=i(795),r=i(338),o=i(469),n=i(677),l=i(979);function c({plugin:e,onClose:t,usePortal:i=!0}){const{assetsBaseUrl:c,useWPHandlers:g,pluginInAction:u}=(0,l.D)();if(!e)return null;const d=c||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",p=(void 0!==window.onecomWpVars&&window.onecomWpVars,e.thumbnail,d?`${d}assets/icons/`:""),m=e.bannerUrl||e.image||e.thumbnail||"https://gravity.group.one/guide-images/product-image@2x.png",h=e.name||"Product",f=e.description||e.shortDescription||"No description available.",v="free"===e.licenseType,y=v?"Free":e.priceCurrency&&e.priceAmount?`${e.priceCurrency} ${e.priceAmount}`:"€ 0,-",_=(e.features&&e.features.length?e.features:f.split(/[.?!]/).map(e=>e.trim()).filter(Boolean)).slice(0,3).map(e=>e.replace(/\.$/,""));for(;_.length<3;)_.push("Sample feature");const b=[_[0],_[1]||"Improves performance",_[2]||"Easy setup"],w=[{name:_[0],desc:f.substring(0,150)||"Feature description"},{name:_[1],desc:"Enhances your WordPress experience with reliable performance"},{name:_[2],desc:"Easy to set up and configure with minimal technical knowledge"}],k=(0,a.createElement)("div",{className:"gv-surface-dim"},(0,a.createElement)("article",{className:"gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid"},(0,a.createElement)("nav",{className:"gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start"},(0,a.createElement)("a",{href:"#",onClick:e=>{e.preventDefault(),"undefined"!=typeof window&&window.history&&window.history.length>1?window.history.back():t&&t()},className:"gv-flex gv-items-center gv-gap-xs",role:"button","aria-label":"Go back"},(0,a.createElement)("img",{style:{minWidth:"24px"},className:"gv-tile",src:`${p}arrow_back.svg`,alt:"Back to plugins"}),(0,a.createElement)("span",null,"Back")),(0,a.createElement)(o.A,{plugin:e}),(0,a.createElement)(n.A,{plugin:e})),(0,a.createElement)("header",{className:"gv-product-header gv-area-header"},(0,a.createElement)("div",{className:"gv-content gv-stack-space-md gv-text-sm"},(0,a.createElement)("h1",{className:"gv-title gv-header-lg"},h),(0,a.createElement)("p",null,f),e.author&&(0,a.createElement)("p",{className:"gv-text-xs gv-mt-sm"},"Author: ",e.authorUrl?(0,a.createElement)("a",{href:e.authorUrl},e.author):e.author)),(0,a.createElement)("div",{className:"gv-image"},(0,a.createElement)("picture",null,(0,a.createElement)("source",{media:"(min-width: 600px)",srcSet:`${m} 1x, ${m} 2x`}),(0,a.createElement)("img",{src:m,srcSet:`${m} 1x, ${m} 2x`,alt:`${h} image`})))),(0,a.createElement)("section",{className:"gv-product-table gv-features-table gv-products-1 gv-area-table"},(0,a.createElement)("div",{className:"gv-table-container"},(0,a.createElement)("div",{className:"gv-table",role:"table"},(0,a.createElement)("div",{className:"gv-table-header",role:"rowgroup"},(0,a.createElement)("div",{className:"gv-table-row",role:"row"},(0,a.createElement)("div",{className:"gv-product",role:"columnheader"},(0,a.createElement)("div",{className:"gv-content"},(0,a.createElement)("h3",{className:"gv-title"},h),(0,a.createElement)("p",null,f.substring(0,120),f.length>120?"…":"")),(0,a.createElement)("div",{className:"gv-bottom"},(0,a.createElement)("div",{className:"gv-price-container"},(0,a.createElement)("div",{className:"gv-price"},(0,a.createElement)("span",{className:"gv-price-text"},y),!v&&(0,a.createElement)("span",{className:"gv-period"},"/mo"))),g?(0,a.createElement)(r.A,{plugin:e}):e.download&&(0,a.createElement)("a",{href:e.download,download:!0,className:"gv-button gv-button-secondary"},"Download"))))),(0,a.createElement)("div",{className:"gv-section",role:"rowgroup"},(0,a.createElement)("div",{className:"gv-section-header gv-table-row",role:"row"},(0,a.createElement)("div",{className:"gv-cell",role:"cell"},(0,a.createElement)("h4",{className:"gv-title"},e.textKeys?.featureOverviewHeading||"Key features"))),_.map((e,t)=>(0,a.createElement)("div",{className:"gv-table-row",role:"row",key:t},(0,a.createElement)("div",{className:"gv-cell",role:"cell"},(0,a.createElement)("span",{className:"gv-cell-text"},e)))))))),(0,a.createElement)("div",{className:"gv-area-details gv-grid gv-gap-fluid"},(0,a.createElement)("section",{className:"gv-stack-space-md"},(0,a.createElement)("h2",{className:"gv-title gv-text-bold gv-text-lg"},e.textKeys?.benefitHeading||"Key benefits"),(0,a.createElement)("ul",{className:"gv-list-items gv-list-check gv-mode-condensed"},b.map((e,t)=>(0,a.createElement)("li",{key:t},e)))),(0,a.createElement)("section",{className:"gv-text-max gv-text-sm gv-stack-space-md"},(0,a.createElement)("h2",{className:"gv-title gv-text-bold gv-text-lg"},"Why choose ",h,"?"),(0,a.createElement)("p",null,"This plugin helps you enhance your site with reliable performance and simplicity. It is designed to integrate smoothly and scale as your needs grow."))),(0,a.createElement)("div",{className:"gv-area-content gv-grid gv-gap-fluid"},(0,a.createElement)("section",{className:"gv-text-sm gv-stack-space-md"},(0,a.createElement)("h2",{className:"gv-title gv-text-bold gv-text-lg"},e.textKeys?.featureOverviewHeading||"Core features overview"),(0,a.createElement)("div",{className:"gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3"},w.map((e,t)=>(0,a.createElement)("div",{className:"gv-item gv-stack-space-sm",key:t},(0,a.createElement)("h3",{className:"gv-title gv-text-bold gv-text-sm"},e.name),(0,a.createElement)("p",null,e.desc))))))));return i?(0,s.createPortal)(k,document.body):k}},609:e=>{"use strict";e.exports=window.React},635:(e,t,i)=>{"use strict";i.r(t),i.d(t,{changeLanguage:()=>Z,createInstance:()=>G,default:()=>K,dir:()=>J,exists:()=>ie,getFixedT:()=>ee,hasLoadedNamespace:()=>se,init:()=>q,keyFromSelector:()=>N,loadLanguages:()=>oe,loadNamespaces:()=>re,loadResources:()=>Y,reloadResources:()=>Q,setDefaultNamespace:()=>ae,t:()=>te,use:()=>X});const a=e=>"string"==typeof e,s=()=>{let e,t;const i=new Promise((i,a)=>{e=i,t=a});return i.resolve=e,i.reject=t,i},r=e=>null==e?"":""+e,o=/###/g,n=e=>e&&e.indexOf("###")>-1?e.replace(o,"."):e,l=e=>!e||a(e),c=(e,t,i)=>{const s=a(t)?t.split("."):t;let r=0;for(;r<s.length-1;){if(l(e))return{};const t=n(s[r]);!e[t]&&i&&(e[t]=new i),e=Object.prototype.hasOwnProperty.call(e,t)?e[t]:{},++r}return l(e)?{}:{obj:e,k:n(s[r])}},g=(e,t,i)=>{const{obj:a,k:s}=c(e,t,Object);if(void 0!==a||1===t.length)return void(a[s]=i);let r=t[t.length-1],o=t.slice(0,t.length-1),n=c(e,o,Object);for(;void 0===n.obj&&o.length;)r=`${o[o.length-1]}.${r}`,o=o.slice(0,o.length-1),n=c(e,o,Object),n?.obj&&void 0!==n.obj[`${n.k}.${r}`]&&(n.obj=void 0);n.obj[`${n.k}.${r}`]=i},u=(e,t)=>{const{obj:i,k:a}=c(e,t);if(i&&Object.prototype.hasOwnProperty.call(i,a))return i[a]},d=(e,t,i)=>{for(const s in t)"__proto__"!==s&&"constructor"!==s&&(s in e?a(e[s])||e[s]instanceof String||a(t[s])||t[s]instanceof String?i&&(e[s]=t[s]):d(e[s],t[s],i):e[s]=t[s]);return e},p=e=>e.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g,"\\$&");var m={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;","/":"&#x2F;"};const h=e=>a(e)?e.replace(/[&<>"'\/]/g,e=>m[e]):e,f=[" ",",","?","!",";"],v=new class{constructor(e){this.capacity=e,this.regExpMap=new Map,this.regExpQueue=[]}getRegExp(e){const t=this.regExpMap.get(e);if(void 0!==t)return t;const i=new RegExp(e);return this.regExpQueue.length===this.capacity&&this.regExpMap.delete(this.regExpQueue.shift()),this.regExpMap.set(e,i),this.regExpQueue.push(e),i}}(20),y=(e,t,i=".")=>{if(!e)return;if(e[t]){if(!Object.prototype.hasOwnProperty.call(e,t))return;return e[t]}const a=t.split(i);let s=e;for(let e=0;e<a.length;){if(!s||"object"!=typeof s)return;let t,r="";for(let o=e;o<a.length;++o)if(o!==e&&(r+=i),r+=a[o],t=s[r],void 0!==t){if(["string","number","boolean"].indexOf(typeof t)>-1&&o<a.length-1)continue;e+=o-e+1;break}s=t}return s},_=e=>e?.replace("_","-"),b={type:"logger",log(e){this.output("log",e)},warn(e){this.output("warn",e)},error(e){this.output("error",e)},output(e,t){console?.[e]?.apply?.(console,t)}};class w{constructor(e,t={}){this.init(e,t)}init(e,t={}){this.prefix=t.prefix||"i18next:",this.logger=e||b,this.options=t,this.debug=t.debug}log(...e){return this.forward(e,"log","",!0)}warn(...e){return this.forward(e,"warn","",!0)}error(...e){return this.forward(e,"error","")}deprecate(...e){return this.forward(e,"warn","WARNING DEPRECATED: ",!0)}forward(e,t,i,s){return s&&!this.debug?null:(a(e[0])&&(e[0]=`${i}${this.prefix} ${e[0]}`),this.logger[t](e))}create(e){return new w(this.logger,{prefix:`${this.prefix}:${e}:`,...this.options})}clone(e){return(e=e||this.options).prefix=e.prefix||this.prefix,new w(this.logger,e)}}var k=new w;class x{constructor(){this.observers={}}on(e,t){return e.split(" ").forEach(e=>{this.observers[e]||(this.observers[e]=new Map);const i=this.observers[e].get(t)||0;this.observers[e].set(t,i+1)}),this}off(e,t){this.observers[e]&&(t?this.observers[e].delete(t):delete this.observers[e])}emit(e,...t){this.observers[e]&&Array.from(this.observers[e].entries()).forEach(([e,i])=>{for(let a=0;a<i;a++)e(...t)}),this.observers["*"]&&Array.from(this.observers["*"].entries()).forEach(([i,a])=>{for(let s=0;s<a;s++)i.apply(i,[e,...t])})}}class S extends x{constructor(e,t={ns:["translation"],defaultNS:"translation"}){super(),this.data=e||{},this.options=t,void 0===this.options.keySeparator&&(this.options.keySeparator="."),void 0===this.options.ignoreJSONStructure&&(this.options.ignoreJSONStructure=!0)}addNamespaces(e){this.options.ns.indexOf(e)<0&&this.options.ns.push(e)}removeNamespaces(e){const t=this.options.ns.indexOf(e);t>-1&&this.options.ns.splice(t,1)}getResource(e,t,i,s={}){const r=void 0!==s.keySeparator?s.keySeparator:this.options.keySeparator,o=void 0!==s.ignoreJSONStructure?s.ignoreJSONStructure:this.options.ignoreJSONStructure;let n;e.indexOf(".")>-1?n=e.split("."):(n=[e,t],i&&(Array.isArray(i)?n.push(...i):a(i)&&r?n.push(...i.split(r)):n.push(i)));const l=u(this.data,n);return!l&&!t&&!i&&e.indexOf(".")>-1&&(e=n[0],t=n[1],i=n.slice(2).join(".")),!l&&o&&a(i)?y(this.data?.[e]?.[t],i,r):l}addResource(e,t,i,a,s={silent:!1}){const r=void 0!==s.keySeparator?s.keySeparator:this.options.keySeparator;let o=[e,t];i&&(o=o.concat(r?i.split(r):i)),e.indexOf(".")>-1&&(o=e.split("."),a=t,t=o[1]),this.addNamespaces(t),g(this.data,o,a),s.silent||this.emit("added",e,t,i,a)}addResources(e,t,i,s={silent:!1}){for(const s in i)(a(i[s])||Array.isArray(i[s]))&&this.addResource(e,t,s,i[s],{silent:!0});s.silent||this.emit("added",e,t,i)}addResourceBundle(e,t,i,a,s,r={silent:!1,skipCopy:!1}){let o=[e,t];e.indexOf(".")>-1&&(o=e.split("."),a=i,i=t,t=o[1]),this.addNamespaces(t);let n=u(this.data,o)||{};r.skipCopy||(i=JSON.parse(JSON.stringify(i))),a?d(n,i,s):n={...n,...i},g(this.data,o,n),r.silent||this.emit("added",e,t,i)}removeResourceBundle(e,t){this.hasResourceBundle(e,t)&&delete this.data[e][t],this.removeNamespaces(t),this.emit("removed",e,t)}hasResourceBundle(e,t){return void 0!==this.getResource(e,t)}getResourceBundle(e,t){return t||(t=this.options.defaultNS),this.getResource(e,t)}getDataByLanguage(e){return this.data[e]}hasLanguageSomeTranslations(e){const t=this.getDataByLanguage(e);return!!(t&&Object.keys(t)||[]).find(e=>t[e]&&Object.keys(t[e]).length>0)}toJSON(){return this.data}}var M={processors:{},addPostProcessor(e){this.processors[e.name]=e},handle(e,t,i,a,s){return e.forEach(e=>{t=this.processors[e]?.process(t,i,a,s)??t}),t}};const E=Symbol("i18next/PATH_KEY");function N(e,t){const{[E]:i}=e(function(){const e=[],t=Object.create(null);let i;return t.get=(a,s)=>(i?.revoke?.(),s===E?e:(e.push(s),i=Proxy.revocable(a,t),i.proxy)),Proxy.revocable(Object.create(null),t).proxy}());return i.join(t?.keySeparator??".")}const C={},P=e=>!a(e)&&"boolean"!=typeof e&&"number"!=typeof e;class O extends x{constructor(e,t={}){super(),((e,t,i)=>{["resourceStore","languageUtils","pluralResolver","interpolator","backendConnector","i18nFormat","utils"].forEach(e=>{t[e]&&(i[e]=t[e])})})(0,e,this),this.options=t,void 0===this.options.keySeparator&&(this.options.keySeparator="."),this.logger=k.create("translator")}changeLanguage(e){e&&(this.language=e)}exists(e,t={interpolation:{}}){const i={...t};if(null==e)return!1;const a=this.resolve(e,i);return void 0!==a?.res}extractFromKey(e,t){let i=void 0!==t.nsSeparator?t.nsSeparator:this.options.nsSeparator;void 0===i&&(i=":");const s=void 0!==t.keySeparator?t.keySeparator:this.options.keySeparator;let r=t.ns||this.options.defaultNS||[];const o=i&&e.indexOf(i)>-1,n=!(this.options.userDefinedKeySeparator||t.keySeparator||this.options.userDefinedNsSeparator||t.nsSeparator||((e,t,i)=>{t=t||"",i=i||"";const a=f.filter(e=>t.indexOf(e)<0&&i.indexOf(e)<0);if(0===a.length)return!0;const s=v.getRegExp(`(${a.map(e=>"?"===e?"\\?":e).join("|")})`);let r=!s.test(e);if(!r){const t=e.indexOf(i);t>0&&!s.test(e.substring(0,t))&&(r=!0)}return r})(e,i,s));if(o&&!n){const t=e.match(this.interpolator.nestingRegexp);if(t&&t.length>0)return{key:e,namespaces:a(r)?[r]:r};const o=e.split(i);(i!==s||i===s&&this.options.ns.indexOf(o[0])>-1)&&(r=o.shift()),e=o.join(s)}return{key:e,namespaces:a(r)?[r]:r}}translate(e,t,i){let s="object"==typeof t?{...t}:t;if("object"!=typeof s&&this.options.overloadTranslationOptionHandler&&(s=this.options.overloadTranslationOptionHandler(arguments)),"object"==typeof s&&(s={...s}),s||(s={}),null==e)return"";"function"==typeof e&&(e=N(e,{...this.options,...s})),Array.isArray(e)||(e=[String(e)]);const r=void 0!==s.returnDetails?s.returnDetails:this.options.returnDetails,o=void 0!==s.keySeparator?s.keySeparator:this.options.keySeparator,{key:n,namespaces:l}=this.extractFromKey(e[e.length-1],s),c=l[l.length-1];let g=void 0!==s.nsSeparator?s.nsSeparator:this.options.nsSeparator;void 0===g&&(g=":");const u=s.lng||this.language,d=s.appendNamespaceToCIMode||this.options.appendNamespaceToCIMode;if("cimode"===u?.toLowerCase())return d?r?{res:`${c}${g}${n}`,usedKey:n,exactUsedKey:n,usedLng:u,usedNS:c,usedParams:this.getUsedParamsDetails(s)}:`${c}${g}${n}`:r?{res:n,usedKey:n,exactUsedKey:n,usedLng:u,usedNS:c,usedParams:this.getUsedParamsDetails(s)}:n;const p=this.resolve(e,s);let m=p?.res;const h=p?.usedKey||n,f=p?.exactUsedKey||n,v=void 0!==s.joinArrays?s.joinArrays:this.options.joinArrays,y=!this.i18nFormat||this.i18nFormat.handleAsObject,_=void 0!==s.count&&!a(s.count),b=O.hasDefaultValue(s),w=_?this.pluralResolver.getSuffix(u,s.count,s):"",k=s.ordinal&&_?this.pluralResolver.getSuffix(u,s.count,{ordinal:!1}):"",x=_&&!s.ordinal&&0===s.count,S=x&&s[`defaultValue${this.options.pluralSeparator}zero`]||s[`defaultValue${w}`]||s[`defaultValue${k}`]||s.defaultValue;let M=m;y&&!m&&b&&(M=S);const E=P(M),C=Object.prototype.toString.apply(M);if(!(y&&M&&E&&["[object Number]","[object Function]","[object RegExp]"].indexOf(C)<0)||a(v)&&Array.isArray(M))if(y&&a(v)&&Array.isArray(m))m=m.join(v),m&&(m=this.extendTranslation(m,e,s,i));else{let t=!1,a=!1;!this.isValidLookup(m)&&b&&(t=!0,m=S),this.isValidLookup(m)||(a=!0,m=n);const r=(s.missingKeyNoValueFallbackToKey||this.options.missingKeyNoValueFallbackToKey)&&a?void 0:m,l=b&&S!==m&&this.options.updateMissing;if(a||t||l){if(this.logger.log(l?"updateKey":"missingKey",u,c,n,l?S:m),o){const e=this.resolve(n,{...s,keySeparator:!1});e&&e.res&&this.logger.warn("Seems the loaded translations were in flat JSON format instead of nested. Either set keySeparator: false on init or make sure your translations are published in nested format.")}let e=[];const t=this.languageUtils.getFallbackCodes(this.options.fallbackLng,s.lng||this.language);if("fallback"===this.options.saveMissingTo&&t&&t[0])for(let i=0;i<t.length;i++)e.push(t[i]);else"all"===this.options.saveMissingTo?e=this.languageUtils.toResolveHierarchy(s.lng||this.language):e.push(s.lng||this.language);const i=(e,t,i)=>{const a=b&&i!==m?i:r;this.options.missingKeyHandler?this.options.missingKeyHandler(e,c,t,a,l,s):this.backendConnector?.saveMissing&&this.backendConnector.saveMissing(e,c,t,a,l,s),this.emit("missingKey",e,c,t,m)};this.options.saveMissing&&(this.options.saveMissingPlurals&&_?e.forEach(e=>{const t=this.pluralResolver.getSuffixes(e,s);x&&s[`defaultValue${this.options.pluralSeparator}zero`]&&t.indexOf(`${this.options.pluralSeparator}zero`)<0&&t.push(`${this.options.pluralSeparator}zero`),t.forEach(t=>{i([e],n+t,s[`defaultValue${t}`]||S)})}):i(e,n,S))}m=this.extendTranslation(m,e,s,p,i),a&&m===n&&this.options.appendNamespaceToMissingKey&&(m=`${c}${g}${n}`),(a||t)&&this.options.parseMissingKeyHandler&&(m=this.options.parseMissingKeyHandler(this.options.appendNamespaceToMissingKey?`${c}${g}${n}`:n,t?m:void 0,s))}else{if(!s.returnObjects&&!this.options.returnObjects){this.options.returnedObjectHandler||this.logger.warn("accessing an object - but returnObjects options is not enabled!");const e=this.options.returnedObjectHandler?this.options.returnedObjectHandler(h,M,{...s,ns:l}):`key '${n} (${this.language})' returned an object instead of string.`;return r?(p.res=e,p.usedParams=this.getUsedParamsDetails(s),p):e}if(o){const e=Array.isArray(M),t=e?[]:{},i=e?f:h;for(const e in M)if(Object.prototype.hasOwnProperty.call(M,e)){const a=`${i}${o}${e}`;t[e]=b&&!m?this.translate(a,{...s,defaultValue:P(S)?S[e]:void 0,joinArrays:!1,ns:l}):this.translate(a,{...s,joinArrays:!1,ns:l}),t[e]===a&&(t[e]=M[e])}m=t}}return r?(p.res=m,p.usedParams=this.getUsedParamsDetails(s),p):m}extendTranslation(e,t,i,s,r){if(this.i18nFormat?.parse)e=this.i18nFormat.parse(e,{...this.options.interpolation.defaultVariables,...i},i.lng||this.language||s.usedLng,s.usedNS,s.usedKey,{resolved:s});else if(!i.skipInterpolation){i.interpolation&&this.interpolator.init({...i,interpolation:{...this.options.interpolation,...i.interpolation}});const o=a(e)&&(void 0!==i?.interpolation?.skipOnVariables?i.interpolation.skipOnVariables:this.options.interpolation.skipOnVariables);let n;if(o){const t=e.match(this.interpolator.nestingRegexp);n=t&&t.length}let l=i.replace&&!a(i.replace)?i.replace:i;if(this.options.interpolation.defaultVariables&&(l={...this.options.interpolation.defaultVariables,...l}),e=this.interpolator.interpolate(e,l,i.lng||this.language||s.usedLng,i),o){const t=e.match(this.interpolator.nestingRegexp);n<(t&&t.length)&&(i.nest=!1)}!i.lng&&s&&s.res&&(i.lng=this.language||s.usedLng),!1!==i.nest&&(e=this.interpolator.nest(e,(...e)=>r?.[0]!==e[0]||i.context?this.translate(...e,t):(this.logger.warn(`It seems you are nesting recursively key: ${e[0]} in key: ${t[0]}`),null),i)),i.interpolation&&this.interpolator.reset()}const o=i.postProcess||this.options.postProcess,n=a(o)?[o]:o;return null!=e&&n?.length&&!1!==i.applyPostProcessor&&(e=M.handle(n,e,t,this.options&&this.options.postProcessPassResolved?{i18nResolved:{...s,usedParams:this.getUsedParamsDetails(i)},...i}:i,this)),e}resolve(e,t={}){let i,s,r,o,n;return a(e)&&(e=[e]),e.forEach(e=>{if(this.isValidLookup(i))return;const l=this.extractFromKey(e,t),c=l.key;s=c;let g=l.namespaces;this.options.fallbackNS&&(g=g.concat(this.options.fallbackNS));const u=void 0!==t.count&&!a(t.count),d=u&&!t.ordinal&&0===t.count,p=void 0!==t.context&&(a(t.context)||"number"==typeof t.context)&&""!==t.context,m=t.lngs?t.lngs:this.languageUtils.toResolveHierarchy(t.lng||this.language,t.fallbackLng);g.forEach(e=>{this.isValidLookup(i)||(n=e,C[`${m[0]}-${e}`]||!this.utils?.hasLoadedNamespace||this.utils?.hasLoadedNamespace(n)||(C[`${m[0]}-${e}`]=!0,this.logger.warn(`key "${s}" for languages "${m.join(", ")}" won't get resolved as namespace "${n}" was not yet loaded`,"This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!")),m.forEach(a=>{if(this.isValidLookup(i))return;o=a;const s=[c];if(this.i18nFormat?.addLookupKeys)this.i18nFormat.addLookupKeys(s,c,a,e,t);else{let e;u&&(e=this.pluralResolver.getSuffix(a,t.count,t));const i=`${this.options.pluralSeparator}zero`,r=`${this.options.pluralSeparator}ordinal${this.options.pluralSeparator}`;if(u&&(t.ordinal&&0===e.indexOf(r)&&s.push(c+e.replace(r,this.options.pluralSeparator)),s.push(c+e),d&&s.push(c+i)),p){const a=`${c}${this.options.contextSeparator||"_"}${t.context}`;s.push(a),u&&(t.ordinal&&0===e.indexOf(r)&&s.push(a+e.replace(r,this.options.pluralSeparator)),s.push(a+e),d&&s.push(a+i))}}let n;for(;n=s.pop();)this.isValidLookup(i)||(r=n,i=this.getResource(a,e,n,t))}))})}),{res:i,usedKey:s,exactUsedKey:r,usedLng:o,usedNS:n}}isValidLookup(e){return!(void 0===e||!this.options.returnNull&&null===e||!this.options.returnEmptyString&&""===e)}getResource(e,t,i,a={}){return this.i18nFormat?.getResource?this.i18nFormat.getResource(e,t,i,a):this.resourceStore.getResource(e,t,i,a)}getUsedParamsDetails(e={}){const t=["defaultValue","ordinal","context","replace","lng","lngs","fallbackLng","ns","keySeparator","nsSeparator","returnObjects","returnDetails","joinArrays","postProcess","interpolation"],i=e.replace&&!a(e.replace);let s=i?e.replace:e;if(i&&void 0!==e.count&&(s.count=e.count),this.options.interpolation.defaultVariables&&(s={...this.options.interpolation.defaultVariables,...s}),!i){s={...s};for(const e of t)delete s[e]}return s}static hasDefaultValue(e){for(const t in e)if(Object.prototype.hasOwnProperty.call(e,t)&&"defaultValue"===t.substring(0,12)&&void 0!==e[t])return!0;return!1}}class L{constructor(e){this.options=e,this.supportedLngs=this.options.supportedLngs||!1,this.logger=k.create("languageUtils")}getScriptPartFromCode(e){if(!(e=_(e))||e.indexOf("-")<0)return null;const t=e.split("-");return 2===t.length?null:(t.pop(),"x"===t[t.length-1].toLowerCase()?null:this.formatLanguageCode(t.join("-")))}getLanguagePartFromCode(e){if(!(e=_(e))||e.indexOf("-")<0)return e;const t=e.split("-");return this.formatLanguageCode(t[0])}formatLanguageCode(e){if(a(e)&&e.indexOf("-")>-1){let t;try{t=Intl.getCanonicalLocales(e)[0]}catch(e){}return t&&this.options.lowerCaseLng&&(t=t.toLowerCase()),t||(this.options.lowerCaseLng?e.toLowerCase():e)}return this.options.cleanCode||this.options.lowerCaseLng?e.toLowerCase():e}isSupportedCode(e){return("languageOnly"===this.options.load||this.options.nonExplicitSupportedLngs)&&(e=this.getLanguagePartFromCode(e)),!this.supportedLngs||!this.supportedLngs.length||this.supportedLngs.indexOf(e)>-1}getBestMatchFromCodes(e){if(!e)return null;let t;return e.forEach(e=>{if(t)return;const i=this.formatLanguageCode(e);this.options.supportedLngs&&!this.isSupportedCode(i)||(t=i)}),!t&&this.options.supportedLngs&&e.forEach(e=>{if(t)return;const i=this.getScriptPartFromCode(e);if(this.isSupportedCode(i))return t=i;const a=this.getLanguagePartFromCode(e);if(this.isSupportedCode(a))return t=a;t=this.options.supportedLngs.find(e=>e===a?e:e.indexOf("-")<0&&a.indexOf("-")<0?void 0:e.indexOf("-")>0&&a.indexOf("-")<0&&e.substring(0,e.indexOf("-"))===a||0===e.indexOf(a)&&a.length>1?e:void 0)}),t||(t=this.getFallbackCodes(this.options.fallbackLng)[0]),t}getFallbackCodes(e,t){if(!e)return[];if("function"==typeof e&&(e=e(t)),a(e)&&(e=[e]),Array.isArray(e))return e;if(!t)return e.default||[];let i=e[t];return i||(i=e[this.getScriptPartFromCode(t)]),i||(i=e[this.formatLanguageCode(t)]),i||(i=e[this.getLanguagePartFromCode(t)]),i||(i=e.default),i||[]}toResolveHierarchy(e,t){const i=this.getFallbackCodes((!1===t?[]:t)||this.options.fallbackLng||[],e),s=[],r=e=>{e&&(this.isSupportedCode(e)?s.push(e):this.logger.warn(`rejecting language code not found in supportedLngs: ${e}`))};return a(e)&&(e.indexOf("-")>-1||e.indexOf("_")>-1)?("languageOnly"!==this.options.load&&r(this.formatLanguageCode(e)),"languageOnly"!==this.options.load&&"currentOnly"!==this.options.load&&r(this.getScriptPartFromCode(e)),"currentOnly"!==this.options.load&&r(this.getLanguagePartFromCode(e))):a(e)&&r(this.formatLanguageCode(e)),i.forEach(e=>{s.indexOf(e)<0&&r(this.formatLanguageCode(e))}),s}}const F={zero:0,one:1,two:2,few:3,many:4,other:5},$={select:e=>1===e?"one":"other",resolvedOptions:()=>({pluralCategories:["one","other"]})};class j{constructor(e,t={}){this.languageUtils=e,this.options=t,this.logger=k.create("pluralResolver"),this.pluralRulesCache={}}addRule(e,t){this.rules[e]=t}clearCache(){this.pluralRulesCache={}}getRule(e,t={}){const i=_("dev"===e?"en":e),a=t.ordinal?"ordinal":"cardinal",s=JSON.stringify({cleanedCode:i,type:a});if(s in this.pluralRulesCache)return this.pluralRulesCache[s];let r;try{r=new Intl.PluralRules(i,{type:a})}catch(i){if(!Intl)return this.logger.error("No Intl support, please use an Intl polyfill!"),$;if(!e.match(/-|_/))return $;const a=this.languageUtils.getLanguagePartFromCode(e);r=this.getRule(a,t)}return this.pluralRulesCache[s]=r,r}needsPlural(e,t={}){let i=this.getRule(e,t);return i||(i=this.getRule("dev",t)),i?.resolvedOptions().pluralCategories.length>1}getPluralFormsOfKey(e,t,i={}){return this.getSuffixes(e,i).map(e=>`${t}${e}`)}getSuffixes(e,t={}){let i=this.getRule(e,t);return i||(i=this.getRule("dev",t)),i?i.resolvedOptions().pluralCategories.sort((e,t)=>F[e]-F[t]).map(e=>`${this.options.prepend}${t.ordinal?`ordinal${this.options.prepend}`:""}${e}`):[]}getSuffix(e,t,i={}){const a=this.getRule(e,i);return a?`${this.options.prepend}${i.ordinal?`ordinal${this.options.prepend}`:""}${a.select(t)}`:(this.logger.warn(`no plural rule found for: ${e}`),this.getSuffix("dev",t,i))}}const T=(e,t,i,s=".",r=!0)=>{let o=((e,t,i)=>{const a=u(e,i);return void 0!==a?a:u(t,i)})(e,t,i);return!o&&r&&a(i)&&(o=y(e,i,s),void 0===o&&(o=y(t,i,s))),o},A=e=>e.replace(/\$/g,"$$$$");class I{constructor(e={}){this.logger=k.create("interpolator"),this.options=e,this.format=e?.interpolation?.format||(e=>e),this.init(e)}init(e={}){e.interpolation||(e.interpolation={escapeValue:!0});const{escape:t,escapeValue:i,useRawValueToEscape:a,prefix:s,prefixEscaped:r,suffix:o,suffixEscaped:n,formatSeparator:l,unescapeSuffix:c,unescapePrefix:g,nestingPrefix:u,nestingPrefixEscaped:d,nestingSuffix:m,nestingSuffixEscaped:f,nestingOptionsSeparator:v,maxReplaces:y,alwaysFormat:_}=e.interpolation;this.escape=void 0!==t?t:h,this.escapeValue=void 0===i||i,this.useRawValueToEscape=void 0!==a&&a,this.prefix=s?p(s):r||"{{",this.suffix=o?p(o):n||"}}",this.formatSeparator=l||",",this.unescapePrefix=c?"":g||"-",this.unescapeSuffix=this.unescapePrefix?"":c||"",this.nestingPrefix=u?p(u):d||p("$t("),this.nestingSuffix=m?p(m):f||p(")"),this.nestingOptionsSeparator=v||",",this.maxReplaces=y||1e3,this.alwaysFormat=void 0!==_&&_,this.resetRegExp()}reset(){this.options&&this.init(this.options)}resetRegExp(){const e=(e,t)=>e?.source===t?(e.lastIndex=0,e):new RegExp(t,"g");this.regexp=e(this.regexp,`${this.prefix}(.+?)${this.suffix}`),this.regexpUnescape=e(this.regexpUnescape,`${this.prefix}${this.unescapePrefix}(.+?)${this.unescapeSuffix}${this.suffix}`),this.nestingRegexp=e(this.nestingRegexp,`${this.nestingPrefix}((?:[^()"']+|"[^"]*"|'[^']*'|\\((?:[^()]|"[^"]*"|'[^']*')*\\))*?)${this.nestingSuffix}`)}interpolate(e,t,i,s){let o,n,l;const c=this.options&&this.options.interpolation&&this.options.interpolation.defaultVariables||{},g=e=>{if(e.indexOf(this.formatSeparator)<0){const a=T(t,c,e,this.options.keySeparator,this.options.ignoreJSONStructure);return this.alwaysFormat?this.format(a,void 0,i,{...s,...t,interpolationkey:e}):a}const a=e.split(this.formatSeparator),r=a.shift().trim(),o=a.join(this.formatSeparator).trim();return this.format(T(t,c,r,this.options.keySeparator,this.options.ignoreJSONStructure),o,i,{...s,...t,interpolationkey:r})};this.resetRegExp();const u=s?.missingInterpolationHandler||this.options.missingInterpolationHandler,d=void 0!==s?.interpolation?.skipOnVariables?s.interpolation.skipOnVariables:this.options.interpolation.skipOnVariables;return[{regex:this.regexpUnescape,safeValue:e=>A(e)},{regex:this.regexp,safeValue:e=>this.escapeValue?A(this.escape(e)):A(e)}].forEach(t=>{for(l=0;o=t.regex.exec(e);){const i=o[1].trim();if(n=g(i),void 0===n)if("function"==typeof u){const t=u(e,o,s);n=a(t)?t:""}else if(s&&Object.prototype.hasOwnProperty.call(s,i))n="";else{if(d){n=o[0];continue}this.logger.warn(`missed to pass in variable ${i} for interpolating ${e}`),n=""}else a(n)||this.useRawValueToEscape||(n=r(n));const c=t.safeValue(n);if(e=e.replace(o[0],c),d?(t.regex.lastIndex+=n.length,t.regex.lastIndex-=o[0].length):t.regex.lastIndex=0,l++,l>=this.maxReplaces)break}}),e}nest(e,t,i={}){let s,o,n;const l=(e,t)=>{const i=this.nestingOptionsSeparator;if(e.indexOf(i)<0)return e;const a=e.split(new RegExp(`${i}[ ]*{`));let s=`{${a[1]}`;e=a[0],s=this.interpolate(s,n);const r=s.match(/'/g),o=s.match(/"/g);((r?.length??0)%2==0&&!o||o.length%2!=0)&&(s=s.replace(/'/g,'"'));try{n=JSON.parse(s),t&&(n={...t,...n})}catch(t){return this.logger.warn(`failed parsing options string in nesting for key ${e}`,t),`${e}${i}${s}`}return n.defaultValue&&n.defaultValue.indexOf(this.prefix)>-1&&delete n.defaultValue,e};for(;s=this.nestingRegexp.exec(e);){let c=[];n={...i},n=n.replace&&!a(n.replace)?n.replace:n,n.applyPostProcessor=!1,delete n.defaultValue;const g=/{.*}/.test(s[1])?s[1].lastIndexOf("}")+1:s[1].indexOf(this.formatSeparator);if(-1!==g&&(c=s[1].slice(g).split(this.formatSeparator).map(e=>e.trim()).filter(Boolean),s[1]=s[1].slice(0,g)),o=t(l.call(this,s[1].trim(),n),n),o&&s[0]===e&&!a(o))return o;a(o)||(o=r(o)),o||(this.logger.warn(`missed to resolve ${s[1]} for nesting ${e}`),o=""),c.length&&(o=c.reduce((e,t)=>this.format(e,t,i.lng,{...i,interpolationkey:s[1].trim()}),o.trim())),e=e.replace(s[0],o),this.regexp.lastIndex=0}return e}}const R=e=>{const t={};return(i,a,s)=>{let r=s;s&&s.interpolationkey&&s.formatParams&&s.formatParams[s.interpolationkey]&&s[s.interpolationkey]&&(r={...r,[s.interpolationkey]:void 0});const o=a+JSON.stringify(r);let n=t[o];return n||(n=e(_(a),s),t[o]=n),n(i)}},D=e=>(t,i,a)=>e(_(i),a)(t);class B{constructor(e={}){this.logger=k.create("formatter"),this.options=e,this.init(e)}init(e,t={interpolation:{}}){this.formatSeparator=t.interpolation.formatSeparator||",";const i=t.cacheInBuiltFormats?R:D;this.formats={number:i((e,t)=>{const i=new Intl.NumberFormat(e,{...t});return e=>i.format(e)}),currency:i((e,t)=>{const i=new Intl.NumberFormat(e,{...t,style:"currency"});return e=>i.format(e)}),datetime:i((e,t)=>{const i=new Intl.DateTimeFormat(e,{...t});return e=>i.format(e)}),relativetime:i((e,t)=>{const i=new Intl.RelativeTimeFormat(e,{...t});return e=>i.format(e,t.range||"day")}),list:i((e,t)=>{const i=new Intl.ListFormat(e,{...t});return e=>i.format(e)})}}add(e,t){this.formats[e.toLowerCase().trim()]=t}addCached(e,t){this.formats[e.toLowerCase().trim()]=R(t)}format(e,t,i,a={}){const s=t.split(this.formatSeparator);if(s.length>1&&s[0].indexOf("(")>1&&s[0].indexOf(")")<0&&s.find(e=>e.indexOf(")")>-1)){const e=s.findIndex(e=>e.indexOf(")")>-1);s[0]=[s[0],...s.splice(1,e)].join(this.formatSeparator)}return s.reduce((e,t)=>{const{formatName:s,formatOptions:r}=(e=>{let t=e.toLowerCase().trim();const i={};if(e.indexOf("(")>-1){const a=e.split("(");t=a[0].toLowerCase().trim();const s=a[1].substring(0,a[1].length-1);"currency"===t&&s.indexOf(":")<0?i.currency||(i.currency=s.trim()):"relativetime"===t&&s.indexOf(":")<0?i.range||(i.range=s.trim()):s.split(";").forEach(e=>{if(e){const[t,...a]=e.split(":"),s=a.join(":").trim().replace(/^'+|'+$/g,""),r=t.trim();i[r]||(i[r]=s),"false"===s&&(i[r]=!1),"true"===s&&(i[r]=!0),isNaN(s)||(i[r]=parseInt(s,10))}})}return{formatName:t,formatOptions:i}})(t);if(this.formats[s]){let t=e;try{const o=a?.formatParams?.[a.interpolationkey]||{},n=o.locale||o.lng||a.locale||a.lng||i;t=this.formats[s](e,n,{...r,...a,...o})}catch(e){this.logger.warn(e)}return t}return this.logger.warn(`there was no format function for ${s}`),e},e)}}class U extends x{constructor(e,t,i,a={}){super(),this.backend=e,this.store=t,this.services=i,this.languageUtils=i.languageUtils,this.options=a,this.logger=k.create("backendConnector"),this.waitingReads=[],this.maxParallelReads=a.maxParallelReads||10,this.readingCalls=0,this.maxRetries=a.maxRetries>=0?a.maxRetries:5,this.retryTimeout=a.retryTimeout>=1?a.retryTimeout:350,this.state={},this.queue=[],this.backend?.init?.(i,a.backend,a)}queueLoad(e,t,i,a){const s={},r={},o={},n={};return e.forEach(e=>{let a=!0;t.forEach(t=>{const o=`${e}|${t}`;!i.reload&&this.store.hasResourceBundle(e,t)?this.state[o]=2:this.state[o]<0||(1===this.state[o]?void 0===r[o]&&(r[o]=!0):(this.state[o]=1,a=!1,void 0===r[o]&&(r[o]=!0),void 0===s[o]&&(s[o]=!0),void 0===n[t]&&(n[t]=!0)))}),a||(o[e]=!0)}),(Object.keys(s).length||Object.keys(r).length)&&this.queue.push({pending:r,pendingCount:Object.keys(r).length,loaded:{},errors:[],callback:a}),{toLoad:Object.keys(s),pending:Object.keys(r),toLoadLanguages:Object.keys(o),toLoadNamespaces:Object.keys(n)}}loaded(e,t,i){const a=e.split("|"),s=a[0],r=a[1];t&&this.emit("failedLoading",s,r,t),!t&&i&&this.store.addResourceBundle(s,r,i,void 0,void 0,{skipCopy:!0}),this.state[e]=t?-1:2,t&&i&&(this.state[e]=0);const o={};this.queue.forEach(i=>{((e,t,i)=>{const{obj:a,k:s}=c(e,t,Object);a[s]=a[s]||[],a[s].push(i)})(i.loaded,[s],r),((e,t)=>{void 0!==e.pending[t]&&(delete e.pending[t],e.pendingCount--)})(i,e),t&&i.errors.push(t),0!==i.pendingCount||i.done||(Object.keys(i.loaded).forEach(e=>{o[e]||(o[e]={});const t=i.loaded[e];t.length&&t.forEach(t=>{void 0===o[e][t]&&(o[e][t]=!0)})}),i.done=!0,i.errors.length?i.callback(i.errors):i.callback())}),this.emit("loaded",o),this.queue=this.queue.filter(e=>!e.done)}read(e,t,i,a=0,s=this.retryTimeout,r){if(!e.length)return r(null,{});if(this.readingCalls>=this.maxParallelReads)return void this.waitingReads.push({lng:e,ns:t,fcName:i,tried:a,wait:s,callback:r});this.readingCalls++;const o=(o,n)=>{if(this.readingCalls--,this.waitingReads.length>0){const e=this.waitingReads.shift();this.read(e.lng,e.ns,e.fcName,e.tried,e.wait,e.callback)}o&&n&&a<this.maxRetries?setTimeout(()=>{this.read.call(this,e,t,i,a+1,2*s,r)},s):r(o,n)},n=this.backend[i].bind(this.backend);if(2!==n.length)return n(e,t,o);try{const i=n(e,t);i&&"function"==typeof i.then?i.then(e=>o(null,e)).catch(o):o(null,i)}catch(e){o(e)}}prepareLoading(e,t,i={},s){if(!this.backend)return this.logger.warn("No backend was added via i18next.use. Will not load resources."),s&&s();a(e)&&(e=this.languageUtils.toResolveHierarchy(e)),a(t)&&(t=[t]);const r=this.queueLoad(e,t,i,s);if(!r.toLoad.length)return r.pending.length||s(),null;r.toLoad.forEach(e=>{this.loadOne(e)})}load(e,t,i){this.prepareLoading(e,t,{},i)}reload(e,t,i){this.prepareLoading(e,t,{reload:!0},i)}loadOne(e,t=""){const i=e.split("|"),a=i[0],s=i[1];this.read(a,s,"read",void 0,void 0,(i,r)=>{i&&this.logger.warn(`${t}loading namespace ${s} for language ${a} failed`,i),!i&&r&&this.logger.log(`${t}loaded namespace ${s} for language ${a}`,r),this.loaded(e,i,r)})}saveMissing(e,t,i,a,s,r={},o=()=>{}){if(!this.services?.utils?.hasLoadedNamespace||this.services?.utils?.hasLoadedNamespace(t)){if(null!=i&&""!==i){if(this.backend?.create){const n={...r,isUpdate:s},l=this.backend.create.bind(this.backend);if(l.length<6)try{let s;s=5===l.length?l(e,t,i,a,n):l(e,t,i,a),s&&"function"==typeof s.then?s.then(e=>o(null,e)).catch(o):o(null,s)}catch(e){o(e)}else l(e,t,i,a,o,n)}e&&e[0]&&this.store.addResource(e[0],t,i,a)}}else this.logger.warn(`did not save key "${i}" as the namespace "${t}" was not yet loaded`,"This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!")}}const V=()=>({debug:!1,initAsync:!0,ns:["translation"],defaultNS:["translation"],fallbackLng:["dev"],fallbackNS:!1,supportedLngs:!1,nonExplicitSupportedLngs:!1,load:"all",preload:!1,simplifyPluralSuffix:!0,keySeparator:".",nsSeparator:":",pluralSeparator:"_",contextSeparator:"_",partialBundledLanguages:!1,saveMissing:!1,updateMissing:!1,saveMissingTo:"fallback",saveMissingPlurals:!0,missingKeyHandler:!1,missingInterpolationHandler:!1,postProcess:!1,postProcessPassResolved:!1,returnNull:!1,returnEmptyString:!0,returnObjects:!1,joinArrays:!1,returnedObjectHandler:!1,parseMissingKeyHandler:!1,appendNamespaceToMissingKey:!1,appendNamespaceToCIMode:!1,overloadTranslationOptionHandler:e=>{let t={};if("object"==typeof e[1]&&(t=e[1]),a(e[1])&&(t.defaultValue=e[1]),a(e[2])&&(t.tDescription=e[2]),"object"==typeof e[2]||"object"==typeof e[3]){const i=e[3]||e[2];Object.keys(i).forEach(e=>{t[e]=i[e]})}return t},interpolation:{escapeValue:!0,format:e=>e,prefix:"{{",suffix:"}}",formatSeparator:",",unescapePrefix:"-",nestingPrefix:"$t(",nestingSuffix:")",nestingOptionsSeparator:",",maxReplaces:1e3,skipOnVariables:!0},cacheInBuiltFormats:!0}),H=e=>(a(e.ns)&&(e.ns=[e.ns]),a(e.fallbackLng)&&(e.fallbackLng=[e.fallbackLng]),a(e.fallbackNS)&&(e.fallbackNS=[e.fallbackNS]),e.supportedLngs?.indexOf?.("cimode")<0&&(e.supportedLngs=e.supportedLngs.concat(["cimode"])),"boolean"==typeof e.initImmediate&&(e.initAsync=e.initImmediate),e),W=()=>{};class z extends x{constructor(e={},t){var i;if(super(),this.options=H(e),this.services={},this.logger=k,this.modules={external:[]},i=this,Object.getOwnPropertyNames(Object.getPrototypeOf(i)).forEach(e=>{"function"==typeof i[e]&&(i[e]=i[e].bind(i))}),t&&!this.isInitialized&&!e.isClone){if(!this.options.initAsync)return this.init(e,t),this;setTimeout(()=>{this.init(e,t)},0)}}init(e={},t){this.isInitializing=!0,"function"==typeof e&&(t=e,e={}),null==e.defaultNS&&e.ns&&(a(e.ns)?e.defaultNS=e.ns:e.ns.indexOf("translation")<0&&(e.defaultNS=e.ns[0]));const i=V();this.options={...i,...this.options,...H(e)},this.options.interpolation={...i.interpolation,...this.options.interpolation},void 0!==e.keySeparator&&(this.options.userDefinedKeySeparator=e.keySeparator),void 0!==e.nsSeparator&&(this.options.userDefinedNsSeparator=e.nsSeparator);const r=e=>e?"function"==typeof e?new e:e:null;if(!this.options.isClone){let e;this.modules.logger?k.init(r(this.modules.logger),this.options):k.init(null,this.options),e=this.modules.formatter?this.modules.formatter:B;const t=new L(this.options);this.store=new S(this.options.resources,this.options);const a=this.services;a.logger=k,a.resourceStore=this.store,a.languageUtils=t,a.pluralResolver=new j(t,{prepend:this.options.pluralSeparator,simplifyPluralSuffix:this.options.simplifyPluralSuffix}),this.options.interpolation.format&&this.options.interpolation.format!==i.interpolation.format&&this.logger.deprecate("init: you are still using the legacy format function, please use the new approach: https://www.i18next.com/translation-function/formatting"),!e||this.options.interpolation.format&&this.options.interpolation.format!==i.interpolation.format||(a.formatter=r(e),a.formatter.init&&a.formatter.init(a,this.options),this.options.interpolation.format=a.formatter.format.bind(a.formatter)),a.interpolator=new I(this.options),a.utils={hasLoadedNamespace:this.hasLoadedNamespace.bind(this)},a.backendConnector=new U(r(this.modules.backend),a.resourceStore,a,this.options),a.backendConnector.on("*",(e,...t)=>{this.emit(e,...t)}),this.modules.languageDetector&&(a.languageDetector=r(this.modules.languageDetector),a.languageDetector.init&&a.languageDetector.init(a,this.options.detection,this.options)),this.modules.i18nFormat&&(a.i18nFormat=r(this.modules.i18nFormat),a.i18nFormat.init&&a.i18nFormat.init(this)),this.translator=new O(this.services,this.options),this.translator.on("*",(e,...t)=>{this.emit(e,...t)}),this.modules.external.forEach(e=>{e.init&&e.init(this)})}if(this.format=this.options.interpolation.format,t||(t=W),this.options.fallbackLng&&!this.services.languageDetector&&!this.options.lng){const e=this.services.languageUtils.getFallbackCodes(this.options.fallbackLng);e.length>0&&"dev"!==e[0]&&(this.options.lng=e[0])}this.services.languageDetector||this.options.lng||this.logger.warn("init: no languageDetector is used and no lng is defined"),["getResource","hasResourceBundle","getResourceBundle","getDataByLanguage"].forEach(e=>{this[e]=(...t)=>this.store[e](...t)}),["addResource","addResources","addResourceBundle","removeResourceBundle"].forEach(e=>{this[e]=(...t)=>(this.store[e](...t),this)});const o=s(),n=()=>{const e=(e,i)=>{this.isInitializing=!1,this.isInitialized&&!this.initializedStoreOnce&&this.logger.warn("init: i18next is already initialized. You should call init just once!"),this.isInitialized=!0,this.options.isClone||this.logger.log("initialized",this.options),this.emit("initialized",this.options),o.resolve(i),t(e,i)};if(this.languages&&!this.isInitialized)return e(null,this.t.bind(this));this.changeLanguage(this.options.lng,e)};return this.options.resources||!this.options.initAsync?n():setTimeout(n,0),o}loadResources(e,t=W){let i=t;const s=a(e)?e:this.language;if("function"==typeof e&&(i=e),!this.options.resources||this.options.partialBundledLanguages){if("cimode"===s?.toLowerCase()&&(!this.options.preload||0===this.options.preload.length))return i();const e=[],t=t=>{t&&"cimode"!==t&&this.services.languageUtils.toResolveHierarchy(t).forEach(t=>{"cimode"!==t&&e.indexOf(t)<0&&e.push(t)})};s?t(s):this.services.languageUtils.getFallbackCodes(this.options.fallbackLng).forEach(e=>t(e)),this.options.preload?.forEach?.(e=>t(e)),this.services.backendConnector.load(e,this.options.ns,e=>{e||this.resolvedLanguage||!this.language||this.setResolvedLanguage(this.language),i(e)})}else i(null)}reloadResources(e,t,i){const a=s();return"function"==typeof e&&(i=e,e=void 0),"function"==typeof t&&(i=t,t=void 0),e||(e=this.languages),t||(t=this.options.ns),i||(i=W),this.services.backendConnector.reload(e,t,e=>{a.resolve(),i(e)}),a}use(e){if(!e)throw new Error("You are passing an undefined module! Please check the object you are passing to i18next.use()");if(!e.type)throw new Error("You are passing a wrong module! Please check the object you are passing to i18next.use()");return"backend"===e.type&&(this.modules.backend=e),("logger"===e.type||e.log&&e.warn&&e.error)&&(this.modules.logger=e),"languageDetector"===e.type&&(this.modules.languageDetector=e),"i18nFormat"===e.type&&(this.modules.i18nFormat=e),"postProcessor"===e.type&&M.addPostProcessor(e),"formatter"===e.type&&(this.modules.formatter=e),"3rdParty"===e.type&&this.modules.external.push(e),this}setResolvedLanguage(e){if(e&&this.languages&&!(["cimode","dev"].indexOf(e)>-1)){for(let e=0;e<this.languages.length;e++){const t=this.languages[e];if(!(["cimode","dev"].indexOf(t)>-1)&&this.store.hasLanguageSomeTranslations(t)){this.resolvedLanguage=t;break}}!this.resolvedLanguage&&this.languages.indexOf(e)<0&&this.store.hasLanguageSomeTranslations(e)&&(this.resolvedLanguage=e,this.languages.unshift(e))}}changeLanguage(e,t){this.isLanguageChangingTo=e;const i=s();this.emit("languageChanging",e);const r=e=>{this.language=e,this.languages=this.services.languageUtils.toResolveHierarchy(e),this.resolvedLanguage=void 0,this.setResolvedLanguage(e)},o=(a,s)=>{s?this.isLanguageChangingTo===e&&(r(s),this.translator.changeLanguage(s),this.isLanguageChangingTo=void 0,this.emit("languageChanged",s),this.logger.log("languageChanged",s)):this.isLanguageChangingTo=void 0,i.resolve((...e)=>this.t(...e)),t&&t(a,(...e)=>this.t(...e))},n=t=>{e||t||!this.services.languageDetector||(t=[]);const i=a(t)?t:t&&t[0],s=this.store.hasLanguageSomeTranslations(i)?i:this.services.languageUtils.getBestMatchFromCodes(a(t)?[t]:t);s&&(this.language||r(s),this.translator.language||this.translator.changeLanguage(s),this.services.languageDetector?.cacheUserLanguage?.(s)),this.loadResources(s,e=>{o(e,s)})};return e||!this.services.languageDetector||this.services.languageDetector.async?!e&&this.services.languageDetector&&this.services.languageDetector.async?0===this.services.languageDetector.detect.length?this.services.languageDetector.detect().then(n):this.services.languageDetector.detect(n):n(e):n(this.services.languageDetector.detect()),i}getFixedT(e,t,i){const s=(e,t,...a)=>{let r;r="object"!=typeof t?this.options.overloadTranslationOptionHandler([e,t].concat(a)):{...t},r.lng=r.lng||s.lng,r.lngs=r.lngs||s.lngs,r.ns=r.ns||s.ns,""!==r.keyPrefix&&(r.keyPrefix=r.keyPrefix||i||s.keyPrefix);const o=this.options.keySeparator||".";let n;return r.keyPrefix&&Array.isArray(e)?n=e.map(e=>("function"==typeof e&&(e=N(e,{...this.options,...t})),`${r.keyPrefix}${o}${e}`)):("function"==typeof e&&(e=N(e,{...this.options,...t})),n=r.keyPrefix?`${r.keyPrefix}${o}${e}`:e),this.t(n,r)};return a(e)?s.lng=e:s.lngs=e,s.ns=t,s.keyPrefix=i,s}t(...e){return this.translator?.translate(...e)}exists(...e){return this.translator?.exists(...e)}setDefaultNamespace(e){this.options.defaultNS=e}hasLoadedNamespace(e,t={}){if(!this.isInitialized)return this.logger.warn("hasLoadedNamespace: i18next was not initialized",this.languages),!1;if(!this.languages||!this.languages.length)return this.logger.warn("hasLoadedNamespace: i18n.languages were undefined or empty",this.languages),!1;const i=t.lng||this.resolvedLanguage||this.languages[0],a=!!this.options&&this.options.fallbackLng,s=this.languages[this.languages.length-1];if("cimode"===i.toLowerCase())return!0;const r=(e,t)=>{const i=this.services.backendConnector.state[`${e}|${t}`];return-1===i||0===i||2===i};if(t.precheck){const e=t.precheck(this,r);if(void 0!==e)return e}return!(!this.hasResourceBundle(i,e)&&this.services.backendConnector.backend&&(!this.options.resources||this.options.partialBundledLanguages)&&(!r(i,e)||a&&!r(s,e)))}loadNamespaces(e,t){const i=s();return this.options.ns?(a(e)&&(e=[e]),e.forEach(e=>{this.options.ns.indexOf(e)<0&&this.options.ns.push(e)}),this.loadResources(e=>{i.resolve(),t&&t(e)}),i):(t&&t(),Promise.resolve())}loadLanguages(e,t){const i=s();a(e)&&(e=[e]);const r=this.options.preload||[],o=e.filter(e=>r.indexOf(e)<0&&this.services.languageUtils.isSupportedCode(e));return o.length?(this.options.preload=r.concat(o),this.loadResources(e=>{i.resolve(),t&&t(e)}),i):(t&&t(),Promise.resolve())}dir(e){if(e||(e=this.resolvedLanguage||(this.languages?.length>0?this.languages[0]:this.language)),!e)return"rtl";try{const t=new Intl.Locale(e);if(t&&t.getTextInfo){const e=t.getTextInfo();if(e&&e.direction)return e.direction}}catch(e){}const t=this.services?.languageUtils||new L(V());return e.toLowerCase().indexOf("-latn")>1?"ltr":["ar","shu","sqr","ssh","xaa","yhd","yud","aao","abh","abv","acm","acq","acw","acx","acy","adf","ads","aeb","aec","afb","ajp","apc","apd","arb","arq","ars","ary","arz","auz","avl","ayh","ayl","ayn","ayp","bbz","pga","he","iw","ps","pbt","pbu","pst","prp","prd","ug","ur","ydd","yds","yih","ji","yi","hbo","men","xmn","fa","jpr","peo","pes","prs","dv","sam","ckb"].indexOf(t.getLanguagePartFromCode(e))>-1||e.toLowerCase().indexOf("-arab")>1?"rtl":"ltr"}static createInstance(e={},t){return new z(e,t)}cloneInstance(e={},t=W){const i=e.forkResourceStore;i&&delete e.forkResourceStore;const a={...this.options,...e,isClone:!0},s=new z(a);if(void 0===e.debug&&void 0===e.prefix||(s.logger=s.logger.clone(e)),["store","services","language"].forEach(e=>{s[e]=this[e]}),s.services={...this.services},s.services.utils={hasLoadedNamespace:s.hasLoadedNamespace.bind(s)},i){const e=Object.keys(this.store.data).reduce((e,t)=>(e[t]={...this.store.data[t]},e[t]=Object.keys(e[t]).reduce((i,a)=>(i[a]={...e[t][a]},i),e[t]),e),{});s.store=new S(e,a),s.services.resourceStore=s.store}return s.translator=new O(s.services,a),s.translator.on("*",(e,...t)=>{s.emit(e,...t)}),s.init(a,t),s.translator.options=a,s.translator.backendConnector.services.utils={hasLoadedNamespace:s.hasLoadedNamespace.bind(s)},s}toJSON(){return{options:this.options,store:this.store,language:this.language,languages:this.languages,resolvedLanguage:this.resolvedLanguage}}}const K=z.createInstance();K.createInstance=z.createInstance;const G=K.createInstance,J=K.dir,q=K.init,Y=K.loadResources,Q=K.reloadResources,X=K.use,Z=K.changeLanguage,ee=K.getFixedT,te=K.t,ie=K.exists,ae=K.setDefaultNamespace,se=K.hasLoadedNamespace,re=K.loadNamespaces,oe=K.loadLanguages},648:(e,t,i)=>{"use strict";i(609),i(437),i(454)},674:(e,t,i)=>{"use strict";i(609),i(352)},677:(e,t,i)=>{"use strict";i.d(t,{A:()=>r});var a=i(609),s=i(979);function r({plugin:e}){const{assetsBaseUrl:t,errorState:i,setErrorState:r}=(0,s.D)();if(!i||!i.visible||i.pluginSlug!==e?.slug)return null;const o=t||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",n=o?`${o}assets/`:"",l="activate"===i.type,c="install"===i.type;return(0,a.createElement)("div",{className:"gv-toast-container"},(0,a.createElement)("div",{className:"gv-toast gv-toast-alert gv-visible"},(0,a.createElement)("gv-icon",{className:"gv-notice-icon","aria-hidden":"true",src:`${n}icons/error.svg`}),(0,a.createElement)("div",{className:"gv-toast-content"},l&&"Couldn't activate plugin.",c&&"Couldn't install plugin."),(0,a.createElement)("button",{type:"button",className:"gv-toast-close","aria-label":"Close",onClick:()=>{r({visible:!1,type:null,pluginSlug:null})}},(0,a.createElement)("gv-icon",{"aria-hidden":"true",src:`${n}icons/close.svg`}))))}},771:(e,t,i)=>{"use strict";i.d(t,{A:()=>c});var a=i(609),s=i(889),r=i(27),o=i(258),n=i(526),l=i(979);const c=({apiBaseUrl:e,useWPHandlers:t,wpConfig:i,enableDefaultStyles:c,assetsBaseUrl:g})=>{const[u,d]=(0,a.useState)("undefined"!=typeof window&&new URLSearchParams(window.location.search).get("plugin"));return(0,a.useEffect)(()=>{const e=()=>{const e="undefined"!=typeof window&&new URLSearchParams(window.location.search).get("plugin");d(!!e)};window.addEventListener("popstate",e);const t=window.history.pushState;return window.history.pushState=function(...i){t.apply(this,i),e()},()=>{window.removeEventListener("popstate",e),window.history.pushState=t}},[]),(0,a.createElement)(l.t,{apiBaseUrl:e,useWPHandlers:t,wpConfig:i,enableDefaultStyles:c,assetsBaseUrl:g},(0,a.createElement)(n.A,null),(0,a.createElement)("div",{className:"gv-activated"},(0,a.createElement)("div",{className:"marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid "},!u&&(0,a.createElement)(r.A,null),!u&&(0,a.createElement)(o.A,null),(0,a.createElement)(s.A,null))))}},795:e=>{"use strict";e.exports=window.ReactDOM},804:(e,t,i)=>{"use strict";i(915),Object.create(null)},811:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Contactez-nous aujourd\'hui","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Conditions","migratorMail_footer_footer-link-3_title":"Politique de confidentialité","migratorMail_footer_visitSite_title":"Visiter le site","migratorMail_hi":"Bonjour,","migratorMail_typeFail_bodyIntro":"Un incident s\'est produit durant la migration de votre site de {oldsite} vers {newsite}.","migratorMail_typeFail_button_title":"Recommencer la migration","migratorMail_typeFail_errorText":"Erreur: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Erreur : Erreur interne ({fail_reason})","migratorMail_typeFail_failTime":"Échec de la migration: {dateandtime}","migratorMail_typeFail_footer_title":"Vous avez besoin d\'aide pour effectuer la migration de votre site vers one.com? Nous sommes là pour vous aider.","migratorMail_typeFail_subject":"Échec de la migration","migratorMail_typeFail_title":"Échec de la migration WordPress","migratorMail_typeSuccess_bodyIntro":"La migration de votre site de {oldsite} vers {newsite} est à présent terminée.","migratorMail_typeSuccess_brokenPlugins":"En outre, après la migration, le(s) plugin(s) suivant(s) a (ont) provoqué des erreurs et a (ont) été désactivé(s) sur le site migré : {plugins}.","migratorMail_typeSuccess_button_title":"Accéder à votre site","migratorMail_typeSuccess_excludedDirs":"Remarque : Pour garantir un processus de migration fluide, les répertoires suivants ont été exclus de la migration : {directories}. Vous pouvez déplacer manuellement ces données vers votre espace web si nécessaire.","migratorMail_typeSuccess_finishTime":"Fin de la migration: {dateandtime}","migratorMail_typeSuccess_footer_title":"Une question? Nous sommes là pour vous aider.","migratorMail_typeSuccess_startTime":"Début de la migration: {dateandtime}","migratorMail_typeSuccess_subject":"Migration effectuée avec succès","migratorMail_typeSuccess_title":"Migration WordPress terminée"}')},814:(e,t,i)=>{"use strict";i(609),i(804),i(454),i(565)},823:e=>{"use strict";e.exports=JSON.parse('{"migratorMail_footer_contactButton_title":"Contact us today","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Terms","migratorMail_footer_footer-link-3_title":"Privacy policy","migratorMail_footer_visitSite_title":"Visit site","migratorMail_hi":"Hi,","migratorMail_typeFail_bodyIntro":"Something went wrong with the migration of your site from {oldsite} to {newsite}.","migratorMail_typeFail_button_title":"Retry migration","migratorMail_typeFail_errorText":"Error: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Error: Internal error ({fail_reason})","migratorMail_typeFail_failTime":"Migration failed: {dateandtime}","migratorMail_typeFail_footer_title":"Need help migrating your site to one.com? We\'re here to help.","migratorMail_typeFail_subject":"Migration failed","migratorMail_typeFail_title":"WordPress migration failed","migratorMail_typeSuccess_bodyIntro":"The migration of your site from {oldsite} to {newsite} is now completed.","migratorMail_typeSuccess_brokenPlugins":"Additionally, post-migration, the following plugin(s) were found to cause errors and have been deactivated on the migrated site: {plugins}.","migratorMail_typeSuccess_button_title":"Go to your site","migratorMail_typeSuccess_excludedDirs":"Please note: To ensure a smooth migration process, the following directories were excluded from the migration: {directories}. You can manually move this data to your webspace if needed.","migratorMail_typeSuccess_finishTime":"Migration finished: {dateandtime}","migratorMail_typeSuccess_footer_title":"Have a question? We\'re here to help.","migratorMail_typeSuccess_startTime":"Migration started: {dateandtime}","migratorMail_typeSuccess_subject":"Migration successful","migratorMail_typeSuccess_title":"WordPress migration completed"}')},829:(e,t,i)=>{"use strict";i(609),i(814),i(352)},831:(e,t,i)=>{"use strict";i.d(t,{r:()=>r});var a=i(565),s=i(484);const r={type:"3rdParty",init(e){(0,a.P)(e.options.react),(0,s.V)(e)}}},875:(e,t,i)=>{"use strict";i.d(t,{x:()=>o});const a=/&(?:amp|#38|lt|#60|gt|#62|apos|#39|quot|#34|nbsp|#160|copy|#169|reg|#174|hellip|#8230|#x2F|#47);/g,s={"&amp;":"&","&#38;":"&","&lt;":"<","&#60;":"<","&gt;":">","&#62;":">","&apos;":"'","&#39;":"'","&quot;":'"',"&#34;":'"',"&nbsp;":" ","&#160;":" ","&copy;":"©","&#169;":"©","&reg;":"®","&#174;":"®","&hellip;":"…","&#8230;":"…","&#x2F;":"/","&#47;":"/"},r=e=>s[e],o=e=>e.replace(a,r)},889:(e,t,i)=>{"use strict";i.d(t,{A:()=>c});var a=i(609),s=i(103),r=(i(530),i(291)),o=i(598),n=i(962),l=i(979);function c(){const{apiBaseUrl:e,useWPHandlers:t,wpConfig:i,enableDefaultStyles:c,assetsBaseUrl:g,pluginInAction:u,setPluginInAction:d,fetchSubscriptionStatus:p,isOnecomBrand:m,plugins:h,setPlugins:f,handlePluginAction:v}=(0,l.D)(),[y,_]=(0,a.useState)(!0),[b,w]=(0,a.useState)({}),[k,x]=(0,a.useState)(null),S=(0,a.useRef)(!1),M=g||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",E=M?`${M}assets/icons/`:"",N="undefined"!=typeof window?new URLSearchParams(window.location.search).get("plugin"):null,C=()=>{if("undefined"==typeof window)return"";const e=new URL(window.location.href);return e.searchParams.delete("plugin"),e.toString()};(0,a.useEffect)(()=>{if(N&&h.length){const e=h.find(e=>e.slug===N);e&&x(e)}else N||x(null)},[N,h]),(0,a.useEffect)(()=>{const e=()=>{const e=new URLSearchParams(window.location.search).get("plugin");if(e){if(h.length){const t=h.find(t=>t.slug===e);t&&x(t)}}else x(null)};return window.addEventListener("popstate",e),()=>window.removeEventListener("popstate",e)},[h]);const{t:P}=(0,r.Bd)();(0,a.useEffect)(()=>{S.current||async function(){try{S.current=!0;const t=await fetch(`${e}`),i=await t.json(),a=(0,s.i)(i);f(a),m&&a.filter(e=>"wp-rocket"===e.slug||"rank-math-pro"===e.slug).forEach(e=>{p(e.slug)})}catch(e){console.error("Failed to fetch plugins",e)}finally{_(!1)}}()},[e,m,p,f]),(0,a.useEffect)(()=>{k&&console.log("Selected plugin state now:",k.slug)},[k]);const O=e=>{if(!e)return!1;const t="onecom"===("undefined"!=typeof window&&window.marketplaceConfig?.brand),i="rank-math-pro"===e.slug||"seo-by-rank-math"===e.slug;return t&&i};if(y)return(0,a.createElement)("p",null,"Loading plugins...");if(k&&N){const e=O(k)?n.A:o.A;return(0,a.createElement)(e,{plugin:k,onClose:()=>{x(null),window.location.href=C()},usePortal:!1})}const L=new Map,F=new Map;h.forEach(e=>{F.has(e.slug)||!0===e.activated||F.set(e.slug,e)}),Array.from(F.values()).forEach(e=>{const t=Array.isArray(e.categories)&&e.categories.length?"object"==typeof e.categories[0]?e.categories[0]:{slug:String(e.categories[0]),title:String(e.categories[0]),description:null}:{slug:"Others",title:"Others",description:null},i=t.slug||t.title||"Others";L.has(i)||L.set(i,{info:t,plugins:[]}),L.get(i).plugins.push(e)});const $=Array.from(L.entries()).filter(([e,{plugins:t}])=>t.length>0);return(0,a.createElement)("div",{className:"marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg"},$.map(([e,{info:t,plugins:i}])=>(0,a.createElement)("section",{key:e,className:"category-section"},(0,a.createElement)("p",{className:"gv-text-bold gv-text-lg"},t.title||e),t.description&&(0,a.createElement)("p",null,t.description),!t.description&&(0,a.createElement)("p",null,"A range of versatile plugins to enhance your WordPress experience and add new functionality with ease."),(0,a.createElement)("div",{className:"product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg"},i.map(e=>(0,a.createElement)("div",{key:e.slug,className:"gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius"},(0,a.createElement)("div",{className:"gv-span-2"},(0,a.createElement)("img",{className:"gv-tile",src:e.iconUrl||`${E}add_box.svg`,alt:e.name})),(0,a.createElement)("div",{className:"gv-span-9"},(0,a.createElement)("p",{className:"gv-text-lg"},e.name),(0,a.createElement)("p",{className:"oc-card-content"}," ",e.description?e.description:e.shortDescription," "),(0,a.createElement)("span",{className:"gv-text-sm"},e.priceCurrency," ",e.priceAmount)),(0,a.createElement)("div",{className:"gv-span-1 gv-content-center"},(0,a.createElement)("a",{href:`${C()}&plugin=${e.slug}`,className:"gv-reset-button",style:{display:"inline-block"},"aria-label":`View details for ${e.name}`,onClick:t=>{t.preventDefault(),x(e);const i=new URL(window.location.href);i.searchParams.set("plugin",e.slug),window.history.pushState({},"",i.toString())}},(0,a.createElement)("img",{className:"gv-tile",src:`${E}arrow_forward.svg`,alt:`View ${e.name} details`,style:{minWidth:"24px"}})))))))),k&&!N&&(()=>{const e=O(k)?n.A:o.A;return(0,a.createElement)(e,{plugin:k,onClose:()=>x(null)})})())}},915:e=>{e.exports={area:!0,base:!0,br:!0,col:!0,embed:!0,hr:!0,img:!0,input:!0,link:!0,meta:!0,param:!0,source:!0,track:!0,wbr:!0}},962:(e,t,i)=>{"use strict";i.d(t,{A:()=>c});var a=i(609),s=i(795),r=i(338),o=i(469),n=i(677),l=i(979);function c({plugin:e,onClose:t,usePortal:i=!0}){const{assetsBaseUrl:c,useWPHandlers:g,pluginInAction:u,plugins:d}=(0,l.D)();if(!e)return null;const p=d.find(e=>"seo-by-rank-math"===e.slug)||null,m=d.find(e=>"rank-math-pro"===e.slug)||null,h=c||void 0!==window.marketplaceConfig&&window.marketplaceConfig?.assetsBaseUrl||"",f=(void 0!==window.onecomWpVars&&window.onecomWpVars,e.thumbnail,h?`${h}assets/icons/`:""),v=e.bannerUrl||e.image||e.thumbnail||"https://gravity.group.one/guide-images/product-image@2x.png",y=p?.name||e.name||"Product",_=p?.description||p?.shortDescription||e.description||e.shortDescription||"No description available.",b=m?.name||"Rank Math Pro",w=m?.description||m?.shortDescription||"Advanced SEO features for professionals",k=m?.priceCurrency&&m?.priceAmount?`${m.priceCurrency} ${m.priceAmount}`:"€ 0,-",x=(p?.features&&p.features.length?p.features:_.split(/[.?!]/).map(e=>e.trim()).filter(Boolean)).slice(0,3).map(e=>e.replace(/\.$/,""));for(;x.length<3;)x.push("Sample feature");const S=[x[0],x[1]||"Improves performance",x[2]||"Easy setup"],M=[{name:x[0],desc:_.substring(0,150)||"Feature description"},{name:x[1],desc:"Enhances your WordPress experience with reliable performance"},{name:x[2],desc:"Easy to set up and configure with minimal technical knowledge"}],E=(0,a.createElement)("div",{className:"gv-surface-dim"},(0,a.createElement)("article",{className:"gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid"},(0,a.createElement)("nav",{className:"gv-breadcrumbs gv-area-nav"},(0,a.createElement)("a",{href:"#",onClick:e=>{e.preventDefault(),"undefined"!=typeof window&&window.history&&window.history.length>1?window.history.back():t&&t()}},(0,a.createElement)("gv-icon",{"aria-hidden":"true",src:`${f}chevron_left.svg`}),(0,a.createElement)("span",null,"Back"))),(0,a.createElement)(o.A,{plugin:e}),(0,a.createElement)(n.A,{plugin:e}),(0,a.createElement)("header",{className:"gv-product-header gv-area-header"},(0,a.createElement)("div",{className:"gv-content gv-stack-space-md gv-text-sm"},(0,a.createElement)("h1",{className:"gv-title gv-header-lg"},y),(0,a.createElement)("p",null,_)),(0,a.createElement)("div",{className:"gv-image"},(0,a.createElement)("picture",null,(0,a.createElement)("source",{media:"(min-width: 600px)",srcSet:`${v} 2x, ${v} 1x`}),(0,a.createElement)("img",{src:v,srcSet:`${v} 2x, ${v} 1x`,alt:"Product image"})))),(0,a.createElement)("section",{className:"gv-product-table gv-features-table gv-products-2 gv-area-table"},(0,a.createElement)("div",{className:"gv-dots-scroll-area"},(0,a.createElement)("div",{className:"gv-table-container"},(0,a.createElement)("div",{className:"gv-slider-nav"},(0,a.createElement)("button",{type:"button",className:"gv-nav-button gv-previous gv-disabled"},(0,a.createElement)("gv-icon",{"aria-hidden":"true",src:`${f}chevron_left.svg`})),(0,a.createElement)("button",{type:"button",className:"gv-nav-button gv-next"},(0,a.createElement)("gv-icon",{"aria-hidden":"true",src:`${f}chevron_right.svg`}))),(0,a.createElement)("div",{className:"gv-table-slider"},(0,a.createElement)("div",{className:"gv-table",role:"table"},(0,a.createElement)("div",{className:"gv-table-header",role:"rowgroup"},(0,a.createElement)("div",{className:"gv-table-row",role:"row"},(0,a.createElement)("div",{className:"gv-product",role:"columnheader"},(0,a.createElement)("div",{className:"gv-content"},(0,a.createElement)("h3",{className:"gv-title"},y),(0,a.createElement)("p",null,_.substring(0,120),_.length>120?"…":"")),(0,a.createElement)("div",{className:"gv-bottom"},(0,a.createElement)("div",{className:"gv-price-container"},(0,a.createElement)("div",{className:"gv-price"},(0,a.createElement)("span",{className:"gv-price-text"},"Free"))),g&&p?(0,a.createElement)(r.A,{plugin:p}):p?.download&&(0,a.createElement)("button",{type:"button",className:"gv-button gv-button-secondary"},p?.textKeys?.installButton||"Install"))),(0,a.createElement)("div",{className:"gv-product",role:"columnheader"},(0,a.createElement)("div",{className:"gv-content"},(0,a.createElement)("h3",{className:"gv-title"},b),(0,a.createElement)("p",null,w.substring(0,120),w.length>120?"…":"")),(0,a.createElement)("div",{className:"gv-bottom"},(0,a.createElement)("div",{className:"gv-price-container"},(0,a.createElement)("div",{className:"gv-price"},(0,a.createElement)("span",{className:"gv-price-text"},k),(0,a.createElement)("span",{className:"gv-period"},"/mo"))),g&&m?(0,a.createElement)(r.A,{plugin:m}):(0,a.createElement)("button",{type:"button",className:"gv-button gv-button-primary"},"Select"))))),(0,a.createElement)("div",{className:"gv-section",role:"rowgroup"},(0,a.createElement)("div",{className:"gv-section-header gv-table-row",role:"row"},(0,a.createElement)("div",{className:"gv-cell",role:"cell"},(0,a.createElement)("h4",{className:"gv-title"},p?.textKeys?.featureOverviewHeading||"Key features")),(0,a.createElement)("div",{className:"gv-cell",role:"cell"},(0,a.createElement)("h4",{className:"gv-title"},m?.textKeys?.featureOverviewHeading||"Key features"))),x.map((e,t)=>(0,a.createElement)("div",{className:"gv-table-row",role:"row",key:t},(0,a.createElement)("div",{className:"gv-cell",role:"cell"},(0,a.createElement)("span",{className:"gv-cell-text"},e)),(0,a.createElement)("div",{className:"gv-cell",role:"cell"},(0,a.createElement)("span",{className:"gv-cell-text"},e)))))))),(0,a.createElement)("div",{className:"gv-slider-pagination gv-state-top"},(0,a.createElement)("div",{className:"gv-dots",role:"tablist"},(0,a.createElement)("span",{className:"gv-dot gv-active",role:"tab","aria-selected":"true","aria-label":"Go to slide 1"}),(0,a.createElement)("span",{className:"gv-dot",role:"tab","aria-selected":"false","aria-label":"Go to slide 2"}))))),(0,a.createElement)("div",{className:"gv-area-details gv-grid gv-gap-fluid"},(0,a.createElement)("section",{className:"gv-stack-space-md"},(0,a.createElement)("h2",{className:"gv-title gv-text-bold gv-text-lg"},e.textKeys?.benefitHeading||"Key benefits"),(0,a.createElement)("ul",{className:"gv-list-items gv-list-check gv-mode-condensed"},S.map((e,t)=>(0,a.createElement)("li",{key:t},e)))),(0,a.createElement)("div",{className:"gv-text-max gv-text-sm gv-stack-space-md"},(0,a.createElement)("h2",{className:"gv-title gv-text-bold gv-text-lg"},y),(0,a.createElement)("p",null,_))),(0,a.createElement)("div",{className:"gv-area-content gv-grid gv-gap-fluid"},(0,a.createElement)("section",{className:"gv-text-sm gv-stack-space-md"},(0,a.createElement)("h2",{className:"gv-title gv-text-bold gv-text-lg"},e.textKeys?.featureOverviewHeading||"Core features overview"),(0,a.createElement)("div",{className:"gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3"},M.map((e,t)=>(0,a.createElement)("div",{className:"gv-item gv-stack-space-sm",key:t},(0,a.createElement)("h3",{className:"gv-title gv-text-bold gv-text-sm"},e.name),(0,a.createElement)("p",null,e.desc))))))));return i?(0,s.createPortal)(E,document.body):E}},979:(e,t,i)=>{"use strict";i.d(t,{D:()=>o,t:()=>r});var a=i(609);const s=(0,a.createContext)(null),r=({children:e,apiBaseUrl:t,useWPHandlers:i,wpConfig:r,enableDefaultStyles:o,assetsBaseUrl:n})=>{const[l,c]=(0,a.useState)({}),[g,u]=(0,a.useState)({}),[d,p]=(0,a.useState)({}),[m,h]=(0,a.useState)([]),[f,v]=(0,a.useState)(""),[y,_]=(0,a.useState)(""),[b,w]=(0,a.useState)({visible:!1,type:null,pluginSlug:null}),[k,x]=(0,a.useState)({visible:!1,type:null,pluginSlug:null}),S=(0,a.useRef)({}),M="onecom"===("undefined"!=typeof window&&window.marketplaceConfig?.brand),E=(0,a.useCallback)(async e=>{if(M&&("wp-rocket"===e||"rank-math-pro"===e)&&!S.current[e]){S.current[e]=!0,p(t=>({...t,[e]:!0}));try{const t=void 0!==window.marketplaceConfig&&window.marketplaceConfig?.wpConfig?.ajaxUrl;if(!t)return console.warn("ajaxUrl not available in marketplaceConfig"),void p(t=>({...t,[e]:!1}));console.log(`[MarketplaceContext] Fetching subscription status for ${e}`);const i=new FormData;i.append("action","get_addon_purchase_status"),i.append("addon_purchase_check","true"),i.append("addon_slug",e);const a=await fetch(t,{method:"POST",body:i}),s=await a.json();console.log(`[MarketplaceContext] Subscription status response for ${e}:`,s),u(t=>({...t,[e]:s.is_purchased}))}catch(t){console.error(`[MarketplaceContext] Failed to fetch subscription status for ${e}`,t),u(t=>({...t,[e]:!1}))}finally{p(t=>({...t,[e]:!1}))}}},[M]),N=(0,a.useCallback)(async(e,a)=>{c(e=>({...e,[a.slug]:!0}));const s=e.charAt(0).toUpperCase()+e.slice(1)+"ing";v(s),_(a.name||a.slug);try{let s=`${t}/${e}/${a.slug}`;const o=`download_url=${encodeURIComponent(a.download||"")}`;s=i?`${r.ajaxUrl}?action=marketplace_${e}_plugin&_wpnonce=${r.nonce}&nonce=${r.nonce}&slug=${a.slug}&${o}`:s+(s.includes("?")?"&":"?")+o;const n=await fetch(s,{method:"POST"}),l=await n.json();l.success?(h(e=>e.map(e=>e.slug===a.slug?{...e,installed:l.data.installed,activated:l.data.activated}:e)),"install"===e&&l.data.installed?w({visible:!0,type:"installed",pluginSlug:a.slug}):"activate"===e&&l.data.activated&&w({visible:!0,type:"activated",pluginSlug:a.slug})):"activate"===e?x({visible:!0,type:"activate",pluginSlug:a.slug}):"install"===e?x({visible:!0,type:"install",pluginSlug:a.slug}):alert(l.data?.message||"Failed to perform action")}catch(e){console.error("Plugin action failed",e)}finally{c(e=>({...e,[a.slug]:!1})),v(""),_("")}},[t,i,r]),C={apiBaseUrl:t,useWPHandlers:i,wpConfig:r,enableDefaultStyles:o,assetsBaseUrl:n,pluginInAction:l,setPluginInAction:c,subscriptionStatus:g,isCheckingSubscription:d,fetchSubscriptionStatus:E,isOnecomBrand:M,plugins:m,setPlugins:h,handlePluginAction:N,loadingAction:f,loadingPlugin:y,noticeState:b,setNoticeState:w,errorState:k,setErrorState:x};return(0,a.createElement)(s.Provider,{value:C},e)},o=()=>{const e=(0,a.useContext)(s);if(!e)throw new Error("useMarketplace must be used within MarketplaceProvider");return e}}},t={};function i(a){var s=t[a];if(void 0!==s)return s.exports;var r=t[a]={exports:{}};return e[a](r,r.exports,i),r.exports}i.n=e=>{var t=e&&e.__esModule?()=>e.default:()=>e;return i.d(t,{a:t}),t},i.d=(e,t)=>{for(var a in t)i.o(t,a)&&!i.o(e,a)&&Object.defineProperty(e,a,{enumerable:!0,get:t[a]})},i.o=(e,t)=>Object.prototype.hasOwnProperty.call(e,t),i.r=e=>{"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(e,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(e,"__esModule",{value:!0})};var a={};(()=>{"use strict";i.r(a);var e=i(609),t=i(795),s=i(771);i(36),document.addEventListener("DOMContentLoaded",()=>{const a=document.getElementById("marketplace-root");if(a){const r=window.marketplaceConfig||{};r.locale&&Promise.resolve().then(i.bind(i,635)).then(({default:e})=>{e.changeLanguage(r.locale)}),(0,t.createRoot)(a).render((0,e.createElement)(s.A,{...r}))}})})(),window.MarketPlaceWP=a})();
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./node_modules/@group.one/gravity/dist/index.es.js":
+/*!**********************************************************!*\
+  !*** ./node_modules/@group.one/gravity/dist/index.es.js ***!
+  \**********************************************************/
+/***/ (() => {
+
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+const promises = {};
+async function fetchWithCache(url) {
+  if (promises.hasOwnProperty(url)) {
+    return promises[url];
+  }
+  let promise;
+  if (url.startsWith("data:") || !("caches" in self)) {
+    promise = fetch(url).then((r) => r.text());
+  } else {
+    promise = caches.open("gravity").then(async (cache) => {
+      let response = await cache.match(url);
+      if (!response) {
+        response = await fetch(url);
+        if (response.ok) {
+          await cache.put(url, response.clone());
+        }
+      }
+      return response.text();
+    });
+  }
+  promises[url] = promise;
+  return promise;
+}
+class GvFlagElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchFlag(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchFlag(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchFlag(newValue);
+    }
+  }
+}
+__publicField(GvFlagElement, "TAG_NAME", "gv-flag");
+class GvIconElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchIcon(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchIcon(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchIcon(newValue);
+    }
+  }
+}
+__publicField(GvIconElement, "TAG_NAME", "gv-icon");
+class GvIllustrationElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchIllustration(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchIllustration(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchIllustration(newValue);
+    }
+  }
+}
+__publicField(GvIllustrationElement, "TAG_NAME", "gv-illustration");
+class GvIndicatorElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchIndicator(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchIndicator(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchIndicator(newValue);
+    }
+  }
+}
+__publicField(GvIndicatorElement, "TAG_NAME", "gv-indicator");
+class GvLoaderElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchLoader(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchLoader(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchLoader(newValue);
+    }
+  }
+}
+__publicField(GvLoaderElement, "TAG_NAME", "gv-loader");
+class GvLogoElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchLogo(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchLogo(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchLogo(newValue);
+    }
+  }
+}
+__publicField(GvLogoElement, "TAG_NAME", "gv-logo");
+class GvPayIconElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchPayIcon(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchPayIcon(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchPayIcon(newValue);
+    }
+  }
+}
+__publicField(GvPayIconElement, "TAG_NAME", "gv-pay-icon");
+class GvTileElement extends HTMLElement {
+  static get observedAttributes() {
+    return ["src"];
+  }
+  fetchTile(path) {
+    if (!path) {
+      return;
+    }
+    fetchWithCache(path).then((svg) => this.innerHTML = svg);
+  }
+  connectedCallback() {
+    this.fetchTile(this.getAttribute("src"));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "src" && oldValue !== newValue) {
+      this.fetchTile(newValue);
+    }
+  }
+}
+__publicField(GvTileElement, "TAG_NAME", "gv-tile");
+function defineCustomElement(tagName, elementClass) {
+  if (!customElements.get(tagName)) {
+    customElements.define(tagName, elementClass);
+  }
+}
+defineCustomElement(GvFlagElement.TAG_NAME, GvFlagElement);
+defineCustomElement(GvIconElement.TAG_NAME, GvIconElement);
+defineCustomElement(GvIllustrationElement.TAG_NAME, GvIllustrationElement);
+defineCustomElement(GvIndicatorElement.TAG_NAME, GvIndicatorElement);
+defineCustomElement(GvLoaderElement.TAG_NAME, GvLoaderElement);
+defineCustomElement(GvLogoElement.TAG_NAME, GvLogoElement);
+defineCustomElement(GvPayIconElement.TAG_NAME, GvPayIconElement);
+defineCustomElement(GvTileElement.TAG_NAME, GvTileElement);
+
+
+/***/ }),
+
+/***/ "./node_modules/html-parse-stringify/dist/html-parse-stringify.module.js":
+/*!*******************************************************************************!*\
+  !*** ./node_modules/html-parse-stringify/dist/html-parse-stringify.module.js ***!
+  \*******************************************************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var void_elements__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! void-elements */ "./node_modules/void-elements/index.js");
+/* harmony import */ var void_elements__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(void_elements__WEBPACK_IMPORTED_MODULE_0__);
+var t=/\s([^'"/\s><]+?)[\s/>]|([^\s=]+)=\s?(".*?"|'.*?')/g;function n(n){var r={type:"tag",name:"",voidElement:!1,attrs:{},children:[]},i=n.match(/<\/?([^\s]+?)[/\s>]/);if(i&&(r.name=i[1],((void_elements__WEBPACK_IMPORTED_MODULE_0___default())[i[1]]||"/"===n.charAt(n.length-2))&&(r.voidElement=!0),r.name.startsWith("!--"))){var s=n.indexOf("--\x3e");return{type:"comment",comment:-1!==s?n.slice(4,s):""}}for(var a=new RegExp(t),c=null;null!==(c=a.exec(n));)if(c[0].trim())if(c[1]){var o=c[1].trim(),l=[o,""];o.indexOf("=")>-1&&(l=o.split("=")),r.attrs[l[0]]=l[1],a.lastIndex--}else c[2]&&(r.attrs[c[2]]=c[3].trim().substring(1,c[3].length-1));return r}var r=/<[a-zA-Z0-9\-\!\/](?:"[^"]*"|'[^']*'|[^'">])*>/g,i=/^\s*$/,s=Object.create(null);function a(e,t){switch(t.type){case"text":return e+t.content;case"tag":return e+="<"+t.name+(t.attrs?function(e){var t=[];for(var n in e)t.push(n+'="'+e[n]+'"');return t.length?" "+t.join(" "):""}(t.attrs):"")+(t.voidElement?"/>":">"),t.voidElement?e:e+t.children.reduce(a,"")+"</"+t.name+">";case"comment":return e+"\x3c!--"+t.comment+"--\x3e"}}var c={parse:function(e,t){t||(t={}),t.components||(t.components=s);var a,c=[],o=[],l=-1,m=!1;if(0!==e.indexOf("<")){var u=e.indexOf("<");c.push({type:"text",content:-1===u?e:e.substring(0,u)})}return e.replace(r,function(r,s){if(m){if(r!=="</"+a.name+">")return;m=!1}var u,f="/"!==r.charAt(1),h=r.startsWith("\x3c!--"),p=s+r.length,d=e.charAt(p);if(h){var v=n(r);return l<0?(c.push(v),c):((u=o[l]).children.push(v),c)}if(f&&(l++,"tag"===(a=n(r)).type&&t.components[a.name]&&(a.type="component",m=!0),a.voidElement||m||!d||"<"===d||a.children.push({type:"text",content:e.slice(p,e.indexOf("<",p))}),0===l&&c.push(a),(u=o[l-1])&&u.children.push(a),o[l]=a),(!f||a.voidElement)&&(l>-1&&(a.voidElement||a.name===r.slice(2,-1))&&(l--,a=-1===l?c:o[l]),!m&&"<"!==d&&d)){u=-1===l?c:o[l].children;var x=e.indexOf("<",p),g=e.slice(p,-1===x?void 0:x);i.test(g)&&(g=" "),(x>-1&&l+u.length>=0||" "!==g)&&u.push({type:"text",content:g})}}),c},stringify:function(e){return e.reduce(function(e,t){return e+a("",t)},"")}};/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (c);
+//# sourceMappingURL=html-parse-stringify.module.js.map
+
+
+/***/ }),
+
+/***/ "./node_modules/i18next/dist/esm/i18next.js":
+/*!**************************************************!*\
+  !*** ./node_modules/i18next/dist/esm/i18next.js ***!
+  \**************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   changeLanguage: () => (/* binding */ changeLanguage),
+/* harmony export */   createInstance: () => (/* binding */ createInstance),
+/* harmony export */   "default": () => (/* binding */ instance),
+/* harmony export */   dir: () => (/* binding */ dir),
+/* harmony export */   exists: () => (/* binding */ exists),
+/* harmony export */   getFixedT: () => (/* binding */ getFixedT),
+/* harmony export */   hasLoadedNamespace: () => (/* binding */ hasLoadedNamespace),
+/* harmony export */   init: () => (/* binding */ init),
+/* harmony export */   keyFromSelector: () => (/* binding */ keysFromSelector),
+/* harmony export */   loadLanguages: () => (/* binding */ loadLanguages),
+/* harmony export */   loadNamespaces: () => (/* binding */ loadNamespaces),
+/* harmony export */   loadResources: () => (/* binding */ loadResources),
+/* harmony export */   reloadResources: () => (/* binding */ reloadResources),
+/* harmony export */   setDefaultNamespace: () => (/* binding */ setDefaultNamespace),
+/* harmony export */   t: () => (/* binding */ t),
+/* harmony export */   use: () => (/* binding */ use)
+/* harmony export */ });
+const isString = obj => typeof obj === 'string';
+const defer = () => {
+  let res;
+  let rej;
+  const promise = new Promise((resolve, reject) => {
+    res = resolve;
+    rej = reject;
+  });
+  promise.resolve = res;
+  promise.reject = rej;
+  return promise;
+};
+const makeString = object => {
+  if (object == null) return '';
+  return '' + object;
+};
+const copy = (a, s, t) => {
+  a.forEach(m => {
+    if (s[m]) t[m] = s[m];
+  });
+};
+const lastOfPathSeparatorRegExp = /###/g;
+const cleanKey = key => key && key.indexOf('###') > -1 ? key.replace(lastOfPathSeparatorRegExp, '.') : key;
+const canNotTraverseDeeper = object => !object || isString(object);
+const getLastOfPath = (object, path, Empty) => {
+  const stack = !isString(path) ? path : path.split('.');
+  let stackIndex = 0;
+  while (stackIndex < stack.length - 1) {
+    if (canNotTraverseDeeper(object)) return {};
+    const key = cleanKey(stack[stackIndex]);
+    if (!object[key] && Empty) object[key] = new Empty();
+    if (Object.prototype.hasOwnProperty.call(object, key)) {
+      object = object[key];
+    } else {
+      object = {};
+    }
+    ++stackIndex;
+  }
+  if (canNotTraverseDeeper(object)) return {};
+  return {
+    obj: object,
+    k: cleanKey(stack[stackIndex])
+  };
+};
+const setPath = (object, path, newValue) => {
+  const {
+    obj,
+    k
+  } = getLastOfPath(object, path, Object);
+  if (obj !== undefined || path.length === 1) {
+    obj[k] = newValue;
+    return;
+  }
+  let e = path[path.length - 1];
+  let p = path.slice(0, path.length - 1);
+  let last = getLastOfPath(object, p, Object);
+  while (last.obj === undefined && p.length) {
+    e = `${p[p.length - 1]}.${e}`;
+    p = p.slice(0, p.length - 1);
+    last = getLastOfPath(object, p, Object);
+    if (last?.obj && typeof last.obj[`${last.k}.${e}`] !== 'undefined') {
+      last.obj = undefined;
+    }
+  }
+  last.obj[`${last.k}.${e}`] = newValue;
+};
+const pushPath = (object, path, newValue, concat) => {
+  const {
+    obj,
+    k
+  } = getLastOfPath(object, path, Object);
+  obj[k] = obj[k] || [];
+  obj[k].push(newValue);
+};
+const getPath = (object, path) => {
+  const {
+    obj,
+    k
+  } = getLastOfPath(object, path);
+  if (!obj) return undefined;
+  if (!Object.prototype.hasOwnProperty.call(obj, k)) return undefined;
+  return obj[k];
+};
+const getPathWithDefaults = (data, defaultData, key) => {
+  const value = getPath(data, key);
+  if (value !== undefined) {
+    return value;
+  }
+  return getPath(defaultData, key);
+};
+const deepExtend = (target, source, overwrite) => {
+  for (const prop in source) {
+    if (prop !== '__proto__' && prop !== 'constructor') {
+      if (prop in target) {
+        if (isString(target[prop]) || target[prop] instanceof String || isString(source[prop]) || source[prop] instanceof String) {
+          if (overwrite) target[prop] = source[prop];
+        } else {
+          deepExtend(target[prop], source[prop], overwrite);
+        }
+      } else {
+        target[prop] = source[prop];
+      }
+    }
+  }
+  return target;
+};
+const regexEscape = str => str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+var _entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '/': '&#x2F;'
+};
+const escape = data => {
+  if (isString(data)) {
+    return data.replace(/[&<>"'\/]/g, s => _entityMap[s]);
+  }
+  return data;
+};
+class RegExpCache {
+  constructor(capacity) {
+    this.capacity = capacity;
+    this.regExpMap = new Map();
+    this.regExpQueue = [];
+  }
+  getRegExp(pattern) {
+    const regExpFromCache = this.regExpMap.get(pattern);
+    if (regExpFromCache !== undefined) {
+      return regExpFromCache;
+    }
+    const regExpNew = new RegExp(pattern);
+    if (this.regExpQueue.length === this.capacity) {
+      this.regExpMap.delete(this.regExpQueue.shift());
+    }
+    this.regExpMap.set(pattern, regExpNew);
+    this.regExpQueue.push(pattern);
+    return regExpNew;
+  }
+}
+const chars = [' ', ',', '?', '!', ';'];
+const looksLikeObjectPathRegExpCache = new RegExpCache(20);
+const looksLikeObjectPath = (key, nsSeparator, keySeparator) => {
+  nsSeparator = nsSeparator || '';
+  keySeparator = keySeparator || '';
+  const possibleChars = chars.filter(c => nsSeparator.indexOf(c) < 0 && keySeparator.indexOf(c) < 0);
+  if (possibleChars.length === 0) return true;
+  const r = looksLikeObjectPathRegExpCache.getRegExp(`(${possibleChars.map(c => c === '?' ? '\\?' : c).join('|')})`);
+  let matched = !r.test(key);
+  if (!matched) {
+    const ki = key.indexOf(keySeparator);
+    if (ki > 0 && !r.test(key.substring(0, ki))) {
+      matched = true;
+    }
+  }
+  return matched;
+};
+const deepFind = (obj, path, keySeparator = '.') => {
+  if (!obj) return undefined;
+  if (obj[path]) {
+    if (!Object.prototype.hasOwnProperty.call(obj, path)) return undefined;
+    return obj[path];
+  }
+  const tokens = path.split(keySeparator);
+  let current = obj;
+  for (let i = 0; i < tokens.length;) {
+    if (!current || typeof current !== 'object') {
+      return undefined;
+    }
+    let next;
+    let nextPath = '';
+    for (let j = i; j < tokens.length; ++j) {
+      if (j !== i) {
+        nextPath += keySeparator;
+      }
+      nextPath += tokens[j];
+      next = current[nextPath];
+      if (next !== undefined) {
+        if (['string', 'number', 'boolean'].indexOf(typeof next) > -1 && j < tokens.length - 1) {
+          continue;
+        }
+        i += j - i + 1;
+        break;
+      }
+    }
+    current = next;
+  }
+  return current;
+};
+const getCleanedCode = code => code?.replace('_', '-');
+
+const consoleLogger = {
+  type: 'logger',
+  log(args) {
+    this.output('log', args);
+  },
+  warn(args) {
+    this.output('warn', args);
+  },
+  error(args) {
+    this.output('error', args);
+  },
+  output(type, args) {
+    console?.[type]?.apply?.(console, args);
+  }
+};
+class Logger {
+  constructor(concreteLogger, options = {}) {
+    this.init(concreteLogger, options);
+  }
+  init(concreteLogger, options = {}) {
+    this.prefix = options.prefix || 'i18next:';
+    this.logger = concreteLogger || consoleLogger;
+    this.options = options;
+    this.debug = options.debug;
+  }
+  log(...args) {
+    return this.forward(args, 'log', '', true);
+  }
+  warn(...args) {
+    return this.forward(args, 'warn', '', true);
+  }
+  error(...args) {
+    return this.forward(args, 'error', '');
+  }
+  deprecate(...args) {
+    return this.forward(args, 'warn', 'WARNING DEPRECATED: ', true);
+  }
+  forward(args, lvl, prefix, debugOnly) {
+    if (debugOnly && !this.debug) return null;
+    if (isString(args[0])) args[0] = `${prefix}${this.prefix} ${args[0]}`;
+    return this.logger[lvl](args);
+  }
+  create(moduleName) {
+    return new Logger(this.logger, {
+      ...{
+        prefix: `${this.prefix}:${moduleName}:`
+      },
+      ...this.options
+    });
+  }
+  clone(options) {
+    options = options || this.options;
+    options.prefix = options.prefix || this.prefix;
+    return new Logger(this.logger, options);
+  }
+}
+var baseLogger = new Logger();
+
+class EventEmitter {
+  constructor() {
+    this.observers = {};
+  }
+  on(events, listener) {
+    events.split(' ').forEach(event => {
+      if (!this.observers[event]) this.observers[event] = new Map();
+      const numListeners = this.observers[event].get(listener) || 0;
+      this.observers[event].set(listener, numListeners + 1);
+    });
+    return this;
+  }
+  off(event, listener) {
+    if (!this.observers[event]) return;
+    if (!listener) {
+      delete this.observers[event];
+      return;
+    }
+    this.observers[event].delete(listener);
+  }
+  emit(event, ...args) {
+    if (this.observers[event]) {
+      const cloned = Array.from(this.observers[event].entries());
+      cloned.forEach(([observer, numTimesAdded]) => {
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer(...args);
+        }
+      });
+    }
+    if (this.observers['*']) {
+      const cloned = Array.from(this.observers['*'].entries());
+      cloned.forEach(([observer, numTimesAdded]) => {
+        for (let i = 0; i < numTimesAdded; i++) {
+          observer.apply(observer, [event, ...args]);
+        }
+      });
+    }
+  }
+}
+
+class ResourceStore extends EventEmitter {
+  constructor(data, options = {
+    ns: ['translation'],
+    defaultNS: 'translation'
+  }) {
+    super();
+    this.data = data || {};
+    this.options = options;
+    if (this.options.keySeparator === undefined) {
+      this.options.keySeparator = '.';
+    }
+    if (this.options.ignoreJSONStructure === undefined) {
+      this.options.ignoreJSONStructure = true;
+    }
+  }
+  addNamespaces(ns) {
+    if (this.options.ns.indexOf(ns) < 0) {
+      this.options.ns.push(ns);
+    }
+  }
+  removeNamespaces(ns) {
+    const index = this.options.ns.indexOf(ns);
+    if (index > -1) {
+      this.options.ns.splice(index, 1);
+    }
+  }
+  getResource(lng, ns, key, options = {}) {
+    const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
+    const ignoreJSONStructure = options.ignoreJSONStructure !== undefined ? options.ignoreJSONStructure : this.options.ignoreJSONStructure;
+    let path;
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+    } else {
+      path = [lng, ns];
+      if (key) {
+        if (Array.isArray(key)) {
+          path.push(...key);
+        } else if (isString(key) && keySeparator) {
+          path.push(...key.split(keySeparator));
+        } else {
+          path.push(key);
+        }
+      }
+    }
+    const result = getPath(this.data, path);
+    if (!result && !ns && !key && lng.indexOf('.') > -1) {
+      lng = path[0];
+      ns = path[1];
+      key = path.slice(2).join('.');
+    }
+    if (result || !ignoreJSONStructure || !isString(key)) return result;
+    return deepFind(this.data?.[lng]?.[ns], key, keySeparator);
+  }
+  addResource(lng, ns, key, value, options = {
+    silent: false
+  }) {
+    const keySeparator = options.keySeparator !== undefined ? options.keySeparator : this.options.keySeparator;
+    let path = [lng, ns];
+    if (key) path = path.concat(keySeparator ? key.split(keySeparator) : key);
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+      value = ns;
+      ns = path[1];
+    }
+    this.addNamespaces(ns);
+    setPath(this.data, path, value);
+    if (!options.silent) this.emit('added', lng, ns, key, value);
+  }
+  addResources(lng, ns, resources, options = {
+    silent: false
+  }) {
+    for (const m in resources) {
+      if (isString(resources[m]) || Array.isArray(resources[m])) this.addResource(lng, ns, m, resources[m], {
+        silent: true
+      });
+    }
+    if (!options.silent) this.emit('added', lng, ns, resources);
+  }
+  addResourceBundle(lng, ns, resources, deep, overwrite, options = {
+    silent: false,
+    skipCopy: false
+  }) {
+    let path = [lng, ns];
+    if (lng.indexOf('.') > -1) {
+      path = lng.split('.');
+      deep = resources;
+      resources = ns;
+      ns = path[1];
+    }
+    this.addNamespaces(ns);
+    let pack = getPath(this.data, path) || {};
+    if (!options.skipCopy) resources = JSON.parse(JSON.stringify(resources));
+    if (deep) {
+      deepExtend(pack, resources, overwrite);
+    } else {
+      pack = {
+        ...pack,
+        ...resources
+      };
+    }
+    setPath(this.data, path, pack);
+    if (!options.silent) this.emit('added', lng, ns, resources);
+  }
+  removeResourceBundle(lng, ns) {
+    if (this.hasResourceBundle(lng, ns)) {
+      delete this.data[lng][ns];
+    }
+    this.removeNamespaces(ns);
+    this.emit('removed', lng, ns);
+  }
+  hasResourceBundle(lng, ns) {
+    return this.getResource(lng, ns) !== undefined;
+  }
+  getResourceBundle(lng, ns) {
+    if (!ns) ns = this.options.defaultNS;
+    return this.getResource(lng, ns);
+  }
+  getDataByLanguage(lng) {
+    return this.data[lng];
+  }
+  hasLanguageSomeTranslations(lng) {
+    const data = this.getDataByLanguage(lng);
+    const n = data && Object.keys(data) || [];
+    return !!n.find(v => data[v] && Object.keys(data[v]).length > 0);
+  }
+  toJSON() {
+    return this.data;
+  }
+}
+
+var postProcessor = {
+  processors: {},
+  addPostProcessor(module) {
+    this.processors[module.name] = module;
+  },
+  handle(processors, value, key, options, translator) {
+    processors.forEach(processor => {
+      value = this.processors[processor]?.process(value, key, options, translator) ?? value;
+    });
+    return value;
+  }
+};
+
+const PATH_KEY = Symbol('i18next/PATH_KEY');
+function createProxy() {
+  const state = [];
+  const handler = Object.create(null);
+  let proxy;
+  handler.get = (target, key) => {
+    proxy?.revoke?.();
+    if (key === PATH_KEY) return state;
+    state.push(key);
+    proxy = Proxy.revocable(target, handler);
+    return proxy.proxy;
+  };
+  return Proxy.revocable(Object.create(null), handler).proxy;
+}
+function keysFromSelector(selector, opts) {
+  const {
+    [PATH_KEY]: path
+  } = selector(createProxy());
+  return path.join(opts?.keySeparator ?? '.');
+}
+
+const checkedLoadedFor = {};
+const shouldHandleAsObject = res => !isString(res) && typeof res !== 'boolean' && typeof res !== 'number';
+class Translator extends EventEmitter {
+  constructor(services, options = {}) {
+    super();
+    copy(['resourceStore', 'languageUtils', 'pluralResolver', 'interpolator', 'backendConnector', 'i18nFormat', 'utils'], services, this);
+    this.options = options;
+    if (this.options.keySeparator === undefined) {
+      this.options.keySeparator = '.';
+    }
+    this.logger = baseLogger.create('translator');
+  }
+  changeLanguage(lng) {
+    if (lng) this.language = lng;
+  }
+  exists(key, o = {
+    interpolation: {}
+  }) {
+    const opt = {
+      ...o
+    };
+    if (key == null) return false;
+    const resolved = this.resolve(key, opt);
+    return resolved?.res !== undefined;
+  }
+  extractFromKey(key, opt) {
+    let nsSeparator = opt.nsSeparator !== undefined ? opt.nsSeparator : this.options.nsSeparator;
+    if (nsSeparator === undefined) nsSeparator = ':';
+    const keySeparator = opt.keySeparator !== undefined ? opt.keySeparator : this.options.keySeparator;
+    let namespaces = opt.ns || this.options.defaultNS || [];
+    const wouldCheckForNsInKey = nsSeparator && key.indexOf(nsSeparator) > -1;
+    const seemsNaturalLanguage = !this.options.userDefinedKeySeparator && !opt.keySeparator && !this.options.userDefinedNsSeparator && !opt.nsSeparator && !looksLikeObjectPath(key, nsSeparator, keySeparator);
+    if (wouldCheckForNsInKey && !seemsNaturalLanguage) {
+      const m = key.match(this.interpolator.nestingRegexp);
+      if (m && m.length > 0) {
+        return {
+          key,
+          namespaces: isString(namespaces) ? [namespaces] : namespaces
+        };
+      }
+      const parts = key.split(nsSeparator);
+      if (nsSeparator !== keySeparator || nsSeparator === keySeparator && this.options.ns.indexOf(parts[0]) > -1) namespaces = parts.shift();
+      key = parts.join(keySeparator);
+    }
+    return {
+      key,
+      namespaces: isString(namespaces) ? [namespaces] : namespaces
+    };
+  }
+  translate(keys, o, lastKey) {
+    let opt = typeof o === 'object' ? {
+      ...o
+    } : o;
+    if (typeof opt !== 'object' && this.options.overloadTranslationOptionHandler) {
+      opt = this.options.overloadTranslationOptionHandler(arguments);
+    }
+    if (typeof opt === 'object') opt = {
+      ...opt
+    };
+    if (!opt) opt = {};
+    if (keys == null) return '';
+    if (typeof keys === 'function') keys = keysFromSelector(keys, {
+      ...this.options,
+      ...opt
+    });
+    if (!Array.isArray(keys)) keys = [String(keys)];
+    const returnDetails = opt.returnDetails !== undefined ? opt.returnDetails : this.options.returnDetails;
+    const keySeparator = opt.keySeparator !== undefined ? opt.keySeparator : this.options.keySeparator;
+    const {
+      key,
+      namespaces
+    } = this.extractFromKey(keys[keys.length - 1], opt);
+    const namespace = namespaces[namespaces.length - 1];
+    let nsSeparator = opt.nsSeparator !== undefined ? opt.nsSeparator : this.options.nsSeparator;
+    if (nsSeparator === undefined) nsSeparator = ':';
+    const lng = opt.lng || this.language;
+    const appendNamespaceToCIMode = opt.appendNamespaceToCIMode || this.options.appendNamespaceToCIMode;
+    if (lng?.toLowerCase() === 'cimode') {
+      if (appendNamespaceToCIMode) {
+        if (returnDetails) {
+          return {
+            res: `${namespace}${nsSeparator}${key}`,
+            usedKey: key,
+            exactUsedKey: key,
+            usedLng: lng,
+            usedNS: namespace,
+            usedParams: this.getUsedParamsDetails(opt)
+          };
+        }
+        return `${namespace}${nsSeparator}${key}`;
+      }
+      if (returnDetails) {
+        return {
+          res: key,
+          usedKey: key,
+          exactUsedKey: key,
+          usedLng: lng,
+          usedNS: namespace,
+          usedParams: this.getUsedParamsDetails(opt)
+        };
+      }
+      return key;
+    }
+    const resolved = this.resolve(keys, opt);
+    let res = resolved?.res;
+    const resUsedKey = resolved?.usedKey || key;
+    const resExactUsedKey = resolved?.exactUsedKey || key;
+    const noObject = ['[object Number]', '[object Function]', '[object RegExp]'];
+    const joinArrays = opt.joinArrays !== undefined ? opt.joinArrays : this.options.joinArrays;
+    const handleAsObjectInI18nFormat = !this.i18nFormat || this.i18nFormat.handleAsObject;
+    const needsPluralHandling = opt.count !== undefined && !isString(opt.count);
+    const hasDefaultValue = Translator.hasDefaultValue(opt);
+    const defaultValueSuffix = needsPluralHandling ? this.pluralResolver.getSuffix(lng, opt.count, opt) : '';
+    const defaultValueSuffixOrdinalFallback = opt.ordinal && needsPluralHandling ? this.pluralResolver.getSuffix(lng, opt.count, {
+      ordinal: false
+    }) : '';
+    const needsZeroSuffixLookup = needsPluralHandling && !opt.ordinal && opt.count === 0;
+    const defaultValue = needsZeroSuffixLookup && opt[`defaultValue${this.options.pluralSeparator}zero`] || opt[`defaultValue${defaultValueSuffix}`] || opt[`defaultValue${defaultValueSuffixOrdinalFallback}`] || opt.defaultValue;
+    let resForObjHndl = res;
+    if (handleAsObjectInI18nFormat && !res && hasDefaultValue) {
+      resForObjHndl = defaultValue;
+    }
+    const handleAsObject = shouldHandleAsObject(resForObjHndl);
+    const resType = Object.prototype.toString.apply(resForObjHndl);
+    if (handleAsObjectInI18nFormat && resForObjHndl && handleAsObject && noObject.indexOf(resType) < 0 && !(isString(joinArrays) && Array.isArray(resForObjHndl))) {
+      if (!opt.returnObjects && !this.options.returnObjects) {
+        if (!this.options.returnedObjectHandler) {
+          this.logger.warn('accessing an object - but returnObjects options is not enabled!');
+        }
+        const r = this.options.returnedObjectHandler ? this.options.returnedObjectHandler(resUsedKey, resForObjHndl, {
+          ...opt,
+          ns: namespaces
+        }) : `key '${key} (${this.language})' returned an object instead of string.`;
+        if (returnDetails) {
+          resolved.res = r;
+          resolved.usedParams = this.getUsedParamsDetails(opt);
+          return resolved;
+        }
+        return r;
+      }
+      if (keySeparator) {
+        const resTypeIsArray = Array.isArray(resForObjHndl);
+        const copy = resTypeIsArray ? [] : {};
+        const newKeyToUse = resTypeIsArray ? resExactUsedKey : resUsedKey;
+        for (const m in resForObjHndl) {
+          if (Object.prototype.hasOwnProperty.call(resForObjHndl, m)) {
+            const deepKey = `${newKeyToUse}${keySeparator}${m}`;
+            if (hasDefaultValue && !res) {
+              copy[m] = this.translate(deepKey, {
+                ...opt,
+                defaultValue: shouldHandleAsObject(defaultValue) ? defaultValue[m] : undefined,
+                ...{
+                  joinArrays: false,
+                  ns: namespaces
+                }
+              });
+            } else {
+              copy[m] = this.translate(deepKey, {
+                ...opt,
+                ...{
+                  joinArrays: false,
+                  ns: namespaces
+                }
+              });
+            }
+            if (copy[m] === deepKey) copy[m] = resForObjHndl[m];
+          }
+        }
+        res = copy;
+      }
+    } else if (handleAsObjectInI18nFormat && isString(joinArrays) && Array.isArray(res)) {
+      res = res.join(joinArrays);
+      if (res) res = this.extendTranslation(res, keys, opt, lastKey);
+    } else {
+      let usedDefault = false;
+      let usedKey = false;
+      if (!this.isValidLookup(res) && hasDefaultValue) {
+        usedDefault = true;
+        res = defaultValue;
+      }
+      if (!this.isValidLookup(res)) {
+        usedKey = true;
+        res = key;
+      }
+      const missingKeyNoValueFallbackToKey = opt.missingKeyNoValueFallbackToKey || this.options.missingKeyNoValueFallbackToKey;
+      const resForMissing = missingKeyNoValueFallbackToKey && usedKey ? undefined : res;
+      const updateMissing = hasDefaultValue && defaultValue !== res && this.options.updateMissing;
+      if (usedKey || usedDefault || updateMissing) {
+        this.logger.log(updateMissing ? 'updateKey' : 'missingKey', lng, namespace, key, updateMissing ? defaultValue : res);
+        if (keySeparator) {
+          const fk = this.resolve(key, {
+            ...opt,
+            keySeparator: false
+          });
+          if (fk && fk.res) this.logger.warn('Seems the loaded translations were in flat JSON format instead of nested. Either set keySeparator: false on init or make sure your translations are published in nested format.');
+        }
+        let lngs = [];
+        const fallbackLngs = this.languageUtils.getFallbackCodes(this.options.fallbackLng, opt.lng || this.language);
+        if (this.options.saveMissingTo === 'fallback' && fallbackLngs && fallbackLngs[0]) {
+          for (let i = 0; i < fallbackLngs.length; i++) {
+            lngs.push(fallbackLngs[i]);
+          }
+        } else if (this.options.saveMissingTo === 'all') {
+          lngs = this.languageUtils.toResolveHierarchy(opt.lng || this.language);
+        } else {
+          lngs.push(opt.lng || this.language);
+        }
+        const send = (l, k, specificDefaultValue) => {
+          const defaultForMissing = hasDefaultValue && specificDefaultValue !== res ? specificDefaultValue : resForMissing;
+          if (this.options.missingKeyHandler) {
+            this.options.missingKeyHandler(l, namespace, k, defaultForMissing, updateMissing, opt);
+          } else if (this.backendConnector?.saveMissing) {
+            this.backendConnector.saveMissing(l, namespace, k, defaultForMissing, updateMissing, opt);
+          }
+          this.emit('missingKey', l, namespace, k, res);
+        };
+        if (this.options.saveMissing) {
+          if (this.options.saveMissingPlurals && needsPluralHandling) {
+            lngs.forEach(language => {
+              const suffixes = this.pluralResolver.getSuffixes(language, opt);
+              if (needsZeroSuffixLookup && opt[`defaultValue${this.options.pluralSeparator}zero`] && suffixes.indexOf(`${this.options.pluralSeparator}zero`) < 0) {
+                suffixes.push(`${this.options.pluralSeparator}zero`);
+              }
+              suffixes.forEach(suffix => {
+                send([language], key + suffix, opt[`defaultValue${suffix}`] || defaultValue);
+              });
+            });
+          } else {
+            send(lngs, key, defaultValue);
+          }
+        }
+      }
+      res = this.extendTranslation(res, keys, opt, resolved, lastKey);
+      if (usedKey && res === key && this.options.appendNamespaceToMissingKey) {
+        res = `${namespace}${nsSeparator}${key}`;
+      }
+      if ((usedKey || usedDefault) && this.options.parseMissingKeyHandler) {
+        res = this.options.parseMissingKeyHandler(this.options.appendNamespaceToMissingKey ? `${namespace}${nsSeparator}${key}` : key, usedDefault ? res : undefined, opt);
+      }
+    }
+    if (returnDetails) {
+      resolved.res = res;
+      resolved.usedParams = this.getUsedParamsDetails(opt);
+      return resolved;
+    }
+    return res;
+  }
+  extendTranslation(res, key, opt, resolved, lastKey) {
+    if (this.i18nFormat?.parse) {
+      res = this.i18nFormat.parse(res, {
+        ...this.options.interpolation.defaultVariables,
+        ...opt
+      }, opt.lng || this.language || resolved.usedLng, resolved.usedNS, resolved.usedKey, {
+        resolved
+      });
+    } else if (!opt.skipInterpolation) {
+      if (opt.interpolation) this.interpolator.init({
+        ...opt,
+        ...{
+          interpolation: {
+            ...this.options.interpolation,
+            ...opt.interpolation
+          }
+        }
+      });
+      const skipOnVariables = isString(res) && (opt?.interpolation?.skipOnVariables !== undefined ? opt.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables);
+      let nestBef;
+      if (skipOnVariables) {
+        const nb = res.match(this.interpolator.nestingRegexp);
+        nestBef = nb && nb.length;
+      }
+      let data = opt.replace && !isString(opt.replace) ? opt.replace : opt;
+      if (this.options.interpolation.defaultVariables) data = {
+        ...this.options.interpolation.defaultVariables,
+        ...data
+      };
+      res = this.interpolator.interpolate(res, data, opt.lng || this.language || resolved.usedLng, opt);
+      if (skipOnVariables) {
+        const na = res.match(this.interpolator.nestingRegexp);
+        const nestAft = na && na.length;
+        if (nestBef < nestAft) opt.nest = false;
+      }
+      if (!opt.lng && resolved && resolved.res) opt.lng = this.language || resolved.usedLng;
+      if (opt.nest !== false) res = this.interpolator.nest(res, (...args) => {
+        if (lastKey?.[0] === args[0] && !opt.context) {
+          this.logger.warn(`It seems you are nesting recursively key: ${args[0]} in key: ${key[0]}`);
+          return null;
+        }
+        return this.translate(...args, key);
+      }, opt);
+      if (opt.interpolation) this.interpolator.reset();
+    }
+    const postProcess = opt.postProcess || this.options.postProcess;
+    const postProcessorNames = isString(postProcess) ? [postProcess] : postProcess;
+    if (res != null && postProcessorNames?.length && opt.applyPostProcessor !== false) {
+      res = postProcessor.handle(postProcessorNames, res, key, this.options && this.options.postProcessPassResolved ? {
+        i18nResolved: {
+          ...resolved,
+          usedParams: this.getUsedParamsDetails(opt)
+        },
+        ...opt
+      } : opt, this);
+    }
+    return res;
+  }
+  resolve(keys, opt = {}) {
+    let found;
+    let usedKey;
+    let exactUsedKey;
+    let usedLng;
+    let usedNS;
+    if (isString(keys)) keys = [keys];
+    keys.forEach(k => {
+      if (this.isValidLookup(found)) return;
+      const extracted = this.extractFromKey(k, opt);
+      const key = extracted.key;
+      usedKey = key;
+      let namespaces = extracted.namespaces;
+      if (this.options.fallbackNS) namespaces = namespaces.concat(this.options.fallbackNS);
+      const needsPluralHandling = opt.count !== undefined && !isString(opt.count);
+      const needsZeroSuffixLookup = needsPluralHandling && !opt.ordinal && opt.count === 0;
+      const needsContextHandling = opt.context !== undefined && (isString(opt.context) || typeof opt.context === 'number') && opt.context !== '';
+      const codes = opt.lngs ? opt.lngs : this.languageUtils.toResolveHierarchy(opt.lng || this.language, opt.fallbackLng);
+      namespaces.forEach(ns => {
+        if (this.isValidLookup(found)) return;
+        usedNS = ns;
+        if (!checkedLoadedFor[`${codes[0]}-${ns}`] && this.utils?.hasLoadedNamespace && !this.utils?.hasLoadedNamespace(usedNS)) {
+          checkedLoadedFor[`${codes[0]}-${ns}`] = true;
+          this.logger.warn(`key "${usedKey}" for languages "${codes.join(', ')}" won't get resolved as namespace "${usedNS}" was not yet loaded`, 'This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!');
+        }
+        codes.forEach(code => {
+          if (this.isValidLookup(found)) return;
+          usedLng = code;
+          const finalKeys = [key];
+          if (this.i18nFormat?.addLookupKeys) {
+            this.i18nFormat.addLookupKeys(finalKeys, key, code, ns, opt);
+          } else {
+            let pluralSuffix;
+            if (needsPluralHandling) pluralSuffix = this.pluralResolver.getSuffix(code, opt.count, opt);
+            const zeroSuffix = `${this.options.pluralSeparator}zero`;
+            const ordinalPrefix = `${this.options.pluralSeparator}ordinal${this.options.pluralSeparator}`;
+            if (needsPluralHandling) {
+              if (opt.ordinal && pluralSuffix.indexOf(ordinalPrefix) === 0) {
+                finalKeys.push(key + pluralSuffix.replace(ordinalPrefix, this.options.pluralSeparator));
+              }
+              finalKeys.push(key + pluralSuffix);
+              if (needsZeroSuffixLookup) {
+                finalKeys.push(key + zeroSuffix);
+              }
+            }
+            if (needsContextHandling) {
+              const contextKey = `${key}${this.options.contextSeparator || '_'}${opt.context}`;
+              finalKeys.push(contextKey);
+              if (needsPluralHandling) {
+                if (opt.ordinal && pluralSuffix.indexOf(ordinalPrefix) === 0) {
+                  finalKeys.push(contextKey + pluralSuffix.replace(ordinalPrefix, this.options.pluralSeparator));
+                }
+                finalKeys.push(contextKey + pluralSuffix);
+                if (needsZeroSuffixLookup) {
+                  finalKeys.push(contextKey + zeroSuffix);
+                }
+              }
+            }
+          }
+          let possibleKey;
+          while (possibleKey = finalKeys.pop()) {
+            if (!this.isValidLookup(found)) {
+              exactUsedKey = possibleKey;
+              found = this.getResource(code, ns, possibleKey, opt);
+            }
+          }
+        });
+      });
+    });
+    return {
+      res: found,
+      usedKey,
+      exactUsedKey,
+      usedLng,
+      usedNS
+    };
+  }
+  isValidLookup(res) {
+    return res !== undefined && !(!this.options.returnNull && res === null) && !(!this.options.returnEmptyString && res === '');
+  }
+  getResource(code, ns, key, options = {}) {
+    if (this.i18nFormat?.getResource) return this.i18nFormat.getResource(code, ns, key, options);
+    return this.resourceStore.getResource(code, ns, key, options);
+  }
+  getUsedParamsDetails(options = {}) {
+    const optionsKeys = ['defaultValue', 'ordinal', 'context', 'replace', 'lng', 'lngs', 'fallbackLng', 'ns', 'keySeparator', 'nsSeparator', 'returnObjects', 'returnDetails', 'joinArrays', 'postProcess', 'interpolation'];
+    const useOptionsReplaceForData = options.replace && !isString(options.replace);
+    let data = useOptionsReplaceForData ? options.replace : options;
+    if (useOptionsReplaceForData && typeof options.count !== 'undefined') {
+      data.count = options.count;
+    }
+    if (this.options.interpolation.defaultVariables) {
+      data = {
+        ...this.options.interpolation.defaultVariables,
+        ...data
+      };
+    }
+    if (!useOptionsReplaceForData) {
+      data = {
+        ...data
+      };
+      for (const key of optionsKeys) {
+        delete data[key];
+      }
+    }
+    return data;
+  }
+  static hasDefaultValue(options) {
+    const prefix = 'defaultValue';
+    for (const option in options) {
+      if (Object.prototype.hasOwnProperty.call(options, option) && prefix === option.substring(0, prefix.length) && undefined !== options[option]) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+class LanguageUtil {
+  constructor(options) {
+    this.options = options;
+    this.supportedLngs = this.options.supportedLngs || false;
+    this.logger = baseLogger.create('languageUtils');
+  }
+  getScriptPartFromCode(code) {
+    code = getCleanedCode(code);
+    if (!code || code.indexOf('-') < 0) return null;
+    const p = code.split('-');
+    if (p.length === 2) return null;
+    p.pop();
+    if (p[p.length - 1].toLowerCase() === 'x') return null;
+    return this.formatLanguageCode(p.join('-'));
+  }
+  getLanguagePartFromCode(code) {
+    code = getCleanedCode(code);
+    if (!code || code.indexOf('-') < 0) return code;
+    const p = code.split('-');
+    return this.formatLanguageCode(p[0]);
+  }
+  formatLanguageCode(code) {
+    if (isString(code) && code.indexOf('-') > -1) {
+      let formattedCode;
+      try {
+        formattedCode = Intl.getCanonicalLocales(code)[0];
+      } catch (e) {}
+      if (formattedCode && this.options.lowerCaseLng) {
+        formattedCode = formattedCode.toLowerCase();
+      }
+      if (formattedCode) return formattedCode;
+      if (this.options.lowerCaseLng) {
+        return code.toLowerCase();
+      }
+      return code;
+    }
+    return this.options.cleanCode || this.options.lowerCaseLng ? code.toLowerCase() : code;
+  }
+  isSupportedCode(code) {
+    if (this.options.load === 'languageOnly' || this.options.nonExplicitSupportedLngs) {
+      code = this.getLanguagePartFromCode(code);
+    }
+    return !this.supportedLngs || !this.supportedLngs.length || this.supportedLngs.indexOf(code) > -1;
+  }
+  getBestMatchFromCodes(codes) {
+    if (!codes) return null;
+    let found;
+    codes.forEach(code => {
+      if (found) return;
+      const cleanedLng = this.formatLanguageCode(code);
+      if (!this.options.supportedLngs || this.isSupportedCode(cleanedLng)) found = cleanedLng;
+    });
+    if (!found && this.options.supportedLngs) {
+      codes.forEach(code => {
+        if (found) return;
+        const lngScOnly = this.getScriptPartFromCode(code);
+        if (this.isSupportedCode(lngScOnly)) return found = lngScOnly;
+        const lngOnly = this.getLanguagePartFromCode(code);
+        if (this.isSupportedCode(lngOnly)) return found = lngOnly;
+        found = this.options.supportedLngs.find(supportedLng => {
+          if (supportedLng === lngOnly) return supportedLng;
+          if (supportedLng.indexOf('-') < 0 && lngOnly.indexOf('-') < 0) return;
+          if (supportedLng.indexOf('-') > 0 && lngOnly.indexOf('-') < 0 && supportedLng.substring(0, supportedLng.indexOf('-')) === lngOnly) return supportedLng;
+          if (supportedLng.indexOf(lngOnly) === 0 && lngOnly.length > 1) return supportedLng;
+        });
+      });
+    }
+    if (!found) found = this.getFallbackCodes(this.options.fallbackLng)[0];
+    return found;
+  }
+  getFallbackCodes(fallbacks, code) {
+    if (!fallbacks) return [];
+    if (typeof fallbacks === 'function') fallbacks = fallbacks(code);
+    if (isString(fallbacks)) fallbacks = [fallbacks];
+    if (Array.isArray(fallbacks)) return fallbacks;
+    if (!code) return fallbacks.default || [];
+    let found = fallbacks[code];
+    if (!found) found = fallbacks[this.getScriptPartFromCode(code)];
+    if (!found) found = fallbacks[this.formatLanguageCode(code)];
+    if (!found) found = fallbacks[this.getLanguagePartFromCode(code)];
+    if (!found) found = fallbacks.default;
+    return found || [];
+  }
+  toResolveHierarchy(code, fallbackCode) {
+    const fallbackCodes = this.getFallbackCodes((fallbackCode === false ? [] : fallbackCode) || this.options.fallbackLng || [], code);
+    const codes = [];
+    const addCode = c => {
+      if (!c) return;
+      if (this.isSupportedCode(c)) {
+        codes.push(c);
+      } else {
+        this.logger.warn(`rejecting language code not found in supportedLngs: ${c}`);
+      }
+    };
+    if (isString(code) && (code.indexOf('-') > -1 || code.indexOf('_') > -1)) {
+      if (this.options.load !== 'languageOnly') addCode(this.formatLanguageCode(code));
+      if (this.options.load !== 'languageOnly' && this.options.load !== 'currentOnly') addCode(this.getScriptPartFromCode(code));
+      if (this.options.load !== 'currentOnly') addCode(this.getLanguagePartFromCode(code));
+    } else if (isString(code)) {
+      addCode(this.formatLanguageCode(code));
+    }
+    fallbackCodes.forEach(fc => {
+      if (codes.indexOf(fc) < 0) addCode(this.formatLanguageCode(fc));
+    });
+    return codes;
+  }
+}
+
+const suffixesOrder = {
+  zero: 0,
+  one: 1,
+  two: 2,
+  few: 3,
+  many: 4,
+  other: 5
+};
+const dummyRule = {
+  select: count => count === 1 ? 'one' : 'other',
+  resolvedOptions: () => ({
+    pluralCategories: ['one', 'other']
+  })
+};
+class PluralResolver {
+  constructor(languageUtils, options = {}) {
+    this.languageUtils = languageUtils;
+    this.options = options;
+    this.logger = baseLogger.create('pluralResolver');
+    this.pluralRulesCache = {};
+  }
+  addRule(lng, obj) {
+    this.rules[lng] = obj;
+  }
+  clearCache() {
+    this.pluralRulesCache = {};
+  }
+  getRule(code, options = {}) {
+    const cleanedCode = getCleanedCode(code === 'dev' ? 'en' : code);
+    const type = options.ordinal ? 'ordinal' : 'cardinal';
+    const cacheKey = JSON.stringify({
+      cleanedCode,
+      type
+    });
+    if (cacheKey in this.pluralRulesCache) {
+      return this.pluralRulesCache[cacheKey];
+    }
+    let rule;
+    try {
+      rule = new Intl.PluralRules(cleanedCode, {
+        type
+      });
+    } catch (err) {
+      if (!Intl) {
+        this.logger.error('No Intl support, please use an Intl polyfill!');
+        return dummyRule;
+      }
+      if (!code.match(/-|_/)) return dummyRule;
+      const lngPart = this.languageUtils.getLanguagePartFromCode(code);
+      rule = this.getRule(lngPart, options);
+    }
+    this.pluralRulesCache[cacheKey] = rule;
+    return rule;
+  }
+  needsPlural(code, options = {}) {
+    let rule = this.getRule(code, options);
+    if (!rule) rule = this.getRule('dev', options);
+    return rule?.resolvedOptions().pluralCategories.length > 1;
+  }
+  getPluralFormsOfKey(code, key, options = {}) {
+    return this.getSuffixes(code, options).map(suffix => `${key}${suffix}`);
+  }
+  getSuffixes(code, options = {}) {
+    let rule = this.getRule(code, options);
+    if (!rule) rule = this.getRule('dev', options);
+    if (!rule) return [];
+    return rule.resolvedOptions().pluralCategories.sort((pluralCategory1, pluralCategory2) => suffixesOrder[pluralCategory1] - suffixesOrder[pluralCategory2]).map(pluralCategory => `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${pluralCategory}`);
+  }
+  getSuffix(code, count, options = {}) {
+    const rule = this.getRule(code, options);
+    if (rule) {
+      return `${this.options.prepend}${options.ordinal ? `ordinal${this.options.prepend}` : ''}${rule.select(count)}`;
+    }
+    this.logger.warn(`no plural rule found for: ${code}`);
+    return this.getSuffix('dev', count, options);
+  }
+}
+
+const deepFindWithDefaults = (data, defaultData, key, keySeparator = '.', ignoreJSONStructure = true) => {
+  let path = getPathWithDefaults(data, defaultData, key);
+  if (!path && ignoreJSONStructure && isString(key)) {
+    path = deepFind(data, key, keySeparator);
+    if (path === undefined) path = deepFind(defaultData, key, keySeparator);
+  }
+  return path;
+};
+const regexSafe = val => val.replace(/\$/g, '$$$$');
+class Interpolator {
+  constructor(options = {}) {
+    this.logger = baseLogger.create('interpolator');
+    this.options = options;
+    this.format = options?.interpolation?.format || (value => value);
+    this.init(options);
+  }
+  init(options = {}) {
+    if (!options.interpolation) options.interpolation = {
+      escapeValue: true
+    };
+    const {
+      escape: escape$1,
+      escapeValue,
+      useRawValueToEscape,
+      prefix,
+      prefixEscaped,
+      suffix,
+      suffixEscaped,
+      formatSeparator,
+      unescapeSuffix,
+      unescapePrefix,
+      nestingPrefix,
+      nestingPrefixEscaped,
+      nestingSuffix,
+      nestingSuffixEscaped,
+      nestingOptionsSeparator,
+      maxReplaces,
+      alwaysFormat
+    } = options.interpolation;
+    this.escape = escape$1 !== undefined ? escape$1 : escape;
+    this.escapeValue = escapeValue !== undefined ? escapeValue : true;
+    this.useRawValueToEscape = useRawValueToEscape !== undefined ? useRawValueToEscape : false;
+    this.prefix = prefix ? regexEscape(prefix) : prefixEscaped || '{{';
+    this.suffix = suffix ? regexEscape(suffix) : suffixEscaped || '}}';
+    this.formatSeparator = formatSeparator || ',';
+    this.unescapePrefix = unescapeSuffix ? '' : unescapePrefix || '-';
+    this.unescapeSuffix = this.unescapePrefix ? '' : unescapeSuffix || '';
+    this.nestingPrefix = nestingPrefix ? regexEscape(nestingPrefix) : nestingPrefixEscaped || regexEscape('$t(');
+    this.nestingSuffix = nestingSuffix ? regexEscape(nestingSuffix) : nestingSuffixEscaped || regexEscape(')');
+    this.nestingOptionsSeparator = nestingOptionsSeparator || ',';
+    this.maxReplaces = maxReplaces || 1000;
+    this.alwaysFormat = alwaysFormat !== undefined ? alwaysFormat : false;
+    this.resetRegExp();
+  }
+  reset() {
+    if (this.options) this.init(this.options);
+  }
+  resetRegExp() {
+    const getOrResetRegExp = (existingRegExp, pattern) => {
+      if (existingRegExp?.source === pattern) {
+        existingRegExp.lastIndex = 0;
+        return existingRegExp;
+      }
+      return new RegExp(pattern, 'g');
+    };
+    this.regexp = getOrResetRegExp(this.regexp, `${this.prefix}(.+?)${this.suffix}`);
+    this.regexpUnescape = getOrResetRegExp(this.regexpUnescape, `${this.prefix}${this.unescapePrefix}(.+?)${this.unescapeSuffix}${this.suffix}`);
+    this.nestingRegexp = getOrResetRegExp(this.nestingRegexp, `${this.nestingPrefix}((?:[^()"']+|"[^"]*"|'[^']*'|\\((?:[^()]|"[^"]*"|'[^']*')*\\))*?)${this.nestingSuffix}`);
+  }
+  interpolate(str, data, lng, options) {
+    let match;
+    let value;
+    let replaces;
+    const defaultData = this.options && this.options.interpolation && this.options.interpolation.defaultVariables || {};
+    const handleFormat = key => {
+      if (key.indexOf(this.formatSeparator) < 0) {
+        const path = deepFindWithDefaults(data, defaultData, key, this.options.keySeparator, this.options.ignoreJSONStructure);
+        return this.alwaysFormat ? this.format(path, undefined, lng, {
+          ...options,
+          ...data,
+          interpolationkey: key
+        }) : path;
+      }
+      const p = key.split(this.formatSeparator);
+      const k = p.shift().trim();
+      const f = p.join(this.formatSeparator).trim();
+      return this.format(deepFindWithDefaults(data, defaultData, k, this.options.keySeparator, this.options.ignoreJSONStructure), f, lng, {
+        ...options,
+        ...data,
+        interpolationkey: k
+      });
+    };
+    this.resetRegExp();
+    const missingInterpolationHandler = options?.missingInterpolationHandler || this.options.missingInterpolationHandler;
+    const skipOnVariables = options?.interpolation?.skipOnVariables !== undefined ? options.interpolation.skipOnVariables : this.options.interpolation.skipOnVariables;
+    const todos = [{
+      regex: this.regexpUnescape,
+      safeValue: val => regexSafe(val)
+    }, {
+      regex: this.regexp,
+      safeValue: val => this.escapeValue ? regexSafe(this.escape(val)) : regexSafe(val)
+    }];
+    todos.forEach(todo => {
+      replaces = 0;
+      while (match = todo.regex.exec(str)) {
+        const matchedVar = match[1].trim();
+        value = handleFormat(matchedVar);
+        if (value === undefined) {
+          if (typeof missingInterpolationHandler === 'function') {
+            const temp = missingInterpolationHandler(str, match, options);
+            value = isString(temp) ? temp : '';
+          } else if (options && Object.prototype.hasOwnProperty.call(options, matchedVar)) {
+            value = '';
+          } else if (skipOnVariables) {
+            value = match[0];
+            continue;
+          } else {
+            this.logger.warn(`missed to pass in variable ${matchedVar} for interpolating ${str}`);
+            value = '';
+          }
+        } else if (!isString(value) && !this.useRawValueToEscape) {
+          value = makeString(value);
+        }
+        const safeValue = todo.safeValue(value);
+        str = str.replace(match[0], safeValue);
+        if (skipOnVariables) {
+          todo.regex.lastIndex += value.length;
+          todo.regex.lastIndex -= match[0].length;
+        } else {
+          todo.regex.lastIndex = 0;
+        }
+        replaces++;
+        if (replaces >= this.maxReplaces) {
+          break;
+        }
+      }
+    });
+    return str;
+  }
+  nest(str, fc, options = {}) {
+    let match;
+    let value;
+    let clonedOptions;
+    const handleHasOptions = (key, inheritedOptions) => {
+      const sep = this.nestingOptionsSeparator;
+      if (key.indexOf(sep) < 0) return key;
+      const c = key.split(new RegExp(`${sep}[ ]*{`));
+      let optionsString = `{${c[1]}`;
+      key = c[0];
+      optionsString = this.interpolate(optionsString, clonedOptions);
+      const matchedSingleQuotes = optionsString.match(/'/g);
+      const matchedDoubleQuotes = optionsString.match(/"/g);
+      if ((matchedSingleQuotes?.length ?? 0) % 2 === 0 && !matchedDoubleQuotes || matchedDoubleQuotes.length % 2 !== 0) {
+        optionsString = optionsString.replace(/'/g, '"');
+      }
+      try {
+        clonedOptions = JSON.parse(optionsString);
+        if (inheritedOptions) clonedOptions = {
+          ...inheritedOptions,
+          ...clonedOptions
+        };
+      } catch (e) {
+        this.logger.warn(`failed parsing options string in nesting for key ${key}`, e);
+        return `${key}${sep}${optionsString}`;
+      }
+      if (clonedOptions.defaultValue && clonedOptions.defaultValue.indexOf(this.prefix) > -1) delete clonedOptions.defaultValue;
+      return key;
+    };
+    while (match = this.nestingRegexp.exec(str)) {
+      let formatters = [];
+      clonedOptions = {
+        ...options
+      };
+      clonedOptions = clonedOptions.replace && !isString(clonedOptions.replace) ? clonedOptions.replace : clonedOptions;
+      clonedOptions.applyPostProcessor = false;
+      delete clonedOptions.defaultValue;
+      const keyEndIndex = /{.*}/.test(match[1]) ? match[1].lastIndexOf('}') + 1 : match[1].indexOf(this.formatSeparator);
+      if (keyEndIndex !== -1) {
+        formatters = match[1].slice(keyEndIndex).split(this.formatSeparator).map(elem => elem.trim()).filter(Boolean);
+        match[1] = match[1].slice(0, keyEndIndex);
+      }
+      value = fc(handleHasOptions.call(this, match[1].trim(), clonedOptions), clonedOptions);
+      if (value && match[0] === str && !isString(value)) return value;
+      if (!isString(value)) value = makeString(value);
+      if (!value) {
+        this.logger.warn(`missed to resolve ${match[1]} for nesting ${str}`);
+        value = '';
+      }
+      if (formatters.length) {
+        value = formatters.reduce((v, f) => this.format(v, f, options.lng, {
+          ...options,
+          interpolationkey: match[1].trim()
+        }), value.trim());
+      }
+      str = str.replace(match[0], value);
+      this.regexp.lastIndex = 0;
+    }
+    return str;
+  }
+}
+
+const parseFormatStr = formatStr => {
+  let formatName = formatStr.toLowerCase().trim();
+  const formatOptions = {};
+  if (formatStr.indexOf('(') > -1) {
+    const p = formatStr.split('(');
+    formatName = p[0].toLowerCase().trim();
+    const optStr = p[1].substring(0, p[1].length - 1);
+    if (formatName === 'currency' && optStr.indexOf(':') < 0) {
+      if (!formatOptions.currency) formatOptions.currency = optStr.trim();
+    } else if (formatName === 'relativetime' && optStr.indexOf(':') < 0) {
+      if (!formatOptions.range) formatOptions.range = optStr.trim();
+    } else {
+      const opts = optStr.split(';');
+      opts.forEach(opt => {
+        if (opt) {
+          const [key, ...rest] = opt.split(':');
+          const val = rest.join(':').trim().replace(/^'+|'+$/g, '');
+          const trimmedKey = key.trim();
+          if (!formatOptions[trimmedKey]) formatOptions[trimmedKey] = val;
+          if (val === 'false') formatOptions[trimmedKey] = false;
+          if (val === 'true') formatOptions[trimmedKey] = true;
+          if (!isNaN(val)) formatOptions[trimmedKey] = parseInt(val, 10);
+        }
+      });
+    }
+  }
+  return {
+    formatName,
+    formatOptions
+  };
+};
+const createCachedFormatter = fn => {
+  const cache = {};
+  return (v, l, o) => {
+    let optForCache = o;
+    if (o && o.interpolationkey && o.formatParams && o.formatParams[o.interpolationkey] && o[o.interpolationkey]) {
+      optForCache = {
+        ...optForCache,
+        [o.interpolationkey]: undefined
+      };
+    }
+    const key = l + JSON.stringify(optForCache);
+    let frm = cache[key];
+    if (!frm) {
+      frm = fn(getCleanedCode(l), o);
+      cache[key] = frm;
+    }
+    return frm(v);
+  };
+};
+const createNonCachedFormatter = fn => (v, l, o) => fn(getCleanedCode(l), o)(v);
+class Formatter {
+  constructor(options = {}) {
+    this.logger = baseLogger.create('formatter');
+    this.options = options;
+    this.init(options);
+  }
+  init(services, options = {
+    interpolation: {}
+  }) {
+    this.formatSeparator = options.interpolation.formatSeparator || ',';
+    const cf = options.cacheInBuiltFormats ? createCachedFormatter : createNonCachedFormatter;
+    this.formats = {
+      number: cf((lng, opt) => {
+        const formatter = new Intl.NumberFormat(lng, {
+          ...opt
+        });
+        return val => formatter.format(val);
+      }),
+      currency: cf((lng, opt) => {
+        const formatter = new Intl.NumberFormat(lng, {
+          ...opt,
+          style: 'currency'
+        });
+        return val => formatter.format(val);
+      }),
+      datetime: cf((lng, opt) => {
+        const formatter = new Intl.DateTimeFormat(lng, {
+          ...opt
+        });
+        return val => formatter.format(val);
+      }),
+      relativetime: cf((lng, opt) => {
+        const formatter = new Intl.RelativeTimeFormat(lng, {
+          ...opt
+        });
+        return val => formatter.format(val, opt.range || 'day');
+      }),
+      list: cf((lng, opt) => {
+        const formatter = new Intl.ListFormat(lng, {
+          ...opt
+        });
+        return val => formatter.format(val);
+      })
+    };
+  }
+  add(name, fc) {
+    this.formats[name.toLowerCase().trim()] = fc;
+  }
+  addCached(name, fc) {
+    this.formats[name.toLowerCase().trim()] = createCachedFormatter(fc);
+  }
+  format(value, format, lng, options = {}) {
+    const formats = format.split(this.formatSeparator);
+    if (formats.length > 1 && formats[0].indexOf('(') > 1 && formats[0].indexOf(')') < 0 && formats.find(f => f.indexOf(')') > -1)) {
+      const lastIndex = formats.findIndex(f => f.indexOf(')') > -1);
+      formats[0] = [formats[0], ...formats.splice(1, lastIndex)].join(this.formatSeparator);
+    }
+    const result = formats.reduce((mem, f) => {
+      const {
+        formatName,
+        formatOptions
+      } = parseFormatStr(f);
+      if (this.formats[formatName]) {
+        let formatted = mem;
+        try {
+          const valOptions = options?.formatParams?.[options.interpolationkey] || {};
+          const l = valOptions.locale || valOptions.lng || options.locale || options.lng || lng;
+          formatted = this.formats[formatName](mem, l, {
+            ...formatOptions,
+            ...options,
+            ...valOptions
+          });
+        } catch (error) {
+          this.logger.warn(error);
+        }
+        return formatted;
+      } else {
+        this.logger.warn(`there was no format function for ${formatName}`);
+      }
+      return mem;
+    }, value);
+    return result;
+  }
+}
+
+const removePending = (q, name) => {
+  if (q.pending[name] !== undefined) {
+    delete q.pending[name];
+    q.pendingCount--;
+  }
+};
+class Connector extends EventEmitter {
+  constructor(backend, store, services, options = {}) {
+    super();
+    this.backend = backend;
+    this.store = store;
+    this.services = services;
+    this.languageUtils = services.languageUtils;
+    this.options = options;
+    this.logger = baseLogger.create('backendConnector');
+    this.waitingReads = [];
+    this.maxParallelReads = options.maxParallelReads || 10;
+    this.readingCalls = 0;
+    this.maxRetries = options.maxRetries >= 0 ? options.maxRetries : 5;
+    this.retryTimeout = options.retryTimeout >= 1 ? options.retryTimeout : 350;
+    this.state = {};
+    this.queue = [];
+    this.backend?.init?.(services, options.backend, options);
+  }
+  queueLoad(languages, namespaces, options, callback) {
+    const toLoad = {};
+    const pending = {};
+    const toLoadLanguages = {};
+    const toLoadNamespaces = {};
+    languages.forEach(lng => {
+      let hasAllNamespaces = true;
+      namespaces.forEach(ns => {
+        const name = `${lng}|${ns}`;
+        if (!options.reload && this.store.hasResourceBundle(lng, ns)) {
+          this.state[name] = 2;
+        } else if (this.state[name] < 0) ; else if (this.state[name] === 1) {
+          if (pending[name] === undefined) pending[name] = true;
+        } else {
+          this.state[name] = 1;
+          hasAllNamespaces = false;
+          if (pending[name] === undefined) pending[name] = true;
+          if (toLoad[name] === undefined) toLoad[name] = true;
+          if (toLoadNamespaces[ns] === undefined) toLoadNamespaces[ns] = true;
+        }
+      });
+      if (!hasAllNamespaces) toLoadLanguages[lng] = true;
+    });
+    if (Object.keys(toLoad).length || Object.keys(pending).length) {
+      this.queue.push({
+        pending,
+        pendingCount: Object.keys(pending).length,
+        loaded: {},
+        errors: [],
+        callback
+      });
+    }
+    return {
+      toLoad: Object.keys(toLoad),
+      pending: Object.keys(pending),
+      toLoadLanguages: Object.keys(toLoadLanguages),
+      toLoadNamespaces: Object.keys(toLoadNamespaces)
+    };
+  }
+  loaded(name, err, data) {
+    const s = name.split('|');
+    const lng = s[0];
+    const ns = s[1];
+    if (err) this.emit('failedLoading', lng, ns, err);
+    if (!err && data) {
+      this.store.addResourceBundle(lng, ns, data, undefined, undefined, {
+        skipCopy: true
+      });
+    }
+    this.state[name] = err ? -1 : 2;
+    if (err && data) this.state[name] = 0;
+    const loaded = {};
+    this.queue.forEach(q => {
+      pushPath(q.loaded, [lng], ns);
+      removePending(q, name);
+      if (err) q.errors.push(err);
+      if (q.pendingCount === 0 && !q.done) {
+        Object.keys(q.loaded).forEach(l => {
+          if (!loaded[l]) loaded[l] = {};
+          const loadedKeys = q.loaded[l];
+          if (loadedKeys.length) {
+            loadedKeys.forEach(n => {
+              if (loaded[l][n] === undefined) loaded[l][n] = true;
+            });
+          }
+        });
+        q.done = true;
+        if (q.errors.length) {
+          q.callback(q.errors);
+        } else {
+          q.callback();
+        }
+      }
+    });
+    this.emit('loaded', loaded);
+    this.queue = this.queue.filter(q => !q.done);
+  }
+  read(lng, ns, fcName, tried = 0, wait = this.retryTimeout, callback) {
+    if (!lng.length) return callback(null, {});
+    if (this.readingCalls >= this.maxParallelReads) {
+      this.waitingReads.push({
+        lng,
+        ns,
+        fcName,
+        tried,
+        wait,
+        callback
+      });
+      return;
+    }
+    this.readingCalls++;
+    const resolver = (err, data) => {
+      this.readingCalls--;
+      if (this.waitingReads.length > 0) {
+        const next = this.waitingReads.shift();
+        this.read(next.lng, next.ns, next.fcName, next.tried, next.wait, next.callback);
+      }
+      if (err && data && tried < this.maxRetries) {
+        setTimeout(() => {
+          this.read.call(this, lng, ns, fcName, tried + 1, wait * 2, callback);
+        }, wait);
+        return;
+      }
+      callback(err, data);
+    };
+    const fc = this.backend[fcName].bind(this.backend);
+    if (fc.length === 2) {
+      try {
+        const r = fc(lng, ns);
+        if (r && typeof r.then === 'function') {
+          r.then(data => resolver(null, data)).catch(resolver);
+        } else {
+          resolver(null, r);
+        }
+      } catch (err) {
+        resolver(err);
+      }
+      return;
+    }
+    return fc(lng, ns, resolver);
+  }
+  prepareLoading(languages, namespaces, options = {}, callback) {
+    if (!this.backend) {
+      this.logger.warn('No backend was added via i18next.use. Will not load resources.');
+      return callback && callback();
+    }
+    if (isString(languages)) languages = this.languageUtils.toResolveHierarchy(languages);
+    if (isString(namespaces)) namespaces = [namespaces];
+    const toLoad = this.queueLoad(languages, namespaces, options, callback);
+    if (!toLoad.toLoad.length) {
+      if (!toLoad.pending.length) callback();
+      return null;
+    }
+    toLoad.toLoad.forEach(name => {
+      this.loadOne(name);
+    });
+  }
+  load(languages, namespaces, callback) {
+    this.prepareLoading(languages, namespaces, {}, callback);
+  }
+  reload(languages, namespaces, callback) {
+    this.prepareLoading(languages, namespaces, {
+      reload: true
+    }, callback);
+  }
+  loadOne(name, prefix = '') {
+    const s = name.split('|');
+    const lng = s[0];
+    const ns = s[1];
+    this.read(lng, ns, 'read', undefined, undefined, (err, data) => {
+      if (err) this.logger.warn(`${prefix}loading namespace ${ns} for language ${lng} failed`, err);
+      if (!err && data) this.logger.log(`${prefix}loaded namespace ${ns} for language ${lng}`, data);
+      this.loaded(name, err, data);
+    });
+  }
+  saveMissing(languages, namespace, key, fallbackValue, isUpdate, options = {}, clb = () => {}) {
+    if (this.services?.utils?.hasLoadedNamespace && !this.services?.utils?.hasLoadedNamespace(namespace)) {
+      this.logger.warn(`did not save key "${key}" as the namespace "${namespace}" was not yet loaded`, 'This means something IS WRONG in your setup. You access the t function before i18next.init / i18next.loadNamespace / i18next.changeLanguage was done. Wait for the callback or Promise to resolve before accessing it!!!');
+      return;
+    }
+    if (key === undefined || key === null || key === '') return;
+    if (this.backend?.create) {
+      const opts = {
+        ...options,
+        isUpdate
+      };
+      const fc = this.backend.create.bind(this.backend);
+      if (fc.length < 6) {
+        try {
+          let r;
+          if (fc.length === 5) {
+            r = fc(languages, namespace, key, fallbackValue, opts);
+          } else {
+            r = fc(languages, namespace, key, fallbackValue);
+          }
+          if (r && typeof r.then === 'function') {
+            r.then(data => clb(null, data)).catch(clb);
+          } else {
+            clb(null, r);
+          }
+        } catch (err) {
+          clb(err);
+        }
+      } else {
+        fc(languages, namespace, key, fallbackValue, clb, opts);
+      }
+    }
+    if (!languages || !languages[0]) return;
+    this.store.addResource(languages[0], namespace, key, fallbackValue);
+  }
+}
+
+const get = () => ({
+  debug: false,
+  initAsync: true,
+  ns: ['translation'],
+  defaultNS: ['translation'],
+  fallbackLng: ['dev'],
+  fallbackNS: false,
+  supportedLngs: false,
+  nonExplicitSupportedLngs: false,
+  load: 'all',
+  preload: false,
+  simplifyPluralSuffix: true,
+  keySeparator: '.',
+  nsSeparator: ':',
+  pluralSeparator: '_',
+  contextSeparator: '_',
+  partialBundledLanguages: false,
+  saveMissing: false,
+  updateMissing: false,
+  saveMissingTo: 'fallback',
+  saveMissingPlurals: true,
+  missingKeyHandler: false,
+  missingInterpolationHandler: false,
+  postProcess: false,
+  postProcessPassResolved: false,
+  returnNull: false,
+  returnEmptyString: true,
+  returnObjects: false,
+  joinArrays: false,
+  returnedObjectHandler: false,
+  parseMissingKeyHandler: false,
+  appendNamespaceToMissingKey: false,
+  appendNamespaceToCIMode: false,
+  overloadTranslationOptionHandler: args => {
+    let ret = {};
+    if (typeof args[1] === 'object') ret = args[1];
+    if (isString(args[1])) ret.defaultValue = args[1];
+    if (isString(args[2])) ret.tDescription = args[2];
+    if (typeof args[2] === 'object' || typeof args[3] === 'object') {
+      const options = args[3] || args[2];
+      Object.keys(options).forEach(key => {
+        ret[key] = options[key];
+      });
+    }
+    return ret;
+  },
+  interpolation: {
+    escapeValue: true,
+    format: value => value,
+    prefix: '{{',
+    suffix: '}}',
+    formatSeparator: ',',
+    unescapePrefix: '-',
+    nestingPrefix: '$t(',
+    nestingSuffix: ')',
+    nestingOptionsSeparator: ',',
+    maxReplaces: 1000,
+    skipOnVariables: true
+  },
+  cacheInBuiltFormats: true
+});
+const transformOptions = options => {
+  if (isString(options.ns)) options.ns = [options.ns];
+  if (isString(options.fallbackLng)) options.fallbackLng = [options.fallbackLng];
+  if (isString(options.fallbackNS)) options.fallbackNS = [options.fallbackNS];
+  if (options.supportedLngs?.indexOf?.('cimode') < 0) {
+    options.supportedLngs = options.supportedLngs.concat(['cimode']);
+  }
+  if (typeof options.initImmediate === 'boolean') options.initAsync = options.initImmediate;
+  return options;
+};
+
+const noop = () => {};
+const bindMemberFunctions = inst => {
+  const mems = Object.getOwnPropertyNames(Object.getPrototypeOf(inst));
+  mems.forEach(mem => {
+    if (typeof inst[mem] === 'function') {
+      inst[mem] = inst[mem].bind(inst);
+    }
+  });
+};
+class I18n extends EventEmitter {
+  constructor(options = {}, callback) {
+    super();
+    this.options = transformOptions(options);
+    this.services = {};
+    this.logger = baseLogger;
+    this.modules = {
+      external: []
+    };
+    bindMemberFunctions(this);
+    if (callback && !this.isInitialized && !options.isClone) {
+      if (!this.options.initAsync) {
+        this.init(options, callback);
+        return this;
+      }
+      setTimeout(() => {
+        this.init(options, callback);
+      }, 0);
+    }
+  }
+  init(options = {}, callback) {
+    this.isInitializing = true;
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
+    if (options.defaultNS == null && options.ns) {
+      if (isString(options.ns)) {
+        options.defaultNS = options.ns;
+      } else if (options.ns.indexOf('translation') < 0) {
+        options.defaultNS = options.ns[0];
+      }
+    }
+    const defOpts = get();
+    this.options = {
+      ...defOpts,
+      ...this.options,
+      ...transformOptions(options)
+    };
+    this.options.interpolation = {
+      ...defOpts.interpolation,
+      ...this.options.interpolation
+    };
+    if (options.keySeparator !== undefined) {
+      this.options.userDefinedKeySeparator = options.keySeparator;
+    }
+    if (options.nsSeparator !== undefined) {
+      this.options.userDefinedNsSeparator = options.nsSeparator;
+    }
+    const createClassOnDemand = ClassOrObject => {
+      if (!ClassOrObject) return null;
+      if (typeof ClassOrObject === 'function') return new ClassOrObject();
+      return ClassOrObject;
+    };
+    if (!this.options.isClone) {
+      if (this.modules.logger) {
+        baseLogger.init(createClassOnDemand(this.modules.logger), this.options);
+      } else {
+        baseLogger.init(null, this.options);
+      }
+      let formatter;
+      if (this.modules.formatter) {
+        formatter = this.modules.formatter;
+      } else {
+        formatter = Formatter;
+      }
+      const lu = new LanguageUtil(this.options);
+      this.store = new ResourceStore(this.options.resources, this.options);
+      const s = this.services;
+      s.logger = baseLogger;
+      s.resourceStore = this.store;
+      s.languageUtils = lu;
+      s.pluralResolver = new PluralResolver(lu, {
+        prepend: this.options.pluralSeparator,
+        simplifyPluralSuffix: this.options.simplifyPluralSuffix
+      });
+      const usingLegacyFormatFunction = this.options.interpolation.format && this.options.interpolation.format !== defOpts.interpolation.format;
+      if (usingLegacyFormatFunction) {
+        this.logger.deprecate(`init: you are still using the legacy format function, please use the new approach: https://www.i18next.com/translation-function/formatting`);
+      }
+      if (formatter && (!this.options.interpolation.format || this.options.interpolation.format === defOpts.interpolation.format)) {
+        s.formatter = createClassOnDemand(formatter);
+        if (s.formatter.init) s.formatter.init(s, this.options);
+        this.options.interpolation.format = s.formatter.format.bind(s.formatter);
+      }
+      s.interpolator = new Interpolator(this.options);
+      s.utils = {
+        hasLoadedNamespace: this.hasLoadedNamespace.bind(this)
+      };
+      s.backendConnector = new Connector(createClassOnDemand(this.modules.backend), s.resourceStore, s, this.options);
+      s.backendConnector.on('*', (event, ...args) => {
+        this.emit(event, ...args);
+      });
+      if (this.modules.languageDetector) {
+        s.languageDetector = createClassOnDemand(this.modules.languageDetector);
+        if (s.languageDetector.init) s.languageDetector.init(s, this.options.detection, this.options);
+      }
+      if (this.modules.i18nFormat) {
+        s.i18nFormat = createClassOnDemand(this.modules.i18nFormat);
+        if (s.i18nFormat.init) s.i18nFormat.init(this);
+      }
+      this.translator = new Translator(this.services, this.options);
+      this.translator.on('*', (event, ...args) => {
+        this.emit(event, ...args);
+      });
+      this.modules.external.forEach(m => {
+        if (m.init) m.init(this);
+      });
+    }
+    this.format = this.options.interpolation.format;
+    if (!callback) callback = noop;
+    if (this.options.fallbackLng && !this.services.languageDetector && !this.options.lng) {
+      const codes = this.services.languageUtils.getFallbackCodes(this.options.fallbackLng);
+      if (codes.length > 0 && codes[0] !== 'dev') this.options.lng = codes[0];
+    }
+    if (!this.services.languageDetector && !this.options.lng) {
+      this.logger.warn('init: no languageDetector is used and no lng is defined');
+    }
+    const storeApi = ['getResource', 'hasResourceBundle', 'getResourceBundle', 'getDataByLanguage'];
+    storeApi.forEach(fcName => {
+      this[fcName] = (...args) => this.store[fcName](...args);
+    });
+    const storeApiChained = ['addResource', 'addResources', 'addResourceBundle', 'removeResourceBundle'];
+    storeApiChained.forEach(fcName => {
+      this[fcName] = (...args) => {
+        this.store[fcName](...args);
+        return this;
+      };
+    });
+    const deferred = defer();
+    const load = () => {
+      const finish = (err, t) => {
+        this.isInitializing = false;
+        if (this.isInitialized && !this.initializedStoreOnce) this.logger.warn('init: i18next is already initialized. You should call init just once!');
+        this.isInitialized = true;
+        if (!this.options.isClone) this.logger.log('initialized', this.options);
+        this.emit('initialized', this.options);
+        deferred.resolve(t);
+        callback(err, t);
+      };
+      if (this.languages && !this.isInitialized) return finish(null, this.t.bind(this));
+      this.changeLanguage(this.options.lng, finish);
+    };
+    if (this.options.resources || !this.options.initAsync) {
+      load();
+    } else {
+      setTimeout(load, 0);
+    }
+    return deferred;
+  }
+  loadResources(language, callback = noop) {
+    let usedCallback = callback;
+    const usedLng = isString(language) ? language : this.language;
+    if (typeof language === 'function') usedCallback = language;
+    if (!this.options.resources || this.options.partialBundledLanguages) {
+      if (usedLng?.toLowerCase() === 'cimode' && (!this.options.preload || this.options.preload.length === 0)) return usedCallback();
+      const toLoad = [];
+      const append = lng => {
+        if (!lng) return;
+        if (lng === 'cimode') return;
+        const lngs = this.services.languageUtils.toResolveHierarchy(lng);
+        lngs.forEach(l => {
+          if (l === 'cimode') return;
+          if (toLoad.indexOf(l) < 0) toLoad.push(l);
+        });
+      };
+      if (!usedLng) {
+        const fallbacks = this.services.languageUtils.getFallbackCodes(this.options.fallbackLng);
+        fallbacks.forEach(l => append(l));
+      } else {
+        append(usedLng);
+      }
+      this.options.preload?.forEach?.(l => append(l));
+      this.services.backendConnector.load(toLoad, this.options.ns, e => {
+        if (!e && !this.resolvedLanguage && this.language) this.setResolvedLanguage(this.language);
+        usedCallback(e);
+      });
+    } else {
+      usedCallback(null);
+    }
+  }
+  reloadResources(lngs, ns, callback) {
+    const deferred = defer();
+    if (typeof lngs === 'function') {
+      callback = lngs;
+      lngs = undefined;
+    }
+    if (typeof ns === 'function') {
+      callback = ns;
+      ns = undefined;
+    }
+    if (!lngs) lngs = this.languages;
+    if (!ns) ns = this.options.ns;
+    if (!callback) callback = noop;
+    this.services.backendConnector.reload(lngs, ns, err => {
+      deferred.resolve();
+      callback(err);
+    });
+    return deferred;
+  }
+  use(module) {
+    if (!module) throw new Error('You are passing an undefined module! Please check the object you are passing to i18next.use()');
+    if (!module.type) throw new Error('You are passing a wrong module! Please check the object you are passing to i18next.use()');
+    if (module.type === 'backend') {
+      this.modules.backend = module;
+    }
+    if (module.type === 'logger' || module.log && module.warn && module.error) {
+      this.modules.logger = module;
+    }
+    if (module.type === 'languageDetector') {
+      this.modules.languageDetector = module;
+    }
+    if (module.type === 'i18nFormat') {
+      this.modules.i18nFormat = module;
+    }
+    if (module.type === 'postProcessor') {
+      postProcessor.addPostProcessor(module);
+    }
+    if (module.type === 'formatter') {
+      this.modules.formatter = module;
+    }
+    if (module.type === '3rdParty') {
+      this.modules.external.push(module);
+    }
+    return this;
+  }
+  setResolvedLanguage(l) {
+    if (!l || !this.languages) return;
+    if (['cimode', 'dev'].indexOf(l) > -1) return;
+    for (let li = 0; li < this.languages.length; li++) {
+      const lngInLngs = this.languages[li];
+      if (['cimode', 'dev'].indexOf(lngInLngs) > -1) continue;
+      if (this.store.hasLanguageSomeTranslations(lngInLngs)) {
+        this.resolvedLanguage = lngInLngs;
+        break;
+      }
+    }
+    if (!this.resolvedLanguage && this.languages.indexOf(l) < 0 && this.store.hasLanguageSomeTranslations(l)) {
+      this.resolvedLanguage = l;
+      this.languages.unshift(l);
+    }
+  }
+  changeLanguage(lng, callback) {
+    this.isLanguageChangingTo = lng;
+    const deferred = defer();
+    this.emit('languageChanging', lng);
+    const setLngProps = l => {
+      this.language = l;
+      this.languages = this.services.languageUtils.toResolveHierarchy(l);
+      this.resolvedLanguage = undefined;
+      this.setResolvedLanguage(l);
+    };
+    const done = (err, l) => {
+      if (l) {
+        if (this.isLanguageChangingTo === lng) {
+          setLngProps(l);
+          this.translator.changeLanguage(l);
+          this.isLanguageChangingTo = undefined;
+          this.emit('languageChanged', l);
+          this.logger.log('languageChanged', l);
+        }
+      } else {
+        this.isLanguageChangingTo = undefined;
+      }
+      deferred.resolve((...args) => this.t(...args));
+      if (callback) callback(err, (...args) => this.t(...args));
+    };
+    const setLng = lngs => {
+      if (!lng && !lngs && this.services.languageDetector) lngs = [];
+      const fl = isString(lngs) ? lngs : lngs && lngs[0];
+      const l = this.store.hasLanguageSomeTranslations(fl) ? fl : this.services.languageUtils.getBestMatchFromCodes(isString(lngs) ? [lngs] : lngs);
+      if (l) {
+        if (!this.language) {
+          setLngProps(l);
+        }
+        if (!this.translator.language) this.translator.changeLanguage(l);
+        this.services.languageDetector?.cacheUserLanguage?.(l);
+      }
+      this.loadResources(l, err => {
+        done(err, l);
+      });
+    };
+    if (!lng && this.services.languageDetector && !this.services.languageDetector.async) {
+      setLng(this.services.languageDetector.detect());
+    } else if (!lng && this.services.languageDetector && this.services.languageDetector.async) {
+      if (this.services.languageDetector.detect.length === 0) {
+        this.services.languageDetector.detect().then(setLng);
+      } else {
+        this.services.languageDetector.detect(setLng);
+      }
+    } else {
+      setLng(lng);
+    }
+    return deferred;
+  }
+  getFixedT(lng, ns, keyPrefix) {
+    const fixedT = (key, opts, ...rest) => {
+      let o;
+      if (typeof opts !== 'object') {
+        o = this.options.overloadTranslationOptionHandler([key, opts].concat(rest));
+      } else {
+        o = {
+          ...opts
+        };
+      }
+      o.lng = o.lng || fixedT.lng;
+      o.lngs = o.lngs || fixedT.lngs;
+      o.ns = o.ns || fixedT.ns;
+      if (o.keyPrefix !== '') o.keyPrefix = o.keyPrefix || keyPrefix || fixedT.keyPrefix;
+      const keySeparator = this.options.keySeparator || '.';
+      let resultKey;
+      if (o.keyPrefix && Array.isArray(key)) {
+        resultKey = key.map(k => {
+          if (typeof k === 'function') k = keysFromSelector(k, {
+            ...this.options,
+            ...opts
+          });
+          return `${o.keyPrefix}${keySeparator}${k}`;
+        });
+      } else {
+        if (typeof key === 'function') key = keysFromSelector(key, {
+          ...this.options,
+          ...opts
+        });
+        resultKey = o.keyPrefix ? `${o.keyPrefix}${keySeparator}${key}` : key;
+      }
+      return this.t(resultKey, o);
+    };
+    if (isString(lng)) {
+      fixedT.lng = lng;
+    } else {
+      fixedT.lngs = lng;
+    }
+    fixedT.ns = ns;
+    fixedT.keyPrefix = keyPrefix;
+    return fixedT;
+  }
+  t(...args) {
+    return this.translator?.translate(...args);
+  }
+  exists(...args) {
+    return this.translator?.exists(...args);
+  }
+  setDefaultNamespace(ns) {
+    this.options.defaultNS = ns;
+  }
+  hasLoadedNamespace(ns, options = {}) {
+    if (!this.isInitialized) {
+      this.logger.warn('hasLoadedNamespace: i18next was not initialized', this.languages);
+      return false;
+    }
+    if (!this.languages || !this.languages.length) {
+      this.logger.warn('hasLoadedNamespace: i18n.languages were undefined or empty', this.languages);
+      return false;
+    }
+    const lng = options.lng || this.resolvedLanguage || this.languages[0];
+    const fallbackLng = this.options ? this.options.fallbackLng : false;
+    const lastLng = this.languages[this.languages.length - 1];
+    if (lng.toLowerCase() === 'cimode') return true;
+    const loadNotPending = (l, n) => {
+      const loadState = this.services.backendConnector.state[`${l}|${n}`];
+      return loadState === -1 || loadState === 0 || loadState === 2;
+    };
+    if (options.precheck) {
+      const preResult = options.precheck(this, loadNotPending);
+      if (preResult !== undefined) return preResult;
+    }
+    if (this.hasResourceBundle(lng, ns)) return true;
+    if (!this.services.backendConnector.backend || this.options.resources && !this.options.partialBundledLanguages) return true;
+    if (loadNotPending(lng, ns) && (!fallbackLng || loadNotPending(lastLng, ns))) return true;
+    return false;
+  }
+  loadNamespaces(ns, callback) {
+    const deferred = defer();
+    if (!this.options.ns) {
+      if (callback) callback();
+      return Promise.resolve();
+    }
+    if (isString(ns)) ns = [ns];
+    ns.forEach(n => {
+      if (this.options.ns.indexOf(n) < 0) this.options.ns.push(n);
+    });
+    this.loadResources(err => {
+      deferred.resolve();
+      if (callback) callback(err);
+    });
+    return deferred;
+  }
+  loadLanguages(lngs, callback) {
+    const deferred = defer();
+    if (isString(lngs)) lngs = [lngs];
+    const preloaded = this.options.preload || [];
+    const newLngs = lngs.filter(lng => preloaded.indexOf(lng) < 0 && this.services.languageUtils.isSupportedCode(lng));
+    if (!newLngs.length) {
+      if (callback) callback();
+      return Promise.resolve();
+    }
+    this.options.preload = preloaded.concat(newLngs);
+    this.loadResources(err => {
+      deferred.resolve();
+      if (callback) callback(err);
+    });
+    return deferred;
+  }
+  dir(lng) {
+    if (!lng) lng = this.resolvedLanguage || (this.languages?.length > 0 ? this.languages[0] : this.language);
+    if (!lng) return 'rtl';
+    try {
+      const l = new Intl.Locale(lng);
+      if (l && l.getTextInfo) {
+        const ti = l.getTextInfo();
+        if (ti && ti.direction) return ti.direction;
+      }
+    } catch (e) {}
+    const rtlLngs = ['ar', 'shu', 'sqr', 'ssh', 'xaa', 'yhd', 'yud', 'aao', 'abh', 'abv', 'acm', 'acq', 'acw', 'acx', 'acy', 'adf', 'ads', 'aeb', 'aec', 'afb', 'ajp', 'apc', 'apd', 'arb', 'arq', 'ars', 'ary', 'arz', 'auz', 'avl', 'ayh', 'ayl', 'ayn', 'ayp', 'bbz', 'pga', 'he', 'iw', 'ps', 'pbt', 'pbu', 'pst', 'prp', 'prd', 'ug', 'ur', 'ydd', 'yds', 'yih', 'ji', 'yi', 'hbo', 'men', 'xmn', 'fa', 'jpr', 'peo', 'pes', 'prs', 'dv', 'sam', 'ckb'];
+    const languageUtils = this.services?.languageUtils || new LanguageUtil(get());
+    if (lng.toLowerCase().indexOf('-latn') > 1) return 'ltr';
+    return rtlLngs.indexOf(languageUtils.getLanguagePartFromCode(lng)) > -1 || lng.toLowerCase().indexOf('-arab') > 1 ? 'rtl' : 'ltr';
+  }
+  static createInstance(options = {}, callback) {
+    return new I18n(options, callback);
+  }
+  cloneInstance(options = {}, callback = noop) {
+    const forkResourceStore = options.forkResourceStore;
+    if (forkResourceStore) delete options.forkResourceStore;
+    const mergedOptions = {
+      ...this.options,
+      ...options,
+      ...{
+        isClone: true
+      }
+    };
+    const clone = new I18n(mergedOptions);
+    if (options.debug !== undefined || options.prefix !== undefined) {
+      clone.logger = clone.logger.clone(options);
+    }
+    const membersToCopy = ['store', 'services', 'language'];
+    membersToCopy.forEach(m => {
+      clone[m] = this[m];
+    });
+    clone.services = {
+      ...this.services
+    };
+    clone.services.utils = {
+      hasLoadedNamespace: clone.hasLoadedNamespace.bind(clone)
+    };
+    if (forkResourceStore) {
+      const clonedData = Object.keys(this.store.data).reduce((prev, l) => {
+        prev[l] = {
+          ...this.store.data[l]
+        };
+        prev[l] = Object.keys(prev[l]).reduce((acc, n) => {
+          acc[n] = {
+            ...prev[l][n]
+          };
+          return acc;
+        }, prev[l]);
+        return prev;
+      }, {});
+      clone.store = new ResourceStore(clonedData, mergedOptions);
+      clone.services.resourceStore = clone.store;
+    }
+    clone.translator = new Translator(clone.services, mergedOptions);
+    clone.translator.on('*', (event, ...args) => {
+      clone.emit(event, ...args);
+    });
+    clone.init(mergedOptions, callback);
+    clone.translator.options = mergedOptions;
+    clone.translator.backendConnector.services.utils = {
+      hasLoadedNamespace: clone.hasLoadedNamespace.bind(clone)
+    };
+    return clone;
+  }
+  toJSON() {
+    return {
+      options: this.options,
+      store: this.store,
+      language: this.language,
+      languages: this.languages,
+      resolvedLanguage: this.resolvedLanguage
+    };
+  }
+}
+const instance = I18n.createInstance();
+instance.createInstance = I18n.createInstance;
+
+const createInstance = instance.createInstance;
+const dir = instance.dir;
+const init = instance.init;
+const loadResources = instance.loadResources;
+const reloadResources = instance.reloadResources;
+const use = instance.use;
+const changeLanguage = instance.changeLanguage;
+const getFixedT = instance.getFixedT;
+const t = instance.t;
+const exists = instance.exists;
+const setDefaultNamespace = instance.setDefaultNamespace;
+const hasLoadedNamespace = instance.hasLoadedNamespace;
+const loadNamespaces = instance.loadNamespaces;
+const loadLanguages = instance.loadLanguages;
+
+
+
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/I18nextProvider.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/I18nextProvider.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   I18nextProvider: () => (/* binding */ I18nextProvider)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _context_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./context.js */ "./node_modules/react-i18next/dist/es/context.js");
+
+
+function I18nextProvider({
+  i18n,
+  defaultNS,
+  children
+}) {
+  const value = (0,react__WEBPACK_IMPORTED_MODULE_0__.useMemo)(() => ({
+    i18n,
+    defaultNS
+  }), [i18n, defaultNS]);
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_context_js__WEBPACK_IMPORTED_MODULE_1__.I18nContext.Provider, {
+    value
+  }, children);
+}
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/Trans.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/Trans.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Trans: () => (/* binding */ Trans),
+/* harmony export */   nodesToString: () => (/* reexport safe */ _TransWithoutContext_js__WEBPACK_IMPORTED_MODULE_1__.nodesToString)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _TransWithoutContext_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TransWithoutContext.js */ "./node_modules/react-i18next/dist/es/TransWithoutContext.js");
+/* harmony import */ var _context_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./context.js */ "./node_modules/react-i18next/dist/es/context.js");
+
+
+
+
+function Trans({
+  children,
+  count,
+  parent,
+  i18nKey,
+  context,
+  tOptions = {},
+  values,
+  defaults,
+  components,
+  ns,
+  i18n: i18nFromProps,
+  t: tFromProps,
+  shouldUnescape,
+  ...additionalProps
+}) {
+  const {
+    i18n: i18nFromContext,
+    defaultNS: defaultNSFromContext
+  } = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_context_js__WEBPACK_IMPORTED_MODULE_2__.I18nContext) || {};
+  const i18n = i18nFromProps || i18nFromContext || (0,_context_js__WEBPACK_IMPORTED_MODULE_2__.getI18n)();
+  const t = tFromProps || i18n?.t.bind(i18n);
+  return (0,_TransWithoutContext_js__WEBPACK_IMPORTED_MODULE_1__.Trans)({
+    children,
+    count,
+    parent,
+    i18nKey,
+    context,
+    tOptions,
+    values,
+    defaults,
+    components,
+    ns: ns || t?.ns || defaultNSFromContext || i18n?.options?.defaultNS,
+    i18n,
+    t: tFromProps,
+    shouldUnescape,
+    ...additionalProps
+  });
+}
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/TransWithoutContext.js":
+/*!*******************************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/TransWithoutContext.js ***!
+  \*******************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Trans: () => (/* binding */ Trans),
+/* harmony export */   nodesToString: () => (/* binding */ nodesToString)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var html_parse_stringify__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! html-parse-stringify */ "./node_modules/html-parse-stringify/dist/html-parse-stringify.module.js");
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils.js */ "./node_modules/react-i18next/dist/es/utils.js");
+/* harmony import */ var _defaults_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./defaults.js */ "./node_modules/react-i18next/dist/es/defaults.js");
+/* harmony import */ var _i18nInstance_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./i18nInstance.js */ "./node_modules/react-i18next/dist/es/i18nInstance.js");
+
+
+
+
+
+const hasChildren = (node, checkLength) => {
+  if (!node) return false;
+  const base = node.props?.children ?? node.children;
+  if (checkLength) return base.length > 0;
+  return !!base;
+};
+const getChildren = node => {
+  if (!node) return [];
+  const children = node.props?.children ?? node.children;
+  return node.props?.i18nIsDynamicList ? getAsArray(children) : children;
+};
+const hasValidReactChildren = children => Array.isArray(children) && children.every(react__WEBPACK_IMPORTED_MODULE_0__.isValidElement);
+const getAsArray = data => Array.isArray(data) ? data : [data];
+const mergeProps = (source, target) => {
+  const newTarget = {
+    ...target
+  };
+  newTarget.props = Object.assign(source.props, target.props);
+  return newTarget;
+};
+const nodesToString = (children, i18nOptions, i18n, i18nKey) => {
+  if (!children) return '';
+  let stringNode = '';
+  const childrenArray = getAsArray(children);
+  const keepArray = i18nOptions?.transSupportBasicHtmlNodes ? i18nOptions.transKeepBasicHtmlNodesFor ?? [] : [];
+  childrenArray.forEach((child, childIndex) => {
+    if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(child)) {
+      stringNode += `${child}`;
+      return;
+    }
+    if ((0,react__WEBPACK_IMPORTED_MODULE_0__.isValidElement)(child)) {
+      const {
+        props,
+        type
+      } = child;
+      const childPropsCount = Object.keys(props).length;
+      const shouldKeepChild = keepArray.indexOf(type) > -1;
+      const childChildren = props.children;
+      if (!childChildren && shouldKeepChild && !childPropsCount) {
+        stringNode += `<${type}/>`;
+        return;
+      }
+      if (!childChildren && (!shouldKeepChild || childPropsCount) || props.i18nIsDynamicList) {
+        stringNode += `<${childIndex}></${childIndex}>`;
+        return;
+      }
+      if (shouldKeepChild && childPropsCount === 1 && (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(childChildren)) {
+        stringNode += `<${type}>${childChildren}</${type}>`;
+        return;
+      }
+      const content = nodesToString(childChildren, i18nOptions, i18n, i18nKey);
+      stringNode += `<${childIndex}>${content}</${childIndex}>`;
+      return;
+    }
+    if (child === null) {
+      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warn)(i18n, 'TRANS_NULL_VALUE', `Passed in a null value as child`, {
+        i18nKey
+      });
+      return;
+    }
+    if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(child)) {
+      const {
+        format,
+        ...clone
+      } = child;
+      const keys = Object.keys(clone);
+      if (keys.length === 1) {
+        const value = format ? `${keys[0]}, ${format}` : keys[0];
+        stringNode += `{{${value}}}`;
+        return;
+      }
+      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warn)(i18n, 'TRANS_INVALID_OBJ', `Invalid child - Object should only have keys {{ value, format }} (format is optional).`, {
+        i18nKey,
+        child
+      });
+      return;
+    }
+    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warn)(i18n, 'TRANS_INVALID_VAR', `Passed in a variable like {number} - pass variables for interpolation as full objects like {{number}}.`, {
+      i18nKey,
+      child
+    });
+  });
+  return stringNode;
+};
+const renderNodes = (children, knownComponentsMap, targetString, i18n, i18nOptions, combinedTOpts, shouldUnescape) => {
+  if (targetString === '') return [];
+  const keepArray = i18nOptions.transKeepBasicHtmlNodesFor || [];
+  const emptyChildrenButNeedsHandling = targetString && new RegExp(keepArray.map(keep => `<${keep}`).join('|')).test(targetString);
+  if (!children && !knownComponentsMap && !emptyChildrenButNeedsHandling && !shouldUnescape) return [targetString];
+  const data = knownComponentsMap ?? {};
+  const getData = childs => {
+    const childrenArray = getAsArray(childs);
+    childrenArray.forEach(child => {
+      if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(child)) return;
+      if (hasChildren(child)) getData(getChildren(child));else if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(child) && !(0,react__WEBPACK_IMPORTED_MODULE_0__.isValidElement)(child)) Object.assign(data, child);
+    });
+  };
+  getData(children);
+  const ast = html_parse_stringify__WEBPACK_IMPORTED_MODULE_1__["default"].parse(`<0>${targetString}</0>`);
+  const opts = {
+    ...data,
+    ...combinedTOpts
+  };
+  const renderInner = (child, node, rootReactNode) => {
+    const childs = getChildren(child);
+    const mappedChildren = mapAST(childs, node.children, rootReactNode);
+    return hasValidReactChildren(childs) && mappedChildren.length === 0 || child.props?.i18nIsDynamicList ? childs : mappedChildren;
+  };
+  const pushTranslatedJSX = (child, inner, mem, i, isVoid) => {
+    if (child.dummy) {
+      child.children = inner;
+      mem.push((0,react__WEBPACK_IMPORTED_MODULE_0__.cloneElement)(child, {
+        key: i
+      }, isVoid ? undefined : inner));
+    } else {
+      mem.push(...react__WEBPACK_IMPORTED_MODULE_0__.Children.map([child], c => {
+        const props = {
+          ...c.props
+        };
+        delete props.i18nIsDynamicList;
+        return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(c.type, {
+          ...props,
+          key: i,
+          ref: c.props.ref ?? c.ref
+        }, isVoid ? null : inner);
+      }));
+    }
+  };
+  const mapAST = (reactNode, astNode, rootReactNode) => {
+    const reactNodes = getAsArray(reactNode);
+    const astNodes = getAsArray(astNode);
+    return astNodes.reduce((mem, node, i) => {
+      const translationContent = node.children?.[0]?.content && i18n.services.interpolator.interpolate(node.children[0].content, opts, i18n.language);
+      if (node.type === 'tag') {
+        let tmp = reactNodes[parseInt(node.name, 10)];
+        if (!tmp && knownComponentsMap) tmp = knownComponentsMap[node.name];
+        if (rootReactNode.length === 1 && !tmp) tmp = rootReactNode[0][node.name];
+        if (!tmp) tmp = {};
+        const child = Object.keys(node.attrs).length !== 0 ? mergeProps({
+          props: node.attrs
+        }, tmp) : tmp;
+        const isElement = (0,react__WEBPACK_IMPORTED_MODULE_0__.isValidElement)(child);
+        const isValidTranslationWithChildren = isElement && hasChildren(node, true) && !node.voidElement;
+        const isEmptyTransWithHTML = emptyChildrenButNeedsHandling && (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(child) && child.dummy && !isElement;
+        const isKnownComponent = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(knownComponentsMap) && Object.hasOwnProperty.call(knownComponentsMap, node.name);
+        if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(child)) {
+          const value = i18n.services.interpolator.interpolate(child, opts, i18n.language);
+          mem.push(value);
+        } else if (hasChildren(child) || isValidTranslationWithChildren) {
+          const inner = renderInner(child, node, rootReactNode);
+          pushTranslatedJSX(child, inner, mem, i);
+        } else if (isEmptyTransWithHTML) {
+          const inner = mapAST(reactNodes, node.children, rootReactNode);
+          pushTranslatedJSX(child, inner, mem, i);
+        } else if (Number.isNaN(parseFloat(node.name))) {
+          if (isKnownComponent) {
+            const inner = renderInner(child, node, rootReactNode);
+            pushTranslatedJSX(child, inner, mem, i, node.voidElement);
+          } else if (i18nOptions.transSupportBasicHtmlNodes && keepArray.indexOf(node.name) > -1) {
+            if (node.voidElement) {
+              mem.push((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(node.name, {
+                key: `${node.name}-${i}`
+              }));
+            } else {
+              const inner = mapAST(reactNodes, node.children, rootReactNode);
+              mem.push((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(node.name, {
+                key: `${node.name}-${i}`
+              }, inner));
+            }
+          } else if (node.voidElement) {
+            mem.push(`<${node.name} />`);
+          } else {
+            const inner = mapAST(reactNodes, node.children, rootReactNode);
+            mem.push(`<${node.name}>${inner}</${node.name}>`);
+          }
+        } else if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(child) && !isElement) {
+          const content = node.children[0] ? translationContent : null;
+          if (content) mem.push(content);
+        } else {
+          pushTranslatedJSX(child, translationContent, mem, i, node.children.length !== 1 || !translationContent);
+        }
+      } else if (node.type === 'text') {
+        const wrapTextNodes = i18nOptions.transWrapTextNodes;
+        const content = shouldUnescape ? i18nOptions.unescape(i18n.services.interpolator.interpolate(node.content, opts, i18n.language)) : i18n.services.interpolator.interpolate(node.content, opts, i18n.language);
+        if (wrapTextNodes) {
+          mem.push((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(wrapTextNodes, {
+            key: `${node.name}-${i}`
+          }, content));
+        } else {
+          mem.push(content);
+        }
+      }
+      return mem;
+    }, []);
+  };
+  const result = mapAST([{
+    dummy: true,
+    children: children || []
+  }], ast, getAsArray(children || []));
+  return getChildren(result[0]);
+};
+const fixComponentProps = (component, index, translation) => {
+  const componentKey = component.key || index;
+  const comp = (0,react__WEBPACK_IMPORTED_MODULE_0__.cloneElement)(component, {
+    key: componentKey
+  });
+  if (!comp.props || !comp.props.children || translation.indexOf(`${index}/>`) < 0 && translation.indexOf(`${index} />`) < 0) {
+    return comp;
+  }
+  function Componentized() {
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(react__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, comp);
+  }
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(Componentized, {
+    key: componentKey
+  });
+};
+const generateArrayComponents = (components, translation) => components.map((c, index) => fixComponentProps(c, index, translation));
+const generateObjectComponents = (components, translation) => {
+  const componentMap = {};
+  Object.keys(components).forEach(c => {
+    Object.assign(componentMap, {
+      [c]: fixComponentProps(components[c], c, translation)
+    });
+  });
+  return componentMap;
+};
+const generateComponents = (components, translation, i18n, i18nKey) => {
+  if (!components) return null;
+  if (Array.isArray(components)) {
+    return generateArrayComponents(components, translation);
+  }
+  if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(components)) {
+    return generateObjectComponents(components, translation);
+  }
+  (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warnOnce)(i18n, 'TRANS_INVALID_COMPONENTS', `<Trans /> "components" prop expects an object or array`, {
+    i18nKey
+  });
+  return null;
+};
+const isComponentsMap = object => {
+  if (!(0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(object)) return false;
+  if (Array.isArray(object)) return false;
+  return Object.keys(object).reduce((acc, key) => acc && Number.isNaN(Number.parseFloat(key)), true);
+};
+function Trans({
+  children,
+  count,
+  parent,
+  i18nKey,
+  context,
+  tOptions = {},
+  values,
+  defaults,
+  components,
+  ns,
+  i18n: i18nFromProps,
+  t: tFromProps,
+  shouldUnescape,
+  ...additionalProps
+}) {
+  const i18n = i18nFromProps || (0,_i18nInstance_js__WEBPACK_IMPORTED_MODULE_4__.getI18n)();
+  if (!i18n) {
+    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warnOnce)(i18n, 'NO_I18NEXT_INSTANCE', `Trans: You need to pass in an i18next instance using i18nextReactModule`, {
+      i18nKey
+    });
+    return children;
+  }
+  const t = tFromProps || i18n.t.bind(i18n) || (k => k);
+  const reactI18nextOptions = {
+    ...(0,_defaults_js__WEBPACK_IMPORTED_MODULE_3__.getDefaults)(),
+    ...i18n.options?.react
+  };
+  let namespaces = ns || t.ns || i18n.options?.defaultNS;
+  namespaces = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(namespaces) ? [namespaces] : namespaces || ['translation'];
+  const nodeAsString = nodesToString(children, reactI18nextOptions, i18n, i18nKey);
+  const defaultValue = defaults || nodeAsString || reactI18nextOptions.transEmptyNodeValue || i18nKey;
+  const {
+    hashTransKey
+  } = reactI18nextOptions;
+  const key = i18nKey || (hashTransKey ? hashTransKey(nodeAsString || defaultValue) : nodeAsString || defaultValue);
+  if (i18n.options?.interpolation?.defaultVariables) {
+    values = values && Object.keys(values).length > 0 ? {
+      ...values,
+      ...i18n.options.interpolation.defaultVariables
+    } : {
+      ...i18n.options.interpolation.defaultVariables
+    };
+  }
+  const interpolationOverride = values || count !== undefined && !i18n.options?.interpolation?.alwaysFormat || !children ? tOptions.interpolation : {
+    interpolation: {
+      ...tOptions.interpolation,
+      prefix: '#$?',
+      suffix: '?$#'
+    }
+  };
+  const combinedTOpts = {
+    ...tOptions,
+    context: context || tOptions.context,
+    count,
+    ...values,
+    ...interpolationOverride,
+    defaultValue,
+    ns: namespaces
+  };
+  const translation = key ? t(key, combinedTOpts) : defaultValue;
+  const generatedComponents = generateComponents(components, translation, i18n, i18nKey);
+  let indexedChildren = generatedComponents || children;
+  let componentsMap = null;
+  if (isComponentsMap(generatedComponents)) {
+    componentsMap = generatedComponents;
+    indexedChildren = children;
+  }
+  const content = renderNodes(indexedChildren, componentsMap, translation, i18n, reactI18nextOptions, combinedTOpts, shouldUnescape);
+  const useAsParent = parent ?? reactI18nextOptions.defaultTransParent;
+  return useAsParent ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(useAsParent, additionalProps, content) : content;
+}
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/Translation.js":
+/*!***********************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/Translation.js ***!
+  \***********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   Translation: () => (/* binding */ Translation)
+/* harmony export */ });
+/* harmony import */ var _useTranslation_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./useTranslation.js */ "./node_modules/react-i18next/dist/es/useTranslation.js");
+
+const Translation = ({
+  ns,
+  children,
+  ...options
+}) => {
+  const [t, i18n, ready] = (0,_useTranslation_js__WEBPACK_IMPORTED_MODULE_0__.useTranslation)(ns, options);
+  return children(t, {
+    i18n,
+    lng: i18n.language
+  }, ready);
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/context.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/context.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   I18nContext: () => (/* binding */ I18nContext),
+/* harmony export */   ReportNamespaces: () => (/* binding */ ReportNamespaces),
+/* harmony export */   composeInitialProps: () => (/* binding */ composeInitialProps),
+/* harmony export */   getDefaults: () => (/* reexport safe */ _defaults_js__WEBPACK_IMPORTED_MODULE_1__.getDefaults),
+/* harmony export */   getI18n: () => (/* reexport safe */ _i18nInstance_js__WEBPACK_IMPORTED_MODULE_2__.getI18n),
+/* harmony export */   getInitialProps: () => (/* binding */ getInitialProps),
+/* harmony export */   initReactI18next: () => (/* reexport safe */ _initReactI18next_js__WEBPACK_IMPORTED_MODULE_3__.initReactI18next),
+/* harmony export */   setDefaults: () => (/* reexport safe */ _defaults_js__WEBPACK_IMPORTED_MODULE_1__.setDefaults),
+/* harmony export */   setI18n: () => (/* reexport safe */ _i18nInstance_js__WEBPACK_IMPORTED_MODULE_2__.setI18n)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _defaults_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./defaults.js */ "./node_modules/react-i18next/dist/es/defaults.js");
+/* harmony import */ var _i18nInstance_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./i18nInstance.js */ "./node_modules/react-i18next/dist/es/i18nInstance.js");
+/* harmony import */ var _initReactI18next_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./initReactI18next.js */ "./node_modules/react-i18next/dist/es/initReactI18next.js");
+
+
+
+
+
+const I18nContext = (0,react__WEBPACK_IMPORTED_MODULE_0__.createContext)();
+class ReportNamespaces {
+  constructor() {
+    this.usedNamespaces = {};
+  }
+  addUsedNamespaces(namespaces) {
+    namespaces.forEach(ns => {
+      if (!this.usedNamespaces[ns]) this.usedNamespaces[ns] = true;
+    });
+  }
+  getUsedNamespaces() {
+    return Object.keys(this.usedNamespaces);
+  }
+}
+const composeInitialProps = ForComponent => async ctx => {
+  const componentsInitialProps = (await ForComponent.getInitialProps?.(ctx)) ?? {};
+  const i18nInitialProps = getInitialProps();
+  return {
+    ...componentsInitialProps,
+    ...i18nInitialProps
+  };
+};
+const getInitialProps = () => {
+  const i18n = (0,_i18nInstance_js__WEBPACK_IMPORTED_MODULE_2__.getI18n)();
+  const namespaces = i18n.reportNamespaces?.getUsedNamespaces() ?? [];
+  const ret = {};
+  const initialI18nStore = {};
+  i18n.languages.forEach(l => {
+    initialI18nStore[l] = {};
+    namespaces.forEach(ns => {
+      initialI18nStore[l][ns] = i18n.getResourceBundle(l, ns) || {};
+    });
+  });
+  ret.initialI18nStore = initialI18nStore;
+  ret.initialLanguage = i18n.language;
+  return ret;
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/defaults.js":
+/*!********************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/defaults.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getDefaults: () => (/* binding */ getDefaults),
+/* harmony export */   setDefaults: () => (/* binding */ setDefaults)
+/* harmony export */ });
+/* harmony import */ var _unescape_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./unescape.js */ "./node_modules/react-i18next/dist/es/unescape.js");
+
+let defaultOptions = {
+  bindI18n: 'languageChanged',
+  bindI18nStore: '',
+  transEmptyNodeValue: '',
+  transSupportBasicHtmlNodes: true,
+  transWrapTextNodes: '',
+  transKeepBasicHtmlNodesFor: ['br', 'strong', 'i', 'p'],
+  useSuspense: true,
+  unescape: _unescape_js__WEBPACK_IMPORTED_MODULE_0__.unescape
+};
+const setDefaults = (options = {}) => {
+  defaultOptions = {
+    ...defaultOptions,
+    ...options
+  };
+};
+const getDefaults = () => defaultOptions;
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/i18nInstance.js":
+/*!************************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/i18nInstance.js ***!
+  \************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getI18n: () => (/* binding */ getI18n),
+/* harmony export */   setI18n: () => (/* binding */ setI18n)
+/* harmony export */ });
+let i18nInstance;
+const setI18n = instance => {
+  i18nInstance = instance;
+};
+const getI18n = () => i18nInstance;
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/index.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/index.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   I18nContext: () => (/* reexport safe */ _context_js__WEBPACK_IMPORTED_MODULE_11__.I18nContext),
+/* harmony export */   I18nextProvider: () => (/* reexport safe */ _I18nextProvider_js__WEBPACK_IMPORTED_MODULE_5__.I18nextProvider),
+/* harmony export */   Trans: () => (/* reexport safe */ _Trans_js__WEBPACK_IMPORTED_MODULE_0__.Trans),
+/* harmony export */   TransWithoutContext: () => (/* reexport safe */ _TransWithoutContext_js__WEBPACK_IMPORTED_MODULE_1__.Trans),
+/* harmony export */   Translation: () => (/* reexport safe */ _Translation_js__WEBPACK_IMPORTED_MODULE_4__.Translation),
+/* harmony export */   composeInitialProps: () => (/* reexport safe */ _context_js__WEBPACK_IMPORTED_MODULE_11__.composeInitialProps),
+/* harmony export */   date: () => (/* binding */ date),
+/* harmony export */   getDefaults: () => (/* reexport safe */ _defaults_js__WEBPACK_IMPORTED_MODULE_9__.getDefaults),
+/* harmony export */   getI18n: () => (/* reexport safe */ _i18nInstance_js__WEBPACK_IMPORTED_MODULE_10__.getI18n),
+/* harmony export */   getInitialProps: () => (/* reexport safe */ _context_js__WEBPACK_IMPORTED_MODULE_11__.getInitialProps),
+/* harmony export */   initReactI18next: () => (/* reexport safe */ _initReactI18next_js__WEBPACK_IMPORTED_MODULE_8__.initReactI18next),
+/* harmony export */   number: () => (/* binding */ number),
+/* harmony export */   plural: () => (/* binding */ plural),
+/* harmony export */   select: () => (/* binding */ select),
+/* harmony export */   selectOrdinal: () => (/* binding */ selectOrdinal),
+/* harmony export */   setDefaults: () => (/* reexport safe */ _defaults_js__WEBPACK_IMPORTED_MODULE_9__.setDefaults),
+/* harmony export */   setI18n: () => (/* reexport safe */ _i18nInstance_js__WEBPACK_IMPORTED_MODULE_10__.setI18n),
+/* harmony export */   time: () => (/* binding */ time),
+/* harmony export */   useSSR: () => (/* reexport safe */ _useSSR_js__WEBPACK_IMPORTED_MODULE_7__.useSSR),
+/* harmony export */   useTranslation: () => (/* reexport safe */ _useTranslation_js__WEBPACK_IMPORTED_MODULE_2__.useTranslation),
+/* harmony export */   withSSR: () => (/* reexport safe */ _withSSR_js__WEBPACK_IMPORTED_MODULE_6__.withSSR),
+/* harmony export */   withTranslation: () => (/* reexport safe */ _withTranslation_js__WEBPACK_IMPORTED_MODULE_3__.withTranslation)
+/* harmony export */ });
+/* harmony import */ var _Trans_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Trans.js */ "./node_modules/react-i18next/dist/es/Trans.js");
+/* harmony import */ var _TransWithoutContext_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./TransWithoutContext.js */ "./node_modules/react-i18next/dist/es/TransWithoutContext.js");
+/* harmony import */ var _useTranslation_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./useTranslation.js */ "./node_modules/react-i18next/dist/es/useTranslation.js");
+/* harmony import */ var _withTranslation_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./withTranslation.js */ "./node_modules/react-i18next/dist/es/withTranslation.js");
+/* harmony import */ var _Translation_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Translation.js */ "./node_modules/react-i18next/dist/es/Translation.js");
+/* harmony import */ var _I18nextProvider_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./I18nextProvider.js */ "./node_modules/react-i18next/dist/es/I18nextProvider.js");
+/* harmony import */ var _withSSR_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./withSSR.js */ "./node_modules/react-i18next/dist/es/withSSR.js");
+/* harmony import */ var _useSSR_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./useSSR.js */ "./node_modules/react-i18next/dist/es/useSSR.js");
+/* harmony import */ var _initReactI18next_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./initReactI18next.js */ "./node_modules/react-i18next/dist/es/initReactI18next.js");
+/* harmony import */ var _defaults_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./defaults.js */ "./node_modules/react-i18next/dist/es/defaults.js");
+/* harmony import */ var _i18nInstance_js__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./i18nInstance.js */ "./node_modules/react-i18next/dist/es/i18nInstance.js");
+/* harmony import */ var _context_js__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./context.js */ "./node_modules/react-i18next/dist/es/context.js");
+
+
+
+
+
+
+
+
+
+
+
+
+const date = () => '';
+const time = () => '';
+const number = () => '';
+const select = () => '';
+const plural = () => '';
+const selectOrdinal = () => '';
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/initReactI18next.js":
+/*!****************************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/initReactI18next.js ***!
+  \****************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   initReactI18next: () => (/* binding */ initReactI18next)
+/* harmony export */ });
+/* harmony import */ var _defaults_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./defaults.js */ "./node_modules/react-i18next/dist/es/defaults.js");
+/* harmony import */ var _i18nInstance_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./i18nInstance.js */ "./node_modules/react-i18next/dist/es/i18nInstance.js");
+
+
+const initReactI18next = {
+  type: '3rdParty',
+  init(instance) {
+    (0,_defaults_js__WEBPACK_IMPORTED_MODULE_0__.setDefaults)(instance.options.react);
+    (0,_i18nInstance_js__WEBPACK_IMPORTED_MODULE_1__.setI18n)(instance);
+  }
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/unescape.js":
+/*!********************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/unescape.js ***!
+  \********************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   unescape: () => (/* binding */ unescape)
+/* harmony export */ });
+const matchHtmlEntity = /&(?:amp|#38|lt|#60|gt|#62|apos|#39|quot|#34|nbsp|#160|copy|#169|reg|#174|hellip|#8230|#x2F|#47);/g;
+const htmlEntities = {
+  '&amp;': '&',
+  '&#38;': '&',
+  '&lt;': '<',
+  '&#60;': '<',
+  '&gt;': '>',
+  '&#62;': '>',
+  '&apos;': "'",
+  '&#39;': "'",
+  '&quot;': '"',
+  '&#34;': '"',
+  '&nbsp;': ' ',
+  '&#160;': ' ',
+  '&copy;': '©',
+  '&#169;': '©',
+  '&reg;': '®',
+  '&#174;': '®',
+  '&hellip;': '…',
+  '&#8230;': '…',
+  '&#x2F;': '/',
+  '&#47;': '/'
+};
+const unescapeHtmlEntity = m => htmlEntities[m];
+const unescape = text => text.replace(matchHtmlEntity, unescapeHtmlEntity);
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/useSSR.js":
+/*!******************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/useSSR.js ***!
+  \******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useSSR: () => (/* binding */ useSSR)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _context_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./context.js */ "./node_modules/react-i18next/dist/es/context.js");
+
+
+const useSSR = (initialI18nStore, initialLanguage, props = {}) => {
+  const {
+    i18n: i18nFromProps
+  } = props;
+  const {
+    i18n: i18nFromContext
+  } = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_context_js__WEBPACK_IMPORTED_MODULE_1__.I18nContext) || {};
+  const i18n = i18nFromProps || i18nFromContext || (0,_context_js__WEBPACK_IMPORTED_MODULE_1__.getI18n)();
+  if (i18n.options?.isClone) return;
+  if (initialI18nStore && !i18n.initializedStoreOnce) {
+    i18n.services.resourceStore.data = initialI18nStore;
+    i18n.options.ns = Object.values(initialI18nStore).reduce((mem, lngResources) => {
+      Object.keys(lngResources).forEach(ns => {
+        if (mem.indexOf(ns) < 0) mem.push(ns);
+      });
+      return mem;
+    }, i18n.options.ns);
+    i18n.initializedStoreOnce = true;
+    i18n.isInitialized = true;
+  }
+  if (initialLanguage && !i18n.initializedLanguageOnce) {
+    i18n.changeLanguage(initialLanguage);
+    i18n.initializedLanguageOnce = true;
+  }
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/useTranslation.js":
+/*!**************************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/useTranslation.js ***!
+  \**************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   useTranslation: () => (/* binding */ useTranslation)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _context_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./context.js */ "./node_modules/react-i18next/dist/es/context.js");
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils.js */ "./node_modules/react-i18next/dist/es/utils.js");
+
+
+
+const usePrevious = (value, ignore) => {
+  const ref = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    ref.current = ignore ? ref.current : value;
+  }, [value, ignore]);
+  return ref.current;
+};
+const alwaysNewT = (i18n, language, namespace, keyPrefix) => i18n.getFixedT(language, namespace, keyPrefix);
+const useMemoizedT = (i18n, language, namespace, keyPrefix) => (0,react__WEBPACK_IMPORTED_MODULE_0__.useCallback)(alwaysNewT(i18n, language, namespace, keyPrefix), [i18n, language, namespace, keyPrefix]);
+const useTranslation = (ns, props = {}) => {
+  const {
+    i18n: i18nFromProps
+  } = props;
+  const {
+    i18n: i18nFromContext,
+    defaultNS: defaultNSFromContext
+  } = (0,react__WEBPACK_IMPORTED_MODULE_0__.useContext)(_context_js__WEBPACK_IMPORTED_MODULE_1__.I18nContext) || {};
+  const i18n = i18nFromProps || i18nFromContext || (0,_context_js__WEBPACK_IMPORTED_MODULE_1__.getI18n)();
+  if (i18n && !i18n.reportNamespaces) i18n.reportNamespaces = new _context_js__WEBPACK_IMPORTED_MODULE_1__.ReportNamespaces();
+  if (!i18n) {
+    (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warnOnce)(i18n, 'NO_I18NEXT_INSTANCE', 'useTranslation: You will need to pass in an i18next instance by using initReactI18next');
+    const notReadyT = (k, optsOrDefaultValue) => {
+      if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(optsOrDefaultValue)) return optsOrDefaultValue;
+      if ((0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isObject)(optsOrDefaultValue) && (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(optsOrDefaultValue.defaultValue)) return optsOrDefaultValue.defaultValue;
+      return Array.isArray(k) ? k[k.length - 1] : k;
+    };
+    const retNotReady = [notReadyT, {}, false];
+    retNotReady.t = notReadyT;
+    retNotReady.i18n = {};
+    retNotReady.ready = false;
+    return retNotReady;
+  }
+  if (i18n.options.react?.wait) (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.warnOnce)(i18n, 'DEPRECATED_OPTION', 'useTranslation: It seems you are still using the old wait option, you may migrate to the new useSuspense behaviour.');
+  const i18nOptions = {
+    ...(0,_context_js__WEBPACK_IMPORTED_MODULE_1__.getDefaults)(),
+    ...i18n.options.react,
+    ...props
+  };
+  const {
+    useSuspense,
+    keyPrefix
+  } = i18nOptions;
+  let namespaces = ns || defaultNSFromContext || i18n.options?.defaultNS;
+  namespaces = (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.isString)(namespaces) ? [namespaces] : namespaces || ['translation'];
+  i18n.reportNamespaces.addUsedNamespaces?.(namespaces);
+  const ready = (i18n.isInitialized || i18n.initializedStoreOnce) && namespaces.every(n => (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.hasLoadedNamespace)(n, i18n, i18nOptions));
+  const memoGetT = useMemoizedT(i18n, props.lng || null, i18nOptions.nsMode === 'fallback' ? namespaces : namespaces[0], keyPrefix);
+  const getT = () => memoGetT;
+  const getNewT = () => alwaysNewT(i18n, props.lng || null, i18nOptions.nsMode === 'fallback' ? namespaces : namespaces[0], keyPrefix);
+  const [t, setT] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(getT);
+  let joinedNS = namespaces.join();
+  if (props.lng) joinedNS = `${props.lng}${joinedNS}`;
+  const previousJoinedNS = usePrevious(joinedNS);
+  const isMounted = (0,react__WEBPACK_IMPORTED_MODULE_0__.useRef)(true);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    const {
+      bindI18n,
+      bindI18nStore
+    } = i18nOptions;
+    isMounted.current = true;
+    if (!ready && !useSuspense) {
+      if (props.lng) {
+        (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.loadLanguages)(i18n, props.lng, namespaces, () => {
+          if (isMounted.current) setT(getNewT);
+        });
+      } else {
+        (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.loadNamespaces)(i18n, namespaces, () => {
+          if (isMounted.current) setT(getNewT);
+        });
+      }
+    }
+    if (ready && previousJoinedNS && previousJoinedNS !== joinedNS && isMounted.current) {
+      setT(getNewT);
+    }
+    const boundReset = () => {
+      if (isMounted.current) setT(getNewT);
+    };
+    if (bindI18n) i18n?.on(bindI18n, boundReset);
+    if (bindI18nStore) i18n?.store.on(bindI18nStore, boundReset);
+    return () => {
+      isMounted.current = false;
+      if (i18n && bindI18n) bindI18n?.split(' ').forEach(e => i18n.off(e, boundReset));
+      if (bindI18nStore && i18n) bindI18nStore.split(' ').forEach(e => i18n.store.off(e, boundReset));
+    };
+  }, [i18n, joinedNS]);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (isMounted.current && ready) {
+      setT(getT);
+    }
+  }, [i18n, keyPrefix, ready]);
+  const ret = [t, i18n, ready];
+  ret.t = t;
+  ret.i18n = i18n;
+  ret.ready = ready;
+  if (ready) return ret;
+  if (!ready && !useSuspense) return ret;
+  throw new Promise(resolve => {
+    if (props.lng) {
+      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.loadLanguages)(i18n, props.lng, namespaces, () => resolve());
+    } else {
+      (0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.loadNamespaces)(i18n, namespaces, () => resolve());
+    }
+  });
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/utils.js":
+/*!*****************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/utils.js ***!
+  \*****************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   getDisplayName: () => (/* binding */ getDisplayName),
+/* harmony export */   hasLoadedNamespace: () => (/* binding */ hasLoadedNamespace),
+/* harmony export */   isObject: () => (/* binding */ isObject),
+/* harmony export */   isString: () => (/* binding */ isString),
+/* harmony export */   loadLanguages: () => (/* binding */ loadLanguages),
+/* harmony export */   loadNamespaces: () => (/* binding */ loadNamespaces),
+/* harmony export */   warn: () => (/* binding */ warn),
+/* harmony export */   warnOnce: () => (/* binding */ warnOnce)
+/* harmony export */ });
+const warn = (i18n, code, msg, rest) => {
+  const args = [msg, {
+    code,
+    ...(rest || {})
+  }];
+  if (i18n?.services?.logger?.forward) {
+    return i18n.services.logger.forward(args, 'warn', 'react-i18next::', true);
+  }
+  if (isString(args[0])) args[0] = `react-i18next:: ${args[0]}`;
+  if (i18n?.services?.logger?.warn) {
+    i18n.services.logger.warn(...args);
+  } else if (console?.warn) {
+    console.warn(...args);
+  }
+};
+const alreadyWarned = {};
+const warnOnce = (i18n, code, msg, rest) => {
+  if (isString(msg) && alreadyWarned[msg]) return;
+  if (isString(msg)) alreadyWarned[msg] = new Date();
+  warn(i18n, code, msg, rest);
+};
+const loadedClb = (i18n, cb) => () => {
+  if (i18n.isInitialized) {
+    cb();
+  } else {
+    const initialized = () => {
+      setTimeout(() => {
+        i18n.off('initialized', initialized);
+      }, 0);
+      cb();
+    };
+    i18n.on('initialized', initialized);
+  }
+};
+const loadNamespaces = (i18n, ns, cb) => {
+  i18n.loadNamespaces(ns, loadedClb(i18n, cb));
+};
+const loadLanguages = (i18n, lng, ns, cb) => {
+  if (isString(ns)) ns = [ns];
+  if (i18n.options.preload && i18n.options.preload.indexOf(lng) > -1) return loadNamespaces(i18n, ns, cb);
+  ns.forEach(n => {
+    if (i18n.options.ns.indexOf(n) < 0) i18n.options.ns.push(n);
+  });
+  i18n.loadLanguages(lng, loadedClb(i18n, cb));
+};
+const hasLoadedNamespace = (ns, i18n, options = {}) => {
+  if (!i18n.languages || !i18n.languages.length) {
+    warnOnce(i18n, 'NO_LANGUAGES', 'i18n.languages were undefined or empty', {
+      languages: i18n.languages
+    });
+    return true;
+  }
+  return i18n.hasLoadedNamespace(ns, {
+    lng: options.lng,
+    precheck: (i18nInstance, loadNotPending) => {
+      if (options.bindI18n && options.bindI18n.indexOf('languageChanging') > -1 && i18nInstance.services.backendConnector.backend && i18nInstance.isLanguageChangingTo && !loadNotPending(i18nInstance.isLanguageChangingTo, ns)) return false;
+    }
+  });
+};
+const getDisplayName = Component => Component.displayName || Component.name || (isString(Component) && Component.length > 0 ? Component : 'Unknown');
+const isString = obj => typeof obj === 'string';
+const isObject = obj => typeof obj === 'object' && obj !== null;
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/withSSR.js":
+/*!*******************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/withSSR.js ***!
+  \*******************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   withSSR: () => (/* binding */ withSSR)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _useSSR_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./useSSR.js */ "./node_modules/react-i18next/dist/es/useSSR.js");
+/* harmony import */ var _context_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./context.js */ "./node_modules/react-i18next/dist/es/context.js");
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./utils.js */ "./node_modules/react-i18next/dist/es/utils.js");
+
+
+
+
+const withSSR = () => function Extend(WrappedComponent) {
+  function I18nextWithSSR({
+    initialI18nStore,
+    initialLanguage,
+    ...rest
+  }) {
+    (0,_useSSR_js__WEBPACK_IMPORTED_MODULE_1__.useSSR)(initialI18nStore, initialLanguage);
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(WrappedComponent, {
+      ...rest
+    });
+  }
+  I18nextWithSSR.getInitialProps = (0,_context_js__WEBPACK_IMPORTED_MODULE_2__.composeInitialProps)(WrappedComponent);
+  I18nextWithSSR.displayName = `withI18nextSSR(${(0,_utils_js__WEBPACK_IMPORTED_MODULE_3__.getDisplayName)(WrappedComponent)})`;
+  I18nextWithSSR.WrappedComponent = WrappedComponent;
+  return I18nextWithSSR;
+};
+
+/***/ }),
+
+/***/ "./node_modules/react-i18next/dist/es/withTranslation.js":
+/*!***************************************************************!*\
+  !*** ./node_modules/react-i18next/dist/es/withTranslation.js ***!
+  \***************************************************************/
+/***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   withTranslation: () => (/* binding */ withTranslation)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var _useTranslation_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./useTranslation.js */ "./node_modules/react-i18next/dist/es/useTranslation.js");
+/* harmony import */ var _utils_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./utils.js */ "./node_modules/react-i18next/dist/es/utils.js");
+
+
+
+const withTranslation = (ns, options = {}) => function Extend(WrappedComponent) {
+  function I18nextWithTranslation({
+    forwardedRef,
+    ...rest
+  }) {
+    const [t, i18n, ready] = (0,_useTranslation_js__WEBPACK_IMPORTED_MODULE_1__.useTranslation)(ns, {
+      ...rest,
+      keyPrefix: options.keyPrefix
+    });
+    const passDownProps = {
+      ...rest,
+      t,
+      i18n,
+      tReady: ready
+    };
+    if (options.withRef && forwardedRef) {
+      passDownProps.ref = forwardedRef;
+    } else if (!options.withRef && forwardedRef) {
+      passDownProps.forwardedRef = forwardedRef;
+    }
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(WrappedComponent, passDownProps);
+  }
+  I18nextWithTranslation.displayName = `withI18nextTranslation(${(0,_utils_js__WEBPACK_IMPORTED_MODULE_2__.getDisplayName)(WrappedComponent)})`;
+  I18nextWithTranslation.WrappedComponent = WrappedComponent;
+  const forwardRef = (props, ref) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(I18nextWithTranslation, Object.assign({}, props, {
+    forwardedRef: ref
+  }));
+  return options.withRef ? (0,react__WEBPACK_IMPORTED_MODULE_0__.forwardRef)(forwardRef) : I18nextWithTranslation;
+};
+
+/***/ }),
+
+/***/ "./node_modules/void-elements/index.js":
+/*!*********************************************!*\
+  !*** ./node_modules/void-elements/index.js ***!
+  \*********************************************/
+/***/ ((module) => {
+
+/**
+ * This file automatically generated from `pre-publish.js`.
+ * Do not manually edit.
+ */
+
+module.exports = {
+  "area": true,
+  "base": true,
+  "br": true,
+  "col": true,
+  "embed": true,
+  "hr": true,
+  "img": true,
+  "input": true,
+  "link": true,
+  "meta": true,
+  "param": true,
+  "source": true,
+  "track": true,
+  "wbr": true
+};
+
+
+/***/ }),
+
+/***/ "./src/MarketplaceApp.jsx":
+/*!********************************!*\
+  !*** ./src/MarketplaceApp.jsx ***!
+  \********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _components_MarketPlace__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./components/MarketPlace */ "./src/components/MarketPlace.jsx");
+/* harmony import */ var _components_ProductBanner__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./components/ProductBanner */ "./src/components/ProductBanner.jsx");
+
+
+
+
+const MarketplaceApp = ({
+  apiBaseUrl,
+  useWPHandlers,
+  wpConfig,
+  enableDefaultStyles,
+  assetsBaseUrl
+}) => {
+  // Track detail page visibility with state
+  const [isDetailPage, setIsDetailPage] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin"));
+
+  // Listen for URL changes (both popstate and custom events)
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    const checkDetailPage = () => {
+      const hasPlugin = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin");
+      setIsDetailPage(!!hasPlugin);
+    };
+
+    // Listen for browser back/forward
+    window.addEventListener('popstate', checkDetailPage);
+
+    // Listen for programmatic URL changes (from pushState)
+    const originalPushState = window.history.pushState;
+    window.history.pushState = function (...args) {
+      originalPushState.apply(this, args);
+      checkDetailPage();
+    };
+    return () => {
+      window.removeEventListener('popstate', checkDetailPage);
+      window.history.pushState = originalPushState;
+    };
+  }, []);
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-activated"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid "
+  }, !isDetailPage && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_ProductBanner__WEBPACK_IMPORTED_MODULE_2__["default"], null), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_components_MarketPlace__WEBPACK_IMPORTED_MODULE_1__["default"], {
+    apiBaseUrl: apiBaseUrl,
+    useWPHandlers: useWPHandlers,
+    wpConfig: wpConfig,
+    enableDefaultStyles: enableDefaultStyles,
+    assetsBaseUrl: assetsBaseUrl
+  })));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (MarketplaceApp);
+
+/***/ }),
+
+/***/ "./src/components/MarketPlace.jsx":
+/*!****************************************!*\
+  !*** ./src/components/MarketPlace.jsx ***!
+  \****************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ Marketplace)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _normalised_plugins__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./normalised-plugins */ "./src/components/normalised-plugins.jsx");
+/* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @group.one/gravity */ "./node_modules/@group.one/gravity/dist/index.es.js");
+/* harmony import */ var _group_one_gravity__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_group_one_gravity__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react_i18next__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-i18next */ "./node_modules/react-i18next/dist/es/index.js");
+/* harmony import */ var _ProductDetail__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ProductDetail */ "./src/components/ProductDetail.jsx");
+
+
+
+
+
+
+function Marketplace({
+  apiBaseUrl,
+  useWPHandlers,
+  wpConfig,
+  enableDefaultStyles,
+  assetsBaseUrl
+}) {
+  const [plugins, setPlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]);
+  const [loading, setLoading] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(true);
+  const [pluginInAction, setPluginInAction] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [downloadingPlugins, setDownloadingPlugins] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)({});
+  const [selectedPlugin, setSelectedPlugin] = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null);
+
+  // Construct icon base URL with fallback logic
+  const assetBase = assetsBaseUrl || typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl || "";
+  const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+
+  // Determine if a plugin slug is in the URL
+  const pluginFromQuery = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
+
+  // Get base page URL (without plugin parameter)
+  const getBaseUrl = () => {
+    if (typeof window === "undefined") return "";
+    const url = new URL(window.location.href);
+    url.searchParams.delete("plugin");
+    return url.toString();
+  };
+
+  // After plugins load, select plugin from query if present
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (pluginFromQuery && plugins.length) {
+      const match = plugins.find(p => p.slug === pluginFromQuery);
+      if (match) setSelectedPlugin(match);
+    }
+  }, [pluginFromQuery, plugins]);
+  const {
+    t
+  } = (0,react_i18next__WEBPACK_IMPORTED_MODULE_3__.useTranslation)();
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    async function fetchPlugins() {
+      try {
+        const res = await fetch(`${apiBaseUrl}`);
+        const json = await res.json();
+        const normalized = (0,_normalised_plugins__WEBPACK_IMPORTED_MODULE_1__.normalizePlugins)(json);
+        setPlugins(normalized);
+      } catch (e) {
+        console.error("Failed to fetch plugins", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchPlugins();
+  }, [apiBaseUrl, useWPHandlers, wpConfig]);
+  const handlePluginAction = async (action, plugin) => {
+    setPluginInAction(prev => ({
+      ...prev,
+      [plugin.slug]: true
+    }));
+    try {
+      let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
+
+      // prepare encoded download param (safe if plugin.download is undefined)
+      const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
+      if (useWPHandlers) {
+        // original WP-AJAX URL + download_url appended
+        url = `${wpConfig.ajax_url}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
+      } else {
+        // append download_url to non-WP URL (adds ? or & correctly)
+        url = url + (url.includes('?') ? '&' : '?') + downloadParam;
+      }
+      const res = await fetch(url, {
+        method: "POST"
+      });
+      const result = await res.json();
+      if (result.success) {
+        setPlugins(prev => prev.map(p => p.slug === plugin.slug ? {
+          ...p,
+          installed: result.data.installed,
+          activated: result.data.activated
+        } : p));
+      } else {
+        alert(result.data?.message || "Failed to perform action");
+      }
+    } catch (err) {
+      console.error("Plugin action failed", err);
+    } finally {
+      setPluginInAction(prev => ({
+        ...prev,
+        [plugin.slug]: false
+      }));
+    }
+  };
+  const handleDownloadClick = (e, plugin) => {
+    e.stopPropagation();
+
+    // Set downloading state
+    setDownloadingPlugins(prev => ({
+      ...prev,
+      [plugin.slug]: true
+    }));
+
+    // Reset after a short delay (download is triggered immediately)
+    // The browser handles the actual download, so we simulate completion
+    setTimeout(() => {
+      setDownloadingPlugins(prev => ({
+        ...prev,
+        [plugin.slug]: false
+      }));
+    }, 2000);
+  };
+  const openDetail = (plugin, e) => {
+    // Debug to confirm click
+    console.log("Opening detail for plugin:", plugin.slug);
+    setSelectedPlugin(plugin);
+  };
+
+  // Debug: log whenever selectedPlugin changes
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(() => {
+    if (selectedPlugin) {
+      console.log("Selected plugin state now:", selectedPlugin.slug);
+    }
+  }, [selectedPlugin]);
+  if (loading) return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Loading plugins...");
+
+  // Early return: show full page detail instead of list
+  if (selectedPlugin && pluginFromQuery) {
+    return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {
+      plugin: selectedPlugin,
+      onClose: () => {
+        // Return to listing (clear selection and URL)
+        setSelectedPlugin(null);
+        window.location.href = getBaseUrl();
+      },
+      assetsBaseUrl: assetsBaseUrl,
+      useWPHandlers: useWPHandlers,
+      pluginInAction: pluginInAction,
+      onAction: handlePluginAction,
+      usePortal: false
+    });
+  }
+
+  // Group plugins by a single, specific category (first category), avoid duplicates across headings
+  const categoryMap = new Map();
+
+  // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
+  const bySlug = new Map();
+  plugins.forEach(p => {
+    if (!bySlug.has(p.slug)) bySlug.set(p.slug, p);
+  });
+  Array.from(bySlug.values()).forEach(p => {
+    const primary = Array.isArray(p.categories) && p.categories.length ? String(p.categories[0]) : "Others";
+    if (!categoryMap.has(primary)) categoryMap.set(primary, []);
+    categoryMap.get(primary).push(p);
+  });
+  const categories = Array.from(categoryMap.entries());
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-mt-fluid"
+  }, categories.map(([cat, list]) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    key: cat,
+    className: "category-section"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-heading-md gv-mb-sm"
+  }, cat), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "A range of versatile plugins to enhance your WordPress experience and add new functionality with ease."), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg"
+  }, list.map(plugin => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    key: plugin.slug,
+    className: "gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-span-2"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    className: "gv-tile",
+    src: `${iconBase}add_box.svg`,
+    alt: "Performance Cache"
+  })), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-span-9"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "gv-text-lg"
+  }, plugin.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "oc-card-content"
+  }, " ", plugin.description ? plugin.description : plugin.shortDescription, " "), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-text-sm"
+  }, plugin.priceCurrency, " ", plugin.priceAmount)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-span-1"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: `${getBaseUrl()}&plugin=${plugin.slug}`,
+    className: "gv-reset-button",
+    style: {
+      display: "inline-block"
+    },
+    "aria-label": `View details for ${plugin.name}`,
+    onClick: e => {
+      e.preventDefault();
+      setSelectedPlugin(plugin);
+      const url = new URL(window.location.href);
+      url.searchParams.set("plugin", plugin.slug);
+      window.history.pushState({}, '', url.toString());
+    }
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    className: "gv-tile",
+    src: `${iconBase}arrow_forward.svg`,
+    alt: `View ${plugin.name} details`,
+    style: {
+      minWidth: "24px"
+    }
+  })))))))), selectedPlugin && !pluginFromQuery && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_ProductDetail__WEBPACK_IMPORTED_MODULE_4__["default"], {
+    plugin: selectedPlugin,
+    onClose: () => setSelectedPlugin(null),
+    assetsBaseUrl: assetsBaseUrl,
+    useWPHandlers: useWPHandlers,
+    pluginInAction: pluginInAction,
+    onAction: handlePluginAction
+  }));
+}
+
+/***/ }),
+
+/***/ "./src/components/PluginActions.jsx":
+/*!******************************************!*\
+  !*** ./src/components/PluginActions.jsx ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ PluginActions)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+function PluginActions({
+  plugin,
+  pluginInAction,
+  onAction
+}) {
+  const handleClick = action => {
+    // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
+    const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+    const isOnecomBrand = brand === "onecom";
+    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
+    const isNotInstalled = !plugin.installed;
+    if (isOnecomBrand && isSpecialPlugin && isNotInstalled && action === "install") {
+      // Dispatch custom event instead of calling onAction
+      const event = new CustomEvent("onecom-plugin-provision", {
+        detail: {
+          slug: plugin.slug
+        },
+        bubbles: true,
+        cancelable: true,
+        composed: true
+      });
+      // Dispatch on document so listeners using document.addEventListener receive it
+      document.dispatchEvent(event);
+      return;
+    }
+
+    // Default behavior
+    onAction(action, plugin);
+  };
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "plugin-actions gv-mt-md"
+  }, plugin.installed ? plugin.activated ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    className: "gv-button gv-button-secondary",
+    disabled: pluginInAction[plugin.slug],
+    onClick: () => handleClick("deactivate")
+  }, pluginInAction[plugin.slug] ? marketplaceConfig?.labels?.deactivating || 'Deactivating...' : marketplaceConfig?.labels?.deactivate || 'Deactivate') : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    className: "gv-button gv-button-primary",
+    disabled: pluginInAction[plugin.slug],
+    onClick: () => handleClick("activate")
+  }, pluginInAction[plugin.slug] ? marketplaceConfig?.labels?.activating || 'Activating...' : marketplaceConfig?.labels?.activate || 'Activate') : (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    className: "gv-button gv-button-secondary",
+    disabled: pluginInAction[plugin.slug],
+    onClick: () => handleClick("install")
+  }, pluginInAction[plugin.slug] ? marketplaceConfig?.labels?.installing || 'Installing...' : marketplaceConfig?.labels?.install || 'Install'));
+}
+
+/***/ }),
+
+/***/ "./src/components/ProductBanner.jsx":
+/*!******************************************!*\
+  !*** ./src/components/ProductBanner.jsx ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+
+
+const ProductBanner = () => {
+  return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
+    className: "gv-product-header"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content gv-stack-space-md gv-text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "gv-title gv-header-lg"
+  }, "one.com WP Marketplace"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Your place to find plugins, themes, and services for your site."), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("button", {
+    type: "button",
+    className: "gv-button gv-button-secondary"
+  }, "Learn more")), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-image"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("picture", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("source", {
+    media: "(min-width: 600px)",
+    srcSet: " https://gravity.group.one/guide-images/product-image@2x.png 2x, https://gravity.group.one/guide-images/product-image.png    1x "
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    src: "https://gravity.group.one/guide-images/product-image-mobile.png",
+    srcSet: " https://gravity.group.one/guide-images/product-image-mobile@2x.png 2x, https://gravity.group.one/guide-imagesproduct-image-mobile.png    1x ",
+    alt: "Product image"
+  }))));
+};
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ProductBanner);
+
+/***/ }),
+
+/***/ "./src/components/ProductDetail.jsx":
+/*!******************************************!*\
+  !*** ./src/components/ProductDetail.jsx ***!
+  \******************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ProductDetail)
+/* harmony export */ });
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "react-dom");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _PluginActions__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./PluginActions */ "./src/components/PluginActions.jsx");
+
+
+
+
+function ProductDetail({
+  plugin,
+  onClose,
+  assetsBaseUrl,
+  useWPHandlers,
+  pluginInAction,
+  onAction,
+  usePortal = true
+}) {
+  if (!plugin) return null;
+  const assetBase = assetsBaseUrl || typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl || "";
+  const imageURL = typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL || assetBase;
+  const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
+  const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+  const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+
+  // Extract data with fallbacks
+  const title = plugin.name || 'Product';
+  const description = plugin.description || plugin.shortDescription || 'No description available.';
+  const price = plugin.priceCurrency && plugin.priceAmount ? `${plugin.priceCurrency} ${plugin.priceAmount}` : '€ 0,-';
+
+  // Derive features from description or plugin data
+  const rawFeatureSource = plugin.features && plugin.features.length ? plugin.features : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
+  const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
+  while (keyFeatures.length < 3) keyFeatures.push('Sample feature');
+  const benefits = [keyFeatures[0], keyFeatures[1] || 'Improves performance', keyFeatures[2] || 'Easy setup'];
+  const coreFeatures = [{
+    name: keyFeatures[0],
+    desc: description.substring(0, 150) || 'Feature description'
+  }, {
+    name: keyFeatures[1],
+    desc: 'Enhances your WordPress experience with reliable performance'
+  }, {
+    name: keyFeatures[2],
+    desc: 'Easy to set up and configure with minimal technical knowledge'
+  }];
+  const content = (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: usePortal ? "gv-surface-dim" : "gv-surface-dim"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("article", {
+    className: "gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("nav", {
+    className: "gv-breadcrumbs gv-area-nav test-"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: "#",
+    onClick: e => {
+      e.preventDefault();
+      if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+        window.history.back();
+      } else if (onClose) {
+        onClose();
+      }
+    },
+    className: "gv-flex gv-items-center gv-gap-xs",
+    role: "button",
+    "aria-label": "Go back"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    style: {
+      minWidth: "24px"
+    },
+    className: "gv-tile",
+    src: `${iconBase}chevron_left.svg`,
+    alt: "Back to plugins"
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", null, "Back"))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
+    className: "gv-product-header gv-area-header"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content gv-stack-space-md gv-text-sm"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h1", {
+    className: "gv-title gv-header-lg"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description), plugin.author && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", {
+    className: "gv-text-xs gv-mt-sm"
+  }, "Author: ", plugin.authorUrl ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: plugin.authorUrl
+  }, plugin.author) : plugin.author)), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-image"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("picture", null, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("source", {
+    media: "(min-width: 600px)",
+    srcSet: `${mainImage} 1x, ${mainImage} 2x`
+  }), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("img", {
+    src: mainImage,
+    srcSet: `${mainImage} 1x, ${mainImage} 2x`,
+    alt: `${title} image`
+  })))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-product-table gv-features-table gv-products-1 gv-area-table"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table",
+    role: "table"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-header",
+    role: "rowgroup"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-row",
+    role: "row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-product",
+    role: "columnheader"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-content"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title"
+  }, title), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, description.substring(0, 120), description.length > 120 ? '…' : '')), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-bottom"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price-container"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-price"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-price-text"
+  }, price), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-period"
+  }, "/mo"))), useWPHandlers ? (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_PluginActions__WEBPACK_IMPORTED_MODULE_2__["default"], {
+    plugin: plugin,
+    pluginInAction: pluginInAction,
+    onAction: onAction
+  }) : plugin.download && (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("a", {
+    href: plugin.download,
+    download: true,
+    className: "gv-button gv-button-secondary"
+  }, "Download"))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-section",
+    role: "rowgroup"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-section-header gv-table-row",
+    role: "row"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h4", {
+    className: "gv-title"
+  }, "Key features"))), keyFeatures.map((f, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-table-row",
+    role: "row",
+    key: i
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-cell",
+    role: "cell"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("span", {
+    className: "gv-cell-text"
+  }, f)))))))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-area-details gv-grid gv-gap-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Key benefits"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("ul", {
+    className: "gv-list-items gv-list-check gv-mode-condensed"
+  }, benefits.map((b, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("li", {
+    key: i
+  }, b)))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-text-max gv-text-sm gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Why choose ", title, "?"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "This plugin helps you enhance your site with reliable performance and simplicity. It is designed to integrate smoothly and scale as your needs grow."))), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-area-content gv-grid gv-gap-fluid"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("section", {
+    className: "gv-text-sm gv-stack-space-md"
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h2", {
+    className: "gv-title gv-text-bold gv-text-lg"
+  }, "Core features overview"), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3"
+  }, coreFeatures.map((cf, i) => (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {
+    className: "gv-item gv-stack-space-sm",
+    key: i
+  }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("h3", {
+    className: "gv-title gv-text-bold gv-text-sm"
+  }, cf.name), (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, cf.desc))))))));
+  return usePortal ? (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createPortal)(content, document.body) : content;
+}
+
+/***/ }),
+
+/***/ "./src/components/normalised-plugins.jsx":
+/*!***********************************************!*\
+  !*** ./src/components/normalised-plugins.jsx ***!
+  \***********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   normalizePlugins: () => (/* binding */ normalizePlugins)
+/* harmony export */ });
+function normalizePlugins(rawResponse) {
+  // Only support the new response shape:
+  // { error: null, success: true, data: [ { ...plugin }, ... ] }
+
+  if (!rawResponse || !Array.isArray(rawResponse.data)) {
+    // Log a clear error when the response is not supported
+    // Keeping a minimal, non-crashing fallback of returning an empty list
+    console.error("Unsupported marketplace response shape. Expected { data: [ ... ] }.", rawResponse);
+    return [];
+  }
+  const items = rawResponse.data;
+  if (items.length === 0) return [];
+
+  // Map to normalized structure
+  const normalized = items.map(plugin => {
+    var _plugin$installed, _plugin$activated;
+    // Prefer description coming from textKeys.description, then fallback to description field
+    const descriptionFromTextKeys = plugin?.textKeys?.description;
+    const description = typeof descriptionFromTextKeys === "string" && descriptionFromTextKeys ? descriptionFromTextKeys : typeof plugin?.description === "object" && plugin.description !== null ? plugin.description["en-gb"] || Object.values(plugin.description)[0] || "" : plugin?.description || "";
+    const download = plugin?.download || plugin?.download_url || plugin?.downloadUrl || "";
+
+    // Author may be a string or an object { name, url }
+    const authorName = typeof plugin?.author === "object" && plugin.author !== null ? plugin.author.name || "" : plugin?.author || "";
+    const authorUrl = typeof plugin?.author === "object" && plugin.author !== null ? plugin.author.url || "" : "";
+    const priceAmount = typeof plugin?.price === "object" && plugin.price !== null ? plugin.price.amount : undefined;
+    const priceCurrency = typeof plugin?.price === "object" && plugin.price !== null ? plugin.price.currency : undefined;
+    return {
+      ...plugin,
+      name: plugin?.name || "Unknown",
+      slug: plugin?.slug || "",
+      thumbnail: plugin?.thumbnail || "",
+      description,
+      download,
+      author: authorName,
+      authorUrl,
+      priceAmount,
+      priceCurrency,
+      installed: (_plugin$installed = plugin?.installed) !== null && _plugin$installed !== void 0 ? _plugin$installed : false,
+      activated: (_plugin$activated = plugin?.activated) !== null && _plugin$activated !== void 0 ? _plugin$activated : false
+    };
+  });
+
+  // Deduplicate by slug (first occurrence wins)
+  const seen = new Set();
+  return normalized.filter(p => {
+    const key = p.slug || p.name || JSON.stringify(p);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+/***/ }),
+
+/***/ "./src/i18n/index.js":
+/*!***************************!*\
+  !*** ./src/i18n/index.js ***!
+  \***************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var i18next__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! i18next */ "./node_modules/i18next/dist/esm/i18next.js");
+/* harmony import */ var react_i18next__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-i18next */ "./node_modules/react-i18next/dist/es/index.js");
+/* harmony import */ var _locales_en_GB_json__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./locales/en_GB.json */ "./src/i18n/locales/en_GB.json");
+/* harmony import */ var _locales_da_DK_json__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./locales/da_DK.json */ "./src/i18n/locales/da_DK.json");
+/* harmony import */ var _locales_de_DE_json__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./locales/de_DE.json */ "./src/i18n/locales/de_DE.json");
+/* harmony import */ var _locales_es_ES_json__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./locales/es_ES.json */ "./src/i18n/locales/es_ES.json");
+/* harmony import */ var _locales_fi_FI_json__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./locales/fi_FI.json */ "./src/i18n/locales/fi_FI.json");
+/* harmony import */ var _locales_fr_FR_json__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./locales/fr_FR.json */ "./src/i18n/locales/fr_FR.json");
+/* harmony import */ var _locales_it_IT_json__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./locales/it_IT.json */ "./src/i18n/locales/it_IT.json");
+/* harmony import */ var _locales_nl_NL_json__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./locales/nl_NL.json */ "./src/i18n/locales/nl_NL.json");
+/* harmony import */ var _locales_no_NO_json__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./locales/no_NO.json */ "./src/i18n/locales/no_NO.json");
+/* harmony import */ var _locales_pt_PT_json__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./locales/pt_PT.json */ "./src/i18n/locales/pt_PT.json");
+/* harmony import */ var _locales_sv_SE_json__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./locales/sv_SE.json */ "./src/i18n/locales/sv_SE.json");
+
+
+
+// Import all translations
+
+
+
+
+
+
+
+
+
+
+
+const resources = {
+  en_GB: {
+    translation: _locales_en_GB_json__WEBPACK_IMPORTED_MODULE_2__
+  },
+  da_DK: {
+    translation: _locales_da_DK_json__WEBPACK_IMPORTED_MODULE_3__
+  },
+  de_DE: {
+    translation: _locales_de_DE_json__WEBPACK_IMPORTED_MODULE_4__
+  },
+  es_ES: {
+    translation: _locales_es_ES_json__WEBPACK_IMPORTED_MODULE_5__
+  },
+  fi_FI: {
+    translation: _locales_fi_FI_json__WEBPACK_IMPORTED_MODULE_6__
+  },
+  fr_FR: {
+    translation: _locales_fr_FR_json__WEBPACK_IMPORTED_MODULE_7__
+  },
+  it_IT: {
+    translation: _locales_it_IT_json__WEBPACK_IMPORTED_MODULE_8__
+  },
+  nl_NL: {
+    translation: _locales_nl_NL_json__WEBPACK_IMPORTED_MODULE_9__
+  },
+  no_NO: {
+    translation: _locales_no_NO_json__WEBPACK_IMPORTED_MODULE_10__
+  },
+  pt_PT: {
+    translation: _locales_pt_PT_json__WEBPACK_IMPORTED_MODULE_11__
+  },
+  sv_SE: {
+    translation: _locales_sv_SE_json__WEBPACK_IMPORTED_MODULE_12__
+  }
+};
+i18next__WEBPACK_IMPORTED_MODULE_0__["default"].use(react_i18next__WEBPACK_IMPORTED_MODULE_1__.initReactI18next).init({
+  resources,
+  lng: "en_GB",
+  // default fallback
+  fallbackLng: "en_GB",
+  interpolation: {
+    escapeValue: false
+  }
+});
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (i18next__WEBPACK_IMPORTED_MODULE_0__["default"]);
+
+/***/ }),
+
+/***/ "./src/i18n/locales/da_DK.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/da_DK.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Kontakt os i dag","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Vilkår","migratorMail_footer_footer-link-3_title":"Privatlivspolitik","migratorMail_footer_visitSite_title":"Besøg siden","migratorMail_hi":"Hej","migratorMail_typeFail_bodyIntro":"Noget gik galt med flytningen af din hjemmeside fra {oldsite} til {newsite}.","migratorMail_typeFail_button_title":"Prøv igen","migratorMail_typeFail_errorText":"Fejl: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fejl: Intern fejl ({fail_reason})","migratorMail_typeFail_failTime":"Migrering mislykkedes {dateandtime}","migratorMail_typeFail_footer_title":"Behøver du hjælp til at migrere din hjemmeside til one.com? Vi er her for at hjælpe.","migratorMail_typeFail_subject":"Migrering mislykkedes","migratorMail_typeFail_title":"WordPress-migrering mislykkedes","migratorMail_typeSuccess_bodyIntro":"Migreringen af din hjemmeside fra {oldsite} til {newsite} er nu fuldendt.","migratorMail_typeSuccess_brokenPlugins":"Efter migreringen viste det sig desuden, at følgende plugin(s) forårsagede fejl og er blevet deaktiveret på det migrerede websted: {plugins}.","migratorMail_typeSuccess_button_title":"Gå til din hjemmeside","migratorMail_typeSuccess_excludedDirs":"Bemærk: For at sikre en problemfri migreringsproces blev følgende mapper udelukket fra migreringen: {directories}. Du kan manuelt flytte disse data til din hjemmeside, hvis det er nødvendigt.","migratorMail_typeSuccess_finishTime":"Migrering afsluttet {dateandtime}","migratorMail_typeSuccess_footer_title":"Har du spørgsmål? Vi er her for at hjælpe.","migratorMail_typeSuccess_startTime":"Migrering startet {dateandtime}","migratorMail_typeSuccess_subject":"Migrering lykkedes","migratorMail_typeSuccess_title":"WordPress-migration fuldendt"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/de_DE.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/de_DE.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Kontaktieren Sie uns noch heute","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"AGB","migratorMail_footer_footer-link-3_title":"Datenschutzrichtlinie","migratorMail_footer_visitSite_title":"Website besuchen","migratorMail_hi":"Hallo,","migratorMail_typeFail_bodyIntro":"Bei der Migration Ihrer Website von {oldsite} zu {newsite} ist leider etwas schiefgelaufen.","migratorMail_typeFail_button_title":"Migration erneut versuchen","migratorMail_typeFail_errorText":"Fehler: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fehler: Interner Fehler ({fail_reason})","migratorMail_typeFail_failTime":"Migration fehlgeschlagen: {dateandtime}","migratorMail_typeFail_footer_title":"Benötigen Sie Hilfe bei der Migration Ihrer Website zu one.com? Wir helfen Ihnen gerne.","migratorMail_typeFail_subject":"Migration fehlgeschlagen","migratorMail_typeFail_title":"WordPress-Migration fehlgeschlagen","migratorMail_typeSuccess_bodyIntro":"Die Migration Ihrer Website von {oldsite} zu {newsite} ist nun abgeschlossen.","migratorMail_typeSuccess_brokenPlugins":"Darüber hinaus wurden nach der Migration die folgenden Plugins gefunden, die Fehler verursachen und auf der migrierten Website deaktiviert wurden: {plugins}.","migratorMail_typeSuccess_button_title":"Zu Ihrer Website gehen","migratorMail_typeSuccess_excludedDirs":"Bitte beachten Sie: Um einen reibungslosen Ablauf der Migration zu gewährleisten, wurden die folgenden Verzeichnisse von der Migration ausgeschlossen: {directories}. Sie können diese Daten bei Bedarf manuell auf Ihren Webspace verschieben.","migratorMail_typeSuccess_finishTime":"Migration abgeschlossen: {dateandtime}","migratorMail_typeSuccess_footer_title":"Haben Sie Fragen? Wir helfen Ihnen gerne.","migratorMail_typeSuccess_startTime":"Migration gestartet: {dateandtime}","migratorMail_typeSuccess_subject":"Migration erfolgreich","migratorMail_typeSuccess_title":"WordPress-Migration abgeschlossen"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/en_GB.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/en_GB.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Contact us today","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Terms","migratorMail_footer_footer-link-3_title":"Privacy policy","migratorMail_footer_visitSite_title":"Visit site","migratorMail_hi":"Hi,","migratorMail_typeFail_bodyIntro":"Something went wrong with the migration of your site from {oldsite} to {newsite}.","migratorMail_typeFail_button_title":"Retry migration","migratorMail_typeFail_errorText":"Error: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Error: Internal error ({fail_reason})","migratorMail_typeFail_failTime":"Migration failed: {dateandtime}","migratorMail_typeFail_footer_title":"Need help migrating your site to one.com? We\'re here to help.","migratorMail_typeFail_subject":"Migration failed","migratorMail_typeFail_title":"WordPress migration failed","migratorMail_typeSuccess_bodyIntro":"The migration of your site from {oldsite} to {newsite} is now completed.","migratorMail_typeSuccess_brokenPlugins":"Additionally, post-migration, the following plugin(s) were found to cause errors and have been deactivated on the migrated site: {plugins}.","migratorMail_typeSuccess_button_title":"Go to your site","migratorMail_typeSuccess_excludedDirs":"Please note: To ensure a smooth migration process, the following directories were excluded from the migration: {directories}. You can manually move this data to your webspace if needed.","migratorMail_typeSuccess_finishTime":"Migration finished: {dateandtime}","migratorMail_typeSuccess_footer_title":"Have a question? We\'re here to help.","migratorMail_typeSuccess_startTime":"Migration started: {dateandtime}","migratorMail_typeSuccess_subject":"Migration successful","migratorMail_typeSuccess_title":"WordPress migration completed"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/es_ES.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/es_ES.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Póngase en contacto con nosotros hoy mismo","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Términos","migratorMail_footer_footer-link-3_title":"Política de privacidad","migratorMail_footer_visitSite_title":"Visitar el sitio","migratorMail_hi":"Hola:","migratorMail_typeFail_bodyIntro":"Se ha producido un error al migrar su sitio de {oldsite} a {newsite}.","migratorMail_typeFail_button_title":"Reintentar migración","migratorMail_typeFail_errorText":"Error: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Error: Error interno ({fail_reason})","migratorMail_typeFail_failTime":"Error en la migración: {dateandtime}","migratorMail_typeFail_footer_title":"¿Necesita ayuda para migrar su sitio a one.com? Estamos aquí para ayudarle.","migratorMail_typeFail_subject":"Error en la migración","migratorMail_typeFail_title":"Error en la migración de WordPress","migratorMail_typeSuccess_bodyIntro":"La migración de su sitio de {oldsite} a {newsite} se ha completado.","migratorMail_typeSuccess_brokenPlugins":"Además, tras la migración, se descubrió que los siguientes plugins causaban errores y se desactivaron en el sitio migrado: {plugins}.","migratorMail_typeSuccess_button_title":"Ir a su sitio","migratorMail_typeSuccess_excludedDirs":"Nota: para garantizar un proceso de migración sin problemas, se han excluido de la migración los siguientes directorios: {directories}. Puedes mover manualmente estos datos a tu espacio web en caso de que sea necesario.","migratorMail_typeSuccess_finishTime":"Fin de la migración: {dateandtime}","migratorMail_typeSuccess_footer_title":"¿Tiene alguna pregunta? Estamos aquí para ayudarle.","migratorMail_typeSuccess_startTime":"Inicio de la migración: {dateandtime}","migratorMail_typeSuccess_subject":"Migración realizada con éxito","migratorMail_typeSuccess_title":"Migración de WordPress completada"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/fi_FI.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/fi_FI.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Ota meihin yhteyttä","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Palvelun käyttöehdot","migratorMail_footer_footer-link-3_title":"Tietosuojakäytäntö","migratorMail_footer_visitSite_title":"Vieraile sivustolla","migratorMail_hi":"Hei,","migratorMail_typeFail_bodyIntro":"Jokin meni pieleen sivustosi siirrossa kohteesta {oldsite} kohteeseen {newsite}.","migratorMail_typeFail_button_title":"Yritä siirtoa uudelleen","migratorMail_typeFail_errorText":"Virhe: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Virhe: Sisäinen virhe ({fail_reason})","migratorMail_typeFail_failTime":"Siirto epäonnistui: {dateandtime}","migratorMail_typeFail_footer_title":"Tarvitsetko apua sivustosi siirtämisessä one.comille? Autamme mielellämme.","migratorMail_typeFail_subject":"Siirto epäonnistui","migratorMail_typeFail_title":"WordPress-siirto epäonnistui","migratorMail_typeSuccess_bodyIntro":"Sivustosi siirto kohteesta {oldsite} kohteeseen {newsite} on nyt valmis.","migratorMail_typeSuccess_brokenPlugins":"Lisäksi siirron jälkeen havaittiin, että seuraavat lisäosat aiheuttavat virheitä, ja ne on poistettu käytöstä siirretyllä sivustolla: {plugins}.","migratorMail_typeSuccess_button_title":"Siirry sivustollesi","migratorMail_typeSuccess_excludedDirs":"Huomaa: Sujuvan siirtoprosessin varmistamiseksi seuraavat hakemistot jätettiin siirron ulkopuolelle: {directories}. Voit tarvittaessa siirtää nämä tiedot manuaalisesti verkkolevytilaasi.","migratorMail_typeSuccess_finishTime":"Siirto valmistui: {dateandtime}","migratorMail_typeSuccess_footer_title":"Onko sinulla kysyttävää? Autamme mielellämme.","migratorMail_typeSuccess_startTime":"Siirto aloitettu: {dateandtime}","migratorMail_typeSuccess_subject":"Siirto onnistui","migratorMail_typeSuccess_title":"WordPress-siirto onnistui"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/fr_FR.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/fr_FR.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Contactez-nous aujourd\'hui","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Conditions","migratorMail_footer_footer-link-3_title":"Politique de confidentialité","migratorMail_footer_visitSite_title":"Visiter le site","migratorMail_hi":"Bonjour,","migratorMail_typeFail_bodyIntro":"Un incident s\'est produit durant la migration de votre site de {oldsite} vers {newsite}.","migratorMail_typeFail_button_title":"Recommencer la migration","migratorMail_typeFail_errorText":"Erreur: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Erreur : Erreur interne ({fail_reason})","migratorMail_typeFail_failTime":"Échec de la migration: {dateandtime}","migratorMail_typeFail_footer_title":"Vous avez besoin d\'aide pour effectuer la migration de votre site vers one.com? Nous sommes là pour vous aider.","migratorMail_typeFail_subject":"Échec de la migration","migratorMail_typeFail_title":"Échec de la migration WordPress","migratorMail_typeSuccess_bodyIntro":"La migration de votre site de {oldsite} vers {newsite} est à présent terminée.","migratorMail_typeSuccess_brokenPlugins":"En outre, après la migration, le(s) plugin(s) suivant(s) a (ont) provoqué des erreurs et a (ont) été désactivé(s) sur le site migré : {plugins}.","migratorMail_typeSuccess_button_title":"Accéder à votre site","migratorMail_typeSuccess_excludedDirs":"Remarque : Pour garantir un processus de migration fluide, les répertoires suivants ont été exclus de la migration : {directories}. Vous pouvez déplacer manuellement ces données vers votre espace web si nécessaire.","migratorMail_typeSuccess_finishTime":"Fin de la migration: {dateandtime}","migratorMail_typeSuccess_footer_title":"Une question? Nous sommes là pour vous aider.","migratorMail_typeSuccess_startTime":"Début de la migration: {dateandtime}","migratorMail_typeSuccess_subject":"Migration effectuée avec succès","migratorMail_typeSuccess_title":"Migration WordPress terminée"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/it_IT.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/it_IT.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Contattaci oggi stesso","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Condizioni","migratorMail_footer_footer-link-3_title":"Informativa sulla privacy","migratorMail_footer_visitSite_title":"Visita il sito","migratorMail_hi":"Salve,","migratorMail_typeFail_bodyIntro":"Qualcosa non ha funzionato con la migrazione del tuo sito da {oldsite} a {newsite}.","migratorMail_typeFail_button_title":"Ritenta la migrazione","migratorMail_typeFail_errorText":"Errore: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Errore: Errore interno ({fail_reason})","migratorMail_typeFail_failTime":"Migrazione non riuscita: {dateandtime}","migratorMail_typeFail_footer_title":"Hai bisogno di assistenza per migrare il tuo sito verso one.com? Siamo qui per aiutarti.","migratorMail_typeFail_subject":"Migrazione non riuscita","migratorMail_typeFail_title":"Migrazione WordPress non riuscita","migratorMail_typeSuccess_bodyIntro":"La migrazione del tuo sito da {oldsite} a {newsite} è ora completata.","migratorMail_typeSuccess_brokenPlugins":"Inoltre, dopo la migrazione, i seguenti plugin hanno causato errori e sono stati disattivati sul sito migrato: {plugins}.","migratorMail_typeSuccess_button_title":"Visita il tuo sito","migratorMail_typeSuccess_excludedDirs":"Nota: per garantire un processo di migrazione ottimizzato, le seguenti directory sono state escluse dalla migrazione: {directories}. Se necessario, puoi spostare manualmente questi dati sul tuo spazio web.","migratorMail_typeSuccess_finishTime":"Migrazione finita: {dateandtime}","migratorMail_typeSuccess_footer_title":"Hai delle domande? Siamo qui per aiutarti.","migratorMail_typeSuccess_startTime":"Migrazione iniziata: {dateandtime}","migratorMail_typeSuccess_subject":"Migrazione riuscita","migratorMail_typeSuccess_title":"Migrazione WordPress completata"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/nl_NL.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/nl_NL.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Neem vandaag nog contact met ons op","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Algemene voorwaarden","migratorMail_footer_footer-link-3_title":"Privacybeleid","migratorMail_footer_visitSite_title":"Website bezoeken","migratorMail_hi":"Hallo,","migratorMail_typeFail_bodyIntro":"Er is iets mis gegaan tijdens de migratie van uw site van {oldsite} naar {newsite}.","migratorMail_typeFail_button_title":"Migratie opnieuw proberen","migratorMail_typeFail_errorText":"Fout: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fout: Interne fout ({fail_reason})","migratorMail_typeFail_failTime":"Migratie niet gelukt: {dateandtime}","migratorMail_typeFail_footer_title":"Hebt u hulp nodig bij het migreren van uw site naar one.com? We helpen u graag.","migratorMail_typeFail_subject":"Migratie niet gelukt","migratorMail_typeFail_title":"WordPress migratie niet gelukt","migratorMail_typeSuccess_bodyIntro":"De migratie van uw site van {oldsite} naar {newsite} is nu voltooid.","migratorMail_typeSuccess_brokenPlugins":"Daarnaast is na de migratie gebleken dat de volgende plugin(s) fouten veroorzaken en zijn gedeactiveerd op de gemigreerde site: {plugins}.","migratorMail_typeSuccess_button_title":"Naar uw site gaan","migratorMail_typeSuccess_excludedDirs":"Let op: Om een soepele migratie te garanderen, zijn de volgende mappen uitgesloten van de migratie: {directories}. Indien nodig kun je deze gegevens handmatig naar je webruimte verplaatsen.","migratorMail_typeSuccess_finishTime":"Migratie voltooid: {dateandtime}","migratorMail_typeSuccess_footer_title":"Hebt u een vraag? We helpen u graag.","migratorMail_typeSuccess_startTime":"Migratie gestart: {dateandtime}","migratorMail_typeSuccess_subject":"Migratie is geslaagd","migratorMail_typeSuccess_title":"WordPress migratie voltooid"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/no_NO.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/no_NO.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Kontakt oss i dag","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Betingelser","migratorMail_footer_footer-link-3_title":"Personvernerklæring","migratorMail_footer_visitSite_title":"Besøk nettstedet","migratorMail_hi":"Hei,","migratorMail_typeFail_bodyIntro":"Noe gikk galt med migreringen av siden din fra {oldsite} til {newsite}.","migratorMail_typeFail_button_title":"Prøv migrering på nytt","migratorMail_typeFail_errorText":"Feil: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Feil: Intern feil ({fail_reason})","migratorMail_typeFail_failTime":"Migrering mislyktes: {dateandtime}","migratorMail_typeFail_footer_title":"Trenger du hjelp med å migrere siden din til one.com? Vi er her for å hjelpe deg.","migratorMail_typeFail_subject":"Migreringen mislyktes","migratorMail_typeFail_title":"WordPress-migreringen mislyktes","migratorMail_typeSuccess_bodyIntro":"Migreringen av siden din fra {oldsite} til {newsite} er fullført.","migratorMail_typeSuccess_brokenPlugins":"I tillegg ble det oppdaget feil i følgende plugin(er) etter migreringen, og disse er deaktivert på det migrerte nettstedet: {plugins}.","migratorMail_typeSuccess_button_title":"Gå til siden din","migratorMail_typeSuccess_excludedDirs":"Vennligst merk: For å sikre en smidig migreringsprosess ble følgende kataloger utelatt fra migreringen: {directories}. Du kan manuelt flytte disse dataene til webhotellet ditt om nødvendig.","migratorMail_typeSuccess_finishTime":"Migrering ferdig: {dateandtime}","migratorMail_typeSuccess_footer_title":"Har du spørsmål? Vi er her for å hjelpe deg.","migratorMail_typeSuccess_startTime":"Migrering startet: {dateandtime}","migratorMail_typeSuccess_subject":"Migreringen var vellykket","migratorMail_typeSuccess_title":"WordPress-migreringen er fullført"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/pt_PT.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/pt_PT.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Contacte-nos hoje","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Termos","migratorMail_footer_footer-link-3_title":"Política de Privacidade","migratorMail_footer_visitSite_title":"Visitar o sítio","migratorMail_hi":"Olá,","migratorMail_typeFail_bodyIntro":"Ocorreu um erro ao migrar o seu website de {oldsite} para {newsite}.","migratorMail_typeFail_button_title":"Voltar a tentar a migração","migratorMail_typeFail_errorText":"Erro: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Erro: Erro interno ({fail_reason})","migratorMail_typeFail_failTime":"A migração falhou: {dateandtime}","migratorMail_typeFail_footer_title":"Precisa de ajuda para migrar o seu website para a one.com? Estamos aqui para ajudar.","migratorMail_typeFail_subject":"Falha na migração","migratorMail_typeFail_title":"Falha na migração para o WordPress","migratorMail_typeSuccess_bodyIntro":"A migração do seu website de {oldsite} para {newsite} foi concluída.","migratorMail_typeSuccess_brokenPlugins":"Além disso, após a migração, verificou-se que o(s) seguinte(s) plugin(s) causava(m) erros e foi(ram) desativado(s) no site migrado: {plugins}.","migratorMail_typeSuccess_button_title":"Aceda ao seu website","migratorMail_typeSuccess_excludedDirs":"Queira ter em atenção: para garantir um processo de migração suave, os seguintes diretórios foram removidos da migração: {directories}. Pode mover manualmente esses dados para o seu espaço web, se necessário.","migratorMail_typeSuccess_finishTime":"Fim da migração: {dateandtime}","migratorMail_typeSuccess_footer_title":"Tem dúvidas? Estamos aqui para ajudar.","migratorMail_typeSuccess_startTime":"A migração começou: {dateandtime}","migratorMail_typeSuccess_subject":"Migração bem-sucedida","migratorMail_typeSuccess_title":"Migração para WordPress concluída"}');
+
+/***/ }),
+
+/***/ "./src/i18n/locales/sv_SE.json":
+/*!*************************************!*\
+  !*** ./src/i18n/locales/sv_SE.json ***!
+  \*************************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = /*#__PURE__*/JSON.parse('{"migratorMail_footer_contactButton_title":"Kontakta oss idag","migratorMail_footer_footer-link-1_title":"one.com","migratorMail_footer_footer-link-2_title":"Villkor","migratorMail_footer_footer-link-3_title":"Sekretesspolicy","migratorMail_footer_visitSite_title":"Besök webbplatsen","migratorMail_hi":"Hej!","migratorMail_typeFail_bodyIntro":"Någonting gick fel när din hemsida skulle migreras från {oldsite} till {newsite}.","migratorMail_typeFail_button_title":"Starta om migrering","migratorMail_typeFail_errorText":"Fel: {fail_reason}","migratorMail_typeFail_errorTextInternal":"Fel: Internt fel ({fail_reason})","migratorMail_typeFail_failTime":"Migrering misslyckades: {dateandtime}","migratorMail_typeFail_footer_title":"Behöver du hjälp med att migrera din hemsida till one.com? Vi hjälper dig gärna.","migratorMail_typeFail_subject":"Migrering misslyckades","migratorMail_typeFail_title":"WordPress-migreringen misslyckades","migratorMail_typeSuccess_bodyIntro":"Migreringen av din hemsida från {oldsite} till {newsite} är nu slutförd.","migratorMail_typeSuccess_brokenPlugins":"Efter migreringen visade det sig dessutom att följande plugin orsakade fel och har avaktiverats på den migrerade webbplatsen: {plugins}.","migratorMail_typeSuccess_button_title":"Gå till din hemsida","migratorMail_typeSuccess_excludedDirs":"Observera: För att säkerställa en smidig migreringsprocess uteslöts följande kataloger från migreringen: {directories}. Du kan manuellt flytta dessa data till ditt webbutrymme om det behövs.","migratorMail_typeSuccess_finishTime":"Migrering slutfördes: {dateandtime}","migratorMail_typeSuccess_footer_title":"Har du några frågor? Vi hjälper dig gärna.","migratorMail_typeSuccess_startTime":"Migrering startades: {dateandtime}","migratorMail_typeSuccess_subject":"Migrering lyckades","migratorMail_typeSuccess_title":"WordPress-migrering är slutförd"}');
+
+/***/ }),
+
+/***/ "react":
+/*!************************!*\
+  !*** external "React" ***!
+  \************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = window["React"];
+
+/***/ }),
+
+/***/ "react-dom":
+/*!***************************!*\
+  !*** external "ReactDOM" ***!
+  \***************************/
+/***/ ((module) => {
+
+"use strict";
+module.exports = window["ReactDOM"];
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/compat get default export */
+/******/ 	(() => {
+/******/ 		// getDefaultExport function for compatibility with non-harmony modules
+/******/ 		__webpack_require__.n = (module) => {
+/******/ 			var getter = module && module.__esModule ?
+/******/ 				() => (module['default']) :
+/******/ 				() => (module);
+/******/ 			__webpack_require__.d(getter, { a: getter });
+/******/ 			return getter;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/define property getters */
+/******/ 	(() => {
+/******/ 		// define getter functions for harmony exports
+/******/ 		__webpack_require__.d = (exports, definition) => {
+/******/ 			for(var key in definition) {
+/******/ 				if(__webpack_require__.o(definition, key) && !__webpack_require__.o(exports, key)) {
+/******/ 					Object.defineProperty(exports, key, { enumerable: true, get: definition[key] });
+/******/ 				}
+/******/ 			}
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+var __webpack_exports__ = {};
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
+(() => {
+"use strict";
+/*!***********************!*\
+  !*** ./src/index.jsx ***!
+  \***********************/
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-dom */ "react-dom");
+/* harmony import */ var react_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_dom__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _MarketplaceApp__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./MarketplaceApp */ "./src/MarketplaceApp.jsx");
+/* harmony import */ var _i18n__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./i18n */ "./src/i18n/index.js");
+
+
+
+
+
+
+// Inside-WP auto-mount
+document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("marketplace-root");
+  if (el) {
+    const config = window.marketplaceConfig || {};
+    if (config.locale) {
+      Promise.resolve(/*! import() */).then(__webpack_require__.bind(__webpack_require__, /*! i18next */ "./node_modules/i18next/dist/esm/i18next.js")).then(({
+        default: i18n
+      }) => {
+        i18n.changeLanguage(config.locale);
+      });
+    }
+    const root = (0,react_dom__WEBPACK_IMPORTED_MODULE_1__.createRoot)(el);
+    root.render((0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)(_MarketplaceApp__WEBPACK_IMPORTED_MODULE_2__["default"], {
+      ...config
+    }));
+  }
+});
+})();
+
+/******/ })()
+;
 //# sourceMappingURL=index.js.map

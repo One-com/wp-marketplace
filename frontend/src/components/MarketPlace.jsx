@@ -1,33 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import {normalizePlugins} from "./normalised-plugins";
 import "@group.one/gravity";
 import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
-import ProductDetailRankMath from "./ProductDetailRankMath";
-import { useMarketplace } from "../context/MarketplaceContext";
 
-export default function Marketplace() {
-    const {
-        apiBaseUrl,
-        useWPHandlers,
-        wpConfig,
-        enableDefaultStyles,
-        assetsBaseUrl,
-        pluginInAction,
-        setPluginInAction,
-        fetchSubscriptionStatus,
-        isOnecomBrand,
-        plugins,
-        setPlugins,
-        handlePluginAction
-    } = useMarketplace();
-
+export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) {
+    const [plugins, setPlugins] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [pluginInAction, setPluginInAction] = useState({});
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
     const [selectedPlugin, setSelectedPlugin] = useState(null);
-    
-    // Use ref to track if plugins have already been fetched
-    const hasFetchedPlugins = useRef(false);
     
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -51,57 +33,19 @@ export default function Marketplace() {
         if (pluginFromQuery && plugins.length) {
             const match = plugins.find(p => p.slug === pluginFromQuery);
             if (match) setSelectedPlugin(match);
-        } else if (!pluginFromQuery) {
-            // Clear selectedPlugin when no plugin parameter in URL
-            setSelectedPlugin(null);
         }
     }, [pluginFromQuery, plugins]);
-    
-    // Listen for browser back/forward navigation
-    useEffect(() => {
-        const handlePopState = () => {
-            const currentPluginParam = new URLSearchParams(window.location.search).get("plugin");
-            if (!currentPluginParam) {
-                // URL no longer has plugin parameter, clear selection
-                setSelectedPlugin(null);
-            } else if (plugins.length) {
-                // URL has plugin parameter, update selection
-                const match = plugins.find(p => p.slug === currentPluginParam);
-                if (match) setSelectedPlugin(match);
-            }
-        };
-        
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [plugins]);
     
     const {t} = useTranslation();
 
     useEffect(() => {
-        // Only fetch once
-        if (hasFetchedPlugins.current) {
-            return;
-        }
 
         async function fetchPlugins() {
             try {
-                hasFetchedPlugins.current = true;
                 const res = await fetch(`${apiBaseUrl}`);
                 const json = await res.json();
                 const normalized = normalizePlugins(json);
                 setPlugins(normalized);
-
-                // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
-                if (isOnecomBrand) {
-                    const specialPlugins = normalized.filter(p => 
-                        p.slug === "wp-rocket" || p.slug === "rank-math-pro"
-                    );
-                    
-                    // Fetch subscription status for each special plugin
-                    specialPlugins.forEach(plugin => {
-                        fetchSubscriptionStatus(plugin.slug);
-                    });
-                }
             } catch (e) {
                 console.error("Failed to fetch plugins", e);
             } finally {
@@ -110,7 +54,45 @@ export default function Marketplace() {
         }
 
         fetchPlugins();
-    }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
+    }, [apiBaseUrl, useWPHandlers, wpConfig]);
+
+    const handlePluginAction = async (action, plugin) => {
+        setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
+
+        try {
+            let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
+
+            // prepare encoded download param (safe if plugin.download is undefined)
+            const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
+
+            if (useWPHandlers) {
+                // original WP-AJAX URL + download_url appended
+                url = `${wpConfig.ajax_url}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
+            } else {
+                // append download_url to non-WP URL (adds ? or & correctly)
+                url = url + (url.includes('?') ? '&' : '?') + downloadParam;
+            }
+
+            const res = await fetch(url, { method: "POST" });
+            const result = await res.json();
+
+            if (result.success) {
+                setPlugins(prev =>
+                    prev.map(p =>
+                        p.slug === plugin.slug
+                            ? { ...p, installed: result.data.installed, activated: result.data.activated }
+                            : p
+                    )
+                );
+            } else {
+                alert(result.data?.message || "Failed to perform action");
+            }
+        } catch (err) {
+            console.error("Plugin action failed", err);
+        } finally {
+            setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+        }
+    };
 
     const handleDownloadClick = (e, plugin) => {
         e.stopPropagation();
@@ -138,28 +120,22 @@ export default function Marketplace() {
         }
     }, [selectedPlugin]);
 
-    // Helper function to determine if we should use ProductDetailRankMath
-    const shouldUseRankMathDetail = (plugin) => {
-        if (!plugin) return false;
-        const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
-        const isOnecomBrand = brand === "onecom";
-        const isRankMathPlugin = plugin.slug === "rank-math-pro" || plugin.slug === "seo-by-rank-math";
-        return isOnecomBrand && isRankMathPlugin;
-    };
-
     if (loading) return <p>Loading plugins...</p>;
 
     // Early return: show full page detail instead of list
     if (selectedPlugin && pluginFromQuery) {
-        const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
         return (
-            <DetailComponent
+            <ProductDetail
                 plugin={selectedPlugin}
                 onClose={() => {
                     // Return to listing (clear selection and URL)
                     setSelectedPlugin(null);
                     window.location.href = getBaseUrl();
                 }}
+                assetsBaseUrl={assetsBaseUrl}
+                useWPHandlers={useWPHandlers}
+                pluginInAction={pluginInAction}
+                onAction={handlePluginAction}
                 usePortal={false}
             />
         );
@@ -169,48 +145,39 @@ export default function Marketplace() {
     const categoryMap = new Map();
 
     // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
-    // Also filter out activated plugins
     const bySlug = new Map();
     plugins.forEach((p) => {
-        if (!bySlug.has(p.slug) && p.activated !== true) bySlug.set(p.slug, p);
+        if (!bySlug.has(p.slug)) bySlug.set(p.slug, p);
     });
 
     Array.from(bySlug.values()).forEach((p) => {
-        // Handle new category object structure: { id, slug, title, description }
-        const categoryObj = Array.isArray(p.categories) && p.categories.length 
-            ? (typeof p.categories[0] === 'object' ? p.categories[0] : { slug: String(p.categories[0]), title: String(p.categories[0]), description: null })
-            : { slug: "Others", title: "Others", description: null };
-        
-        const categoryKey = categoryObj.slug || categoryObj.title || "Others";
-        
-        if (!categoryMap.has(categoryKey)) {
-            categoryMap.set(categoryKey, { info: categoryObj, plugins: [] });
-        }
-        categoryMap.get(categoryKey).plugins.push(p);
+        const primary = Array.isArray(p.categories) && p.categories.length ? String(p.categories[0]) : "Others";
+        if (!categoryMap.has(primary)) categoryMap.set(primary, []);
+        categoryMap.get(primary).push(p);
     });
 
-    const categories = Array.from(categoryMap.entries()).filter(([catKey, { plugins: list }]) => list.length > 0);
+    const categories = Array.from(categoryMap.entries());
 
     return (
-        <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg">
-            {categories.map(([catKey, { info, plugins: list }]) => (
-                <section key={catKey} className="category-section">
-                    <p className="gv-text-bold gv-text-lg">{info.title || catKey}</p>
-                    {info.description && <p>{info.description}</p>}
-                    {!info.description && <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
+        <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-mt-fluid">
+            {categories.map(([cat, list]) => (
+                <section key={cat} className="category-section">
+                    <h2 className="gv-heading-md gv-mb-sm">{cat}</h2>
+                    <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>
+                     { /* description && <p>{description}</p> */ } 
                     <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg">
                         {list.map((plugin) => (
-                            <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                            <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12">
                                 <div className="gv-span-2">
-                                    <img className="gv-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
-                                        alt={plugin.name} />
+                                    <img className="gv-tile" src={`${iconBase}add_box.svg`}
+                                        alt="Performance Cache" />
                                 </div>
                                 <div className="gv-span-9">
                                     <p className="gv-text-lg">{plugin.name}</p>
                                     <p className="oc-card-content"> {plugin.description ? plugin.description : plugin.shortDescription} </p>
                                     <span className="gv-text-sm">{plugin.priceCurrency} {plugin.priceAmount}</span>
                                 </div>
-                                <div className="gv-span-1 gv-content-center">
+                                <div className="gv-span-1">
                                     <a
                                         href={`${getBaseUrl()}&plugin=${plugin.slug}`}
                                         className="gv-reset-button"
@@ -238,15 +205,16 @@ export default function Marketplace() {
                 </section>
             ))}
             {/* Remove overlay render (keep for non-query usage) */}
-            {selectedPlugin && !pluginFromQuery && (() => {
-                const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
-                return (
-                    <DetailComponent
-                        plugin={selectedPlugin}
-                        onClose={() => setSelectedPlugin(null)}
-                    />
-                );
-            })()}
+            {selectedPlugin && !pluginFromQuery && (
+                <ProductDetail
+                    plugin={selectedPlugin}
+                    onClose={() => setSelectedPlugin(null)}
+                    assetsBaseUrl={assetsBaseUrl}
+                    useWPHandlers={useWPHandlers}
+                    pluginInAction={pluginInAction}
+                    onAction={handlePluginAction}
+                />
+            )}
         </div>
     );
 }

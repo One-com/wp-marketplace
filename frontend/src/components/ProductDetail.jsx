@@ -1,37 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
-import SuccessNotice from "./SuccessNotice";
-import ErrorToast from "./ErrorToast";
-import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function ProductDetail({
     plugin,
     onClose,
+    assetsBaseUrl,
+    useWPHandlers,
+    pluginInAction,
+    onAction,
     usePortal = true
 }) {
-    const {
-        assetsBaseUrl,
-        useWPHandlers,
-        pluginInAction
-    } = useMarketplace();
     if (!plugin) return null;
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
-    const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+    const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
     // Extract data with fallbacks
     const title = plugin.name || 'Product';
     const description = plugin.description || plugin.shortDescription || 'No description available.';
-    const isFree = plugin.licenseType === "free";
-    const price = isFree 
-        ? 'Free'
-        : (plugin.priceCurrency && plugin.priceAmount) 
-            ? `${plugin.priceCurrency} ${plugin.priceAmount}`
-            : '€ 0,-';
+    const price = (plugin.priceCurrency && plugin.priceAmount) 
+        ? `${plugin.priceCurrency} ${plugin.priceAmount}`
+        : '€ 0,-';
 
     // Derive features from description or plugin data
     const rawFeatureSource = plugin.features && plugin.features.length
@@ -56,7 +49,7 @@ export default function ProductDetail({
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
             <article className="gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
-                <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
+                <nav className="gv-breadcrumbs gv-area-nav test-">
                     <a
                         href="#"
                         onClick={e => {
@@ -71,15 +64,11 @@ export default function ProductDetail({
                         role="button"
                         aria-label="Go back"
                     >
-                        <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}arrow_back.svg`}
+                        <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}chevron_left.svg`}
                                         alt="Back to plugins" />
                         <span>Back</span>
                     </a>
-                    <SuccessNotice plugin={plugin} />
-                    <ErrorToast plugin={plugin} />
                 </nav>
-
-
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
@@ -121,12 +110,14 @@ export default function ProductDetail({
                                             <div className="gv-price-container">
                                                 <div className="gv-price">
                                                     <span className="gv-price-text">{price}</span>
-                                                    {!isFree && <span className="gv-period">/mo</span>}
+                                                    <span className="gv-period">/mo</span>
                                                 </div>
                                             </div>
                                             {useWPHandlers ? (
                                                 <PluginActions
                                                     plugin={plugin}
+                                                    pluginInAction={pluginInAction}
+                                                    onAction={onAction}
                                                 />
                                             ) : (
                                                 plugin.download && (
@@ -147,7 +138,7 @@ export default function ProductDetail({
                             <div className="gv-section" role="rowgroup">
                                 <div className="gv-section-header gv-table-row" role="row">
                                     <div className="gv-cell" role="cell">
-                                        <h4 className="gv-title">{plugin.textKeys?.featureOverviewHeading || 'Key features'}</h4>
+                                        <h4 className="gv-title">Key features</h4>
                                     </div>
                                 </div>
                                 {keyFeatures.map((f, i) => (
@@ -165,7 +156,7 @@ export default function ProductDetail({
                 {/* Details / Benefits */}
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.benefitHeading || 'Key benefits'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">Key benefits</h2>
                         <ul className="gv-list-items gv-list-check gv-mode-condensed">
                             {benefits.map((b, i) => <li key={i}>{b}</li>)}
                         </ul>
@@ -183,7 +174,7 @@ export default function ProductDetail({
                 {/* Core Features Overview */}
                 <div className="gv-area-content gv-grid gv-gap-fluid">
                     <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.featureOverviewHeading || 'Core features overview'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">Core features overview</h2>
                         <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                             {coreFeatures.map((cf, i) => (
                                 <div className="gv-item gv-stack-space-sm" key={i}>
