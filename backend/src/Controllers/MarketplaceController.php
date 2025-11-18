@@ -263,10 +263,15 @@ class MarketplaceController {
 			if ( empty( $plugin['slug'] ) ) {
 				return $plugin;
 			}
-			// Resolve actual plugin main file for cases like 'seo-by-rank-math/rank-math.php'
-			$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
-			$plugin['installed'] = ! empty( $plugin_file );
-			$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
+			// Check if plugin is installed
+			$plugin['installed'] = $this->is_installed( $plugin['slug'] );
+
+			// Only resolve plugin file if we need to check activation status
+			$plugin['activated'] = false;
+			if ( $plugin['installed'] ) {
+				$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
+				$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
+			}
 			return $plugin;
 		};
 
@@ -331,11 +336,49 @@ class MarketplaceController {
 	/**
 	 * Check if plugin is installed.
 	 *
-	 * @param string $slug Plugin slug if found.
-	 * @return boolean
+	 * This function checks whether a plugin is physically installed in the WordPress plugins directory.
+	 * It handles both simple directory slugs (e.g., 'akismet') and full plugin file paths
+	 * (e.g., 'seo-by-rank-math-pro/rank-math-pro.php').
+	 *
+	 *
+	 * @param string $slug Plugin slug or plugin file path (e.g., 'akismet' or 'dirname/filename.php').
+	 * @return boolean True if the plugin is installed, false otherwise.
 	 */
 	private function is_installed( $slug = '' ): bool {
-		return file_exists( WP_PLUGIN_DIR . '/' .  $slug  );
+		if ( empty( $slug ) ) {
+			return false;
+		}
+
+		// If slug contains a slash, it's likely a full plugin file path like 'dirname/filename.php'
+		if ( strpos( $slug, '/' ) !== false ) {
+			// Check if the full plugin file exists
+			$plugin_file_path = WP_PLUGIN_DIR . '/' . $slug;
+			if ( file_exists( $plugin_file_path ) ) {
+				return true;
+			}
+
+			// Also check if just the directory exists (handles edge cases)
+			$plugin_dir = dirname( $plugin_file_path );
+			if ( file_exists( $plugin_dir ) && is_dir( $plugin_dir ) ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		// For simple slugs, check if directory exists
+		$plugin_dir = WP_PLUGIN_DIR . '/' . $slug;
+		if ( file_exists( $plugin_dir ) && is_dir( $plugin_dir ) ) {
+			return true;
+		}
+
+		// Also check if it's a single-file plugin (slug.php)
+		$plugin_file = WP_PLUGIN_DIR . '/' . $slug . '.php';
+		if ( file_exists( $plugin_file ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
