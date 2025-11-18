@@ -16,7 +16,7 @@ class MarketplaceModel {
 		$args = [];
 
 		if ( ! empty( $payload ) ) {
-			$args['headers'] = $payload;
+			$args['body'] = $payload;
 		}
 
 		$response = wp_remote_get( $this->api_url, $args );
