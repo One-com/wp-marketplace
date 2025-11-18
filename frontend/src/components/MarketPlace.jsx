@@ -170,7 +170,7 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                             <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12">
                                 <div className="gv-span-2">
                                     <img className="gv-tile" src={`${iconBase}add_box.svg`}
-                                        alt="Performance Cache" />
+                                        alt={plugin.name} />
                                 </div>
                                 <div className="gv-span-9">
                                     <p className="gv-text-lg">{plugin.name}</p>
