@@ -14,6 +14,8 @@ export const MarketplaceProvider = ({
     const [subscriptionStatus, setSubscriptionStatus] = useState({});
     const [isCheckingSubscription, setIsCheckingSubscription] = useState({});
     const [plugins, setPlugins] = useState([]);
+    const [loadingAction, setLoadingAction] = useState('');
+    const [loadingPlugin, setLoadingPlugin] = useState('');
     
     // Use ref to track which subscriptions have been checked to avoid recreation of fetchSubscriptionStatus
     const checkedSubscriptionsRef = useRef({});
@@ -72,6 +74,11 @@ export const MarketplaceProvider = ({
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin) => {
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
+        
+        // Set loading state for overlay
+        const actionText = action.charAt(0).toUpperCase() + action.slice(1) + 'ing';
+        setLoadingAction(actionText);
+        setLoadingPlugin(plugin.name || plugin.slug);
 
         try {
             let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
@@ -105,6 +112,9 @@ export const MarketplaceProvider = ({
             console.error("Plugin action failed", err);
         } finally {
             setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+            // Clear loading state
+            setLoadingAction('');
+            setLoadingPlugin('');
         }
     }, [apiBaseUrl, useWPHandlers, wpConfig]);
 
@@ -122,7 +132,9 @@ export const MarketplaceProvider = ({
         isOnecomBrand,
         plugins,
         setPlugins,
-        handlePluginAction
+        handlePluginAction,
+        loadingAction,
+        loadingPlugin
     };
 
     return (

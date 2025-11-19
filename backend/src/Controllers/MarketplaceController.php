@@ -383,8 +383,7 @@ class MarketplaceController {
 
  	// Fallback: scan installed plugins for partial matches
 		// This handles cases like:
-		// 1. slug "seo-by-rank-math" matching "seo-by-rank-math-pro/rank-math-pro.php" (directory prefix)
-		// 2. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
+		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$plugins = get_plugins();
 
@@ -394,8 +393,8 @@ class MarketplaceController {
 				$directory = $parts[0];
 				$main_file = $parts[1];
 
-				// Check if directory starts with the slug (handles prefix matches)
-				if ( strpos( $directory, $slug ) === 0 ) {
+				// Check if directory exactly matches the slug
+				if ( $directory === $slug ) {
 					return true;
 				}
 
@@ -457,16 +456,15 @@ class MarketplaceController {
 
  	// Fallback: scan installed plugins for partial matches
 		// This handles cases like:
-		// 1. slug "seo-by-rank-math" matching "seo-by-rank-math-pro/rank-math-pro.php" (directory prefix)
-		// 2. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
+		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
 		foreach ( $plugins as $file => $data ) {
 			$parts = explode( '/', $file );
 			if ( count( $parts ) === 2 ) {
 				$directory = $parts[0];
 				$main_file = $parts[1];
 
-				// Check if directory starts with the slug (handles prefix matches)
-				if ( strpos( $directory, $slug ) === 0 ) {
+				// Check if directory exactly matches the slug
+				if ( $directory === $slug ) {
 					return $file;
 				}
 

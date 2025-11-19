@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Marketplace from "./components/MarketPlace";
 import ProductBanner from "./components/ProductBanner";
+import LoadingOverlay from "./components/LoadingOverlay";
 import { MarketplaceProvider } from "./context/MarketplaceContext";
 
 const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
@@ -40,6 +41,7 @@ const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyl
             enableDefaultStyles={enableDefaultStyles}
             assetsBaseUrl={assetsBaseUrl}
         >
+            <LoadingOverlay />
             <div className="gv-activated">
                 <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
 
