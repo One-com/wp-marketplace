@@ -1,16 +1,33 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {normalizePlugins} from "./normalised-plugins";
 import "@group.one/gravity";
 import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
+import { useMarketplace } from "../context/MarketplaceContext";
 
-export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) {
-    const [plugins, setPlugins] = useState([]);
+export default function Marketplace() {
+    const {
+        apiBaseUrl,
+        useWPHandlers,
+        wpConfig,
+        enableDefaultStyles,
+        assetsBaseUrl,
+        pluginInAction,
+        setPluginInAction,
+        fetchSubscriptionStatus,
+        isOnecomBrand,
+        plugins,
+        setPlugins,
+        handlePluginAction
+    } = useMarketplace();
+
     const [loading, setLoading] = useState(true);
-    const [pluginInAction, setPluginInAction] = useState({});
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
     const [selectedPlugin, setSelectedPlugin] = useState(null);
+    
+    // Use ref to track if plugins have already been fetched
+    const hasFetchedPlugins = useRef(false);
     
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -40,13 +57,30 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
     const {t} = useTranslation();
 
     useEffect(() => {
+        // Only fetch once
+        if (hasFetchedPlugins.current) {
+            return;
+        }
 
         async function fetchPlugins() {
             try {
+                hasFetchedPlugins.current = true;
                 const res = await fetch(`${apiBaseUrl}`);
                 const json = await res.json();
                 const normalized = normalizePlugins(json);
                 setPlugins(normalized);
+
+                // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
+                if (isOnecomBrand) {
+                    const specialPlugins = normalized.filter(p => 
+                        p.slug === "wp-rocket" || p.slug === "rank-math-pro"
+                    );
+                    
+                    // Fetch subscription status for each special plugin
+                    specialPlugins.forEach(plugin => {
+                        fetchSubscriptionStatus(plugin.slug);
+                    });
+                }
             } catch (e) {
                 console.error("Failed to fetch plugins", e);
             } finally {
@@ -55,45 +89,7 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
         }
 
         fetchPlugins();
-    }, [apiBaseUrl, useWPHandlers, wpConfig]);
-
-    const handlePluginAction = async (action, plugin) => {
-        setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
-
-        try {
-            let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
-
-            // prepare encoded download param (safe if plugin.download is undefined)
-            const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
-
-            if (useWPHandlers) {
-                // original WP-AJAX URL + download_url appended
-                url = `${wpConfig.ajax_url}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
-            } else {
-                // append download_url to non-WP URL (adds ? or & correctly)
-                url = url + (url.includes('?') ? '&' : '?') + downloadParam;
-            }
-
-            const res = await fetch(url, { method: "POST" });
-            const result = await res.json();
-
-            if (result.success) {
-                setPlugins(prev =>
-                    prev.map(p =>
-                        p.slug === plugin.slug
-                            ? { ...p, installed: result.data.installed, activated: result.data.activated }
-                            : p
-                    )
-                );
-            } else {
-                alert(result.data?.message || "Failed to perform action");
-            }
-        } catch (err) {
-            console.error("Plugin action failed", err);
-        } finally {
-            setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
-        }
-    };
+    }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
 
     const handleDownloadClick = (e, plugin) => {
         e.stopPropagation();
@@ -143,12 +139,7 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                     setSelectedPlugin(null);
                     window.location.href = getBaseUrl();
                 }}
-                assetsBaseUrl={assetsBaseUrl}
-                useWPHandlers={useWPHandlers}
-                pluginInAction={pluginInAction}
-                onAction={handlePluginAction}
                 usePortal={false}
-                apiBaseUrl={apiBaseUrl}
             />
         );
     }
@@ -223,11 +214,6 @@ export default function Marketplace({ apiBaseUrl, useWPHandlers, wpConfig, enabl
                     <DetailComponent
                         plugin={selectedPlugin}
                         onClose={() => setSelectedPlugin(null)}
-                        assetsBaseUrl={assetsBaseUrl}
-                        useWPHandlers={useWPHandlers}
-                        pluginInAction={pluginInAction}
-                        onAction={handlePluginAction}
-                        apiBaseUrl={apiBaseUrl}
                     />
                 );
             })()}
