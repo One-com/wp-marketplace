@@ -217,7 +217,7 @@ class MarketplaceController {
 			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
 			'wpConfig' => [
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
 			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),

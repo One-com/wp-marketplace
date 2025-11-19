@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Marketplace from "./components/MarketPlace";
 import ProductBanner from "./components/ProductBanner";
+import { MarketplaceProvider } from "./context/MarketplaceContext";
 
 const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
     // Track detail page visibility with state
@@ -32,20 +33,22 @@ const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyl
     }, []);
 
     return (
-        <div className="gv-activated">
-            <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
+        <MarketplaceProvider
+            apiBaseUrl={apiBaseUrl}
+            useWPHandlers={useWPHandlers}
+            wpConfig={wpConfig}
+            enableDefaultStyles={enableDefaultStyles}
+            assetsBaseUrl={assetsBaseUrl}
+        >
+            <div className="gv-activated">
+                <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
 
-                {!isDetailPage && <ProductBanner />}
+                    {!isDetailPage && <ProductBanner />}
 
-                <Marketplace
-                    apiBaseUrl={apiBaseUrl}
-                    useWPHandlers={useWPHandlers}
-                    wpConfig={wpConfig}
-                    enableDefaultStyles={enableDefaultStyles}
-                    assetsBaseUrl={assetsBaseUrl}
-                />
+                    <Marketplace />
+                </div>
             </div>
-        </div>
+        </MarketplaceProvider>
     );
 };
 

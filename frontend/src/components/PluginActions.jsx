@@ -1,15 +1,27 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useMarketplace } from "../context/MarketplaceContext";
 
-export default function PluginActions({ plugin, pluginInAction, onAction }) {
+export default function PluginActions({ plugin }) {
+    const {
+        pluginInAction,
+        subscriptionStatus,
+        isCheckingSubscription,
+        isOnecomBrand,
+        handlePluginAction
+    } = useMarketplace();
+
+    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
+    
+    // Get subscription status for this plugin from context
+    const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
+    const pluginIsCheckingSubscription = isCheckingSubscription[plugin.slug];
+
     const handleClick = (action) => {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
-        const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
-        const isOnecomBrand = brand === "onecom";
-        const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
         const isNotInstalled = !plugin.installed;
         
         if (isOnecomBrand && isSpecialPlugin && isNotInstalled && action === "install") {
-            // Dispatch custom event instead of calling onAction
+            // Dispatch custom event instead of calling handlePluginAction
             const event = new CustomEvent("onecom-plugin-provision", {
                 detail: {
                     slug: plugin.slug,
@@ -24,12 +36,42 @@ export default function PluginActions({ plugin, pluginInAction, onAction }) {
         }
         
         // Default behavior
-        onAction(action, plugin);
+        handlePluginAction(action, plugin);
     };
+
+    const handleSelectClick = () => {
+        // Dispatch custom event for provisioning
+        const event = new CustomEvent("onecom-subscribe-addon", {
+            detail: { slug: plugin.slug },
+            bubbles: true,
+            cancelable: true,
+            composed: true
+        });
+        document.dispatchEvent(event);
+    };
+
+    // Check if we should show "Select" button instead of install/activate
+    const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin && !plugin.installed && pluginSubscriptionStatus === false;
+    
+    // Check if we should show skeleton loader (while checking subscription for special plugins)
+    // Show skeleton if: checking OR status is undefined (not yet fetched)
+    const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin && !plugin.installed && 
+        (pluginIsCheckingSubscription || pluginSubscriptionStatus === undefined);
 
     return (
         <div className="plugin-actions gv-mt-md">
-            {plugin.installed ? (
+            {shouldShowSkeleton ? (
+                <div className="gv-skeleton gv-heading-md"></div>
+            ) : shouldShowSelectButton ? (
+                <button
+                    type="button"
+                    className="gv-button gv-button-primary"
+                    onClick={handleSelectClick}
+                    disabled={pluginIsCheckingSubscription}
+                >
+                    Select
+                </button>
+            ) : plugin.installed ? (
                 plugin.activated ? (
                     <button
                         className="gv-button gv-button-secondary"
