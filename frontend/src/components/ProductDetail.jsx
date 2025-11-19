@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
+import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function ProductDetail({
     plugin,
     onClose,
-    assetsBaseUrl,
-    useWPHandlers,
-    pluginInAction,
-    onAction,
     usePortal = true
 }) {
+    const {
+        assetsBaseUrl,
+        useWPHandlers,
+        pluginInAction
+    } = useMarketplace();
     if (!plugin) return null;
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -116,8 +118,6 @@ export default function ProductDetail({
                                             {useWPHandlers ? (
                                                 <PluginActions
                                                     plugin={plugin}
-                                                    pluginInAction={pluginInAction}
-                                                    onAction={onAction}
                                                 />
                                             ) : (
                                                 plugin.download && (

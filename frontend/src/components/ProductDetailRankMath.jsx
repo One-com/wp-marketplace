@@ -1,51 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
+import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function ProductDetailRankMath({
     plugin,
     onClose,
-    assetsBaseUrl,
-    useWPHandlers,
-    pluginInAction,
-    onAction,
-    usePortal = true,
-    apiBaseUrl
+    usePortal = true
 }) {
+    const {
+        assetsBaseUrl,
+        useWPHandlers,
+        pluginInAction,
+        plugins
+    } = useMarketplace();
     if (!plugin) return null;
 
-    const [proPlugin, setProPlugin] = useState(null);
-    const [loading, setLoading] = useState(true);
-
-    // Fetch rank-math-pro plugin data
-    useEffect(() => {
-        async function fetchProPlugin() {
-            try {
-                if (!apiBaseUrl) {
-                    setLoading(false);
-                    return;
-                }
-                const res = await fetch(`${apiBaseUrl}`);
-                const json = await res.json();
-                
-                // Find rank-math-pro in the response
-                let proPluginData = null;
-                if (Array.isArray(json)) {
-                    proPluginData = json.find(p => p.slug === "rank-math-pro");
-                } else if (json.data && Array.isArray(json.data)) {
-                    proPluginData = json.data.find(p => p.slug === "rank-math-pro");
-                }
-                
-                setProPlugin(proPluginData);
-            } catch (e) {
-                console.error("Failed to fetch rank-math-pro plugin", e);
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        fetchProPlugin();
-    }, [apiBaseUrl]);
+    // Get rank-math-pro plugin from context instead of fetching
+    const proPlugin = plugins.find(p => p.slug === "rank-math-pro") || null;
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
@@ -153,8 +125,6 @@ export default function ProductDetailRankMath({
                                                     {useWPHandlers ? (
                                                         <PluginActions
                                                             plugin={plugin}
-                                                            pluginInAction={pluginInAction}
-                                                            onAction={onAction}
                                                         />
                                                     ) : (
                                                         plugin.download && (
@@ -178,11 +148,9 @@ export default function ProductDetailRankMath({
                                                     {useWPHandlers && proPlugin ? (
                                                         <PluginActions
                                                             plugin={proPlugin}
-                                                            pluginInAction={pluginInAction}
-                                                            onAction={onAction}
                                                         />
                                                     ) : (
-                                                        <button type="button" className="gv-button gv-button-secondary">Select</button>
+                                                        <button type="button" className="gv-button gv-button-primary">Select</button>
                                                     )}
                                                 </div>
                                             </div>
