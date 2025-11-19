@@ -16,29 +16,31 @@ export default function ProductDetailRankMath({
     } = useMarketplace();
     if (!plugin) return null;
 
-    // Get rank-math-pro plugin from context instead of fetching
+    // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
+    const freePlugin = plugins.find(p => p.slug === "seo-by-rank-math") || null;
     const proPlugin = plugins.find(p => p.slug === "rank-math-pro") || null;
 
+    // Use the clicked plugin for header/main content, but always use freePlugin for first column
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
     const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
-    // Extract data with fallbacks for free version (current plugin)
-    const title = plugin.name || 'Product';
-    const description = plugin.description || plugin.shortDescription || 'No description available.';
+    // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
+    const title = freePlugin?.name || plugin.name || 'Product';
+    const description = freePlugin?.description || freePlugin?.shortDescription || plugin.description || plugin.shortDescription || 'No description available.';
     
-    // Extract data for pro version
-    const proTitle = proPlugin?.name || title;
-    const proDescription = proPlugin?.description || proPlugin?.shortDescription || description;
+    // Extract data for pro version (second column - always rank-math-pro)
+    const proTitle = proPlugin?.name || 'Rank Math Pro';
+    const proDescription = proPlugin?.description || proPlugin?.shortDescription || 'Advanced SEO features for professionals';
     const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount) 
         ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}`
         : '€ 0,-';
 
     // Derive features from description or plugin data
-    const rawFeatureSource = plugin.features && plugin.features.length
-        ? plugin.features
+    const rawFeatureSource = (freePlugin?.features && freePlugin.features.length)
+        ? freePlugin.features
         : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
 
     const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
@@ -122,12 +124,12 @@ export default function ProductDetailRankMath({
                                                             <span className="gv-price-text">Free</span>
                                                         </div>
                                                     </div>
-                                                    {useWPHandlers ? (
+                                                    {useWPHandlers && freePlugin ? (
                                                         <PluginActions
-                                                            plugin={plugin}
+                                                            plugin={freePlugin}
                                                         />
                                                     ) : (
-                                                        plugin.download && (
+                                                        freePlugin?.download && (
                                                             <button type="button" className="gv-button gv-button-secondary">Install</button>
                                                         )
                                                     )}
