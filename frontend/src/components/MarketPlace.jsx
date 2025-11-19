@@ -51,8 +51,29 @@ export default function Marketplace() {
         if (pluginFromQuery && plugins.length) {
             const match = plugins.find(p => p.slug === pluginFromQuery);
             if (match) setSelectedPlugin(match);
+        } else if (!pluginFromQuery) {
+            // Clear selectedPlugin when no plugin parameter in URL
+            setSelectedPlugin(null);
         }
     }, [pluginFromQuery, plugins]);
+    
+    // Listen for browser back/forward navigation
+    useEffect(() => {
+        const handlePopState = () => {
+            const currentPluginParam = new URLSearchParams(window.location.search).get("plugin");
+            if (!currentPluginParam) {
+                // URL no longer has plugin parameter, clear selection
+                setSelectedPlugin(null);
+            } else if (plugins.length) {
+                // URL has plugin parameter, update selection
+                const match = plugins.find(p => p.slug === currentPluginParam);
+                if (match) setSelectedPlugin(match);
+            }
+        };
+        
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [plugins]);
     
     const {t} = useTranslation();
 

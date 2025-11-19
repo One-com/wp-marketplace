@@ -15,9 +15,10 @@
     "README.md"
   ],
   "scripts": {
-    "start": "wp-scripts start",
-    "build": "webpack --config webpack.wp.js",
-    "build:standalone": "vite build"
+    "start": "wp-scripts start && node copy-build.js",
+    "build": "webpack --config webpack.wp.js && node copy-build.js",
+    "build:standalone": "vite build",
+    "copy": "node copy-build.js"
   },
   "peerDependencies": {
     "react": ">=18 || >=19",
