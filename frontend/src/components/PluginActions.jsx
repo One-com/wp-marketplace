@@ -3,7 +3,6 @@ import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function PluginActions({ plugin }) {
     const {
-        assetsBaseUrl,
         pluginInAction,
         subscriptionStatus,
         isCheckingSubscription,
@@ -16,8 +15,7 @@ export default function PluginActions({ plugin }) {
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
     const pluginIsCheckingSubscription = isCheckingSubscription[plugin.slug];
-    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
-    const iconBase = assetBase ? `${assetBase}assets/` : "";
+
     const handleClick = (action) => {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
@@ -52,30 +50,6 @@ export default function PluginActions({ plugin }) {
         document.dispatchEvent(event);
     };
 
-    const handleManage = () => {
-        // Redirect to plugin's settings page
-        // Common plugin admin pages
-        const pluginAdminPages = {
-            'wp-rocket': 'wp-rocket',
-            'rank-math-pro': 'rank-math',
-            'seo-by-rank-math': 'rank-math',
-            'akismet': 'akismet-key-config',
-            'jetpack': 'jetpack',
-            'wordfence': 'Wordfence',
-            'yoast': 'wpseo_dashboard'
-        };
-
-        const adminPage = pluginAdminPages[plugin.slug] || plugin.slug;
-        const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
-        
-        if (adminUrl) {
-            window.location.href = `${adminUrl}admin.php?page=${adminPage}`;
-        } else {
-            // Fallback to plugins page
-            window.location.href = '/wp-admin/plugins.php';
-        }
-    };
-
     // Check if we should show "Select" button instead of install/activate
     const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin && !plugin.installed && pluginSubscriptionStatus === false;
     
@@ -100,12 +74,13 @@ export default function PluginActions({ plugin }) {
             ) : plugin.installed ? (
                 plugin.activated ? (
                     <button
-                        type="button"
-                        className="gv-button gv-button-primary"
-                        onClick={handleManage}
+                        className="gv-button gv-button-secondary"
+                        disabled={pluginInAction[plugin.slug]}
+                        onClick={() => handleClick("deactivate")}
                     >
-                       <span>Manage</span>
-                        <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_right.svg`}></gv-icon>
+                        {pluginInAction[plugin.slug]
+                            ? (marketplaceConfig?.labels?.deactivating || 'Deactivating...')
+                            : (marketplaceConfig?.labels?.deactivate || 'Deactivate')}
                     </button>
                 ) : (
                     <button
@@ -115,7 +90,7 @@ export default function PluginActions({ plugin }) {
                     >
                         {pluginInAction[plugin.slug]
                             ? (marketplaceConfig?.labels?.activating || 'Activating...')
-                            : (plugin.textKeys?.activateButton || 'Activate')}
+                            : (marketplaceConfig?.labels?.activate || 'Activate')}
                     </button>
                 )
             ) : (
@@ -126,7 +101,7 @@ export default function PluginActions({ plugin }) {
                 >
                     {pluginInAction[plugin.slug]
                         ? (marketplaceConfig?.labels?.installing || 'Installing...')
-                        : (plugin.textKeys?.installButton || 'Install')}
+                        : (marketplaceConfig?.labels?.install || 'Install')}
                 </button>
             )}
         </div>
