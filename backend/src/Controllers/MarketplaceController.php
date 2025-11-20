@@ -317,20 +317,30 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin data.', 'text-domain' ) ] );
 		}
 
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+ 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
-		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
-		$result   = $upgrader->install( $download_url ); //  use URL from React
+ 	$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
+ 	$result   = $upgrader->install( $download_url ); //  use URL from React
 
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
-		}
+ 	if ( is_wp_error( $result ) ) {
+ 		wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+ 	}
 
-		wp_send_json_success([
-			'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
-			'installed' => true,
-			'activated' => false,
-		]);
+ 	// Check if the upgrader returned NULL or false (download/installation failed)
+ 	if ( $result === null || $result === false ) {
+ 		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
+ 	}
+
+ 	// Verify the plugin was actually installed by checking if it exists
+ 	if ( ! $this->is_installed( $slug ) ) {
+ 		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
+ 	}
+
+ 	wp_send_json_success([
+ 		'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
+ 		'installed' => true,
+ 		'activated' => false,
+ 	]);
 	}
 
 	/**
