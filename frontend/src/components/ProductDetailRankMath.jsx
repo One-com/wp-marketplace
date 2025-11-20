@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
+import SuccessNotice from "./SuccessNotice";
+import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function ProductDetailRankMath({
@@ -77,6 +79,9 @@ export default function ProductDetailRankMath({
                         <span>Back</span>
                     </a>
                 </nav>
+
+                <SuccessNotice plugin={plugin} />
+                <ErrorToast plugin={plugin} />
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
