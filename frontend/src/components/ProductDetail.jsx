@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
+import SuccessNotice from "./SuccessNotice";
+import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function ProductDetail({
@@ -51,7 +53,7 @@ export default function ProductDetail({
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
             <article className="gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
-                <nav className="gv-breadcrumbs gv-area-nav test-">
+                <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
                     <a
                         href="#"
                         onClick={e => {
@@ -70,7 +72,11 @@ export default function ProductDetail({
                                         alt="Back to plugins" />
                         <span>Back</span>
                     </a>
+                    <SuccessNotice plugin={plugin} />
+                    <ErrorToast plugin={plugin} />
                 </nav>
+
+
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
