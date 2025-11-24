@@ -175,25 +175,33 @@ export default function Marketplace() {
     });
 
     Array.from(bySlug.values()).forEach((p) => {
-        const primary = Array.isArray(p.categories) && p.categories.length ? String(p.categories[0]) : "Others";
-        if (!categoryMap.has(primary)) categoryMap.set(primary, []);
-        categoryMap.get(primary).push(p);
+        // Handle new category object structure: { id, slug, title, description }
+        const categoryObj = Array.isArray(p.categories) && p.categories.length 
+            ? (typeof p.categories[0] === 'object' ? p.categories[0] : { slug: String(p.categories[0]), title: String(p.categories[0]), description: null })
+            : { slug: "Others", title: "Others", description: null };
+        
+        const categoryKey = categoryObj.slug || categoryObj.title || "Others";
+        
+        if (!categoryMap.has(categoryKey)) {
+            categoryMap.set(categoryKey, { info: categoryObj, plugins: [] });
+        }
+        categoryMap.get(categoryKey).plugins.push(p);
     });
 
     const categories = Array.from(categoryMap.entries());
 
     return (
         <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-mt-fluid">
-            {categories.map(([cat, list]) => (
-                <section key={cat} className="category-section">
-                    <h2 className="gv-heading-md gv-mb-sm">{cat}</h2>
-                    <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>
-                     { /* description && <p>{description}</p> */ } 
+            {categories.map(([catKey, { info, plugins: list }]) => (
+                <section key={catKey} className="category-section">
+                    <h2 className="gv-heading-md gv-mb-sm">{info.title || catKey}</h2>
+                    {info.description && <p>{info.description}</p>}
+                    {!info.description && <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
                     <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg">
                         {list.map((plugin) => (
                             <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12">
                                 <div className="gv-span-2">
-                                    <img className="gv-tile" src={`${iconBase}add_box.svg`}
+                                    <img className="gv-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                         alt={plugin.name} />
                                 </div>
                                 <div className="gv-span-9">

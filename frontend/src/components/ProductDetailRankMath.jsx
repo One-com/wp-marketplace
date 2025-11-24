@@ -27,7 +27,7 @@ export default function ProductDetailRankMath({
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
-    const mainImage = plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+    const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
     const title = freePlugin?.name || plugin.name || 'Product';
@@ -135,7 +135,7 @@ export default function ProductDetailRankMath({
                                                         />
                                                     ) : (
                                                         freePlugin?.download && (
-                                                            <button type="button" className="gv-button gv-button-secondary">Install</button>
+                                                            <button type="button" className="gv-button gv-button-secondary">{freePlugin?.textKeys?.installButton || 'Install'}</button>
                                                         )
                                                     )}
                                                 </div>
@@ -166,10 +166,10 @@ export default function ProductDetailRankMath({
                                     <div className="gv-section" role="rowgroup">
                                         <div className="gv-section-header gv-table-row" role="row">
                                             <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">Key features</h4>
+                                                <h4 className="gv-title">{freePlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
                                             </div>
                                             <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">Key features</h4>
+                                                <h4 className="gv-title">{proPlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
                                             </div>
                                         </div>
                                         {keyFeatures.map((f, i) => (
@@ -197,7 +197,7 @@ export default function ProductDetailRankMath({
 
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">Key benefits</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.benefitHeading || 'Key benefits'}</h2>
                         <ul className="gv-list-items gv-list-check gv-mode-condensed">
                             {benefits.map((b, i) => <li key={i}>{b}</li>)}
                         </ul>
@@ -210,7 +210,7 @@ export default function ProductDetailRankMath({
 
                 <div className="gv-area-content gv-grid gv-gap-fluid">
                     <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">Core features overview</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.featureOverviewHeading || 'Core features overview'}</h2>
                         <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                             {coreFeatures.map((cf, i) => (
                                 <div className="gv-item gv-stack-space-sm" key={i}>
