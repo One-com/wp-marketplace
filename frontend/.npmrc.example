@@ -1,0 +1,7 @@
+# Copy this file to .npmrc and add your npm token
+# Get your token from: npm login && npm token create --read-only
+
+//registry.npmjs.org/:_authToken=YOUR_NPM_TOKEN_HERE
+
+# If using a scoped package from a different registry:
+# @group.one:registry=https://registry.npmjs.org/

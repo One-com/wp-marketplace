@@ -17,7 +17,11 @@
   "scripts": {
     "start": "wp-scripts start",
     "build": "webpack --config webpack.wp.js",
-    "build:standalone": "vite build"
+    "build:standalone": "vite build",
+    "lint": "eslint src --ext .js,.jsx",
+    "lint:fix": "eslint src --ext .js,.jsx --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,json,css,md}\""
   },
   "peerDependencies": {
     "react": ">=18 || >=19",
@@ -27,6 +31,12 @@
     "@vitejs/plugin-react": "^4.0.0",
     "@wordpress/scripts": "^26.0.0",
     "cross-env": "^7.0.3",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^3.2.5",
     "vite": "^5.0.0",
     "webpack": "^5.0.0",
     "webpack-cli": "^5.0.0"

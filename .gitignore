@@ -1,4 +1,43 @@
+# Dependencies
 frontend/node_modules
 vendor/
 backend/vendor/
+
+# Lock files (uncomment composer.lock if needed for development)
 composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+frontend/build/
+frontend/standalone/
+
+# CI/CD
+.phpcs-cache
+.eslintcache
+
+# Testing
+coverage/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# npm authentication (contains tokens)
+.npmrc
+frontend/.npmrc
+
+# Temporary files
+*.tmp
+*.bak
