@@ -4,6 +4,7 @@ import ProductBanner from "./components/ProductBanner";
 
 const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
     // Track detail page visibility with state
+    // CI/CD test
     const [isDetailPage, setIsDetailPage] = useState(
         typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin")
     );
