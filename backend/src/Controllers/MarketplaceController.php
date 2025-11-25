@@ -205,8 +205,25 @@ class MarketplaceController {
 		if ( ! empty( $this->config['custom_css'] ) ) {
 			wp_enqueue_style( 'marketplace-css', esc_url( $this->config['custom_css'] ), [], '1.0.0' );
 		} else {
-			$css_file = 'assets/css/one.min.css';
-			wp_enqueue_style( 'marketplace-css', $base_url . $css_file, [], '1.0.0' );
+			// Enqueue library CSS (one.min.css)
+			$one_css_file = 'assets/min-css/one.min.css';
+			$one_css_path = $base_path . $one_css_file;
+			wp_enqueue_style(
+				'marketplace-one-css',
+				$base_url . $one_css_file,
+				[],
+				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
+			);
+
+			// Enqueue marketplace custom CSS (marketplace.min.css)
+			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
+			$marketplace_css_path = $base_path . $marketplace_css_file;
+			wp_enqueue_style(
+				'marketplace-custom-css',
+				$base_url . $marketplace_css_file,
+				[ 'marketplace-one-css' ],
+				file_exists( $marketplace_css_path ) ? filemtime( $marketplace_css_path ) : '1.0.0'
+			);
 		}
 
 		// Localize JS with config
