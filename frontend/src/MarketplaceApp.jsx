@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Marketplace from "./components/MarketPlace";
 import ProductBanner from "./components/ProductBanner";
+import FeaturedCarousel from "./components/FeaturedCarousel";
 import LoadingOverlay from "./components/LoadingOverlay";
 import { MarketplaceProvider } from "./context/MarketplaceContext";
 
@@ -46,6 +47,7 @@ const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyl
                 <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
 
                     {!isDetailPage && <ProductBanner />}
+                    {!isDetailPage && <FeaturedCarousel />}
 
                     <Marketplace />
                 </div>
