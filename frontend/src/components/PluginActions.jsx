@@ -3,6 +3,7 @@ import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function PluginActions({ plugin }) {
     const {
+        assetsBaseUrl,
         pluginInAction,
         subscriptionStatus,
         isCheckingSubscription,
@@ -15,7 +16,8 @@ export default function PluginActions({ plugin }) {
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
     const pluginIsCheckingSubscription = isCheckingSubscription[plugin.slug];
-
+    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
+    const iconBase = assetBase ? `${assetBase}assets/` : "";
     const handleClick = (action) => {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
@@ -102,7 +104,8 @@ export default function PluginActions({ plugin }) {
                         className="gv-button gv-button-primary"
                         onClick={handleManage}
                     >
-                        Manage
+                       <span>Manage</span>
+                        <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_right.svg`}></gv-icon>
                     </button>
                 ) : (
                     <button
