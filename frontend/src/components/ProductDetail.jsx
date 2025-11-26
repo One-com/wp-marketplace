@@ -71,7 +71,7 @@ export default function ProductDetail({
                         role="button"
                         aria-label="Go back"
                     >
-                        <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}chevron_left.svg`}
+                        <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}arrow_back.svg`}
                                         alt="Back to plugins" />
                         <span>Back</span>
                     </a>

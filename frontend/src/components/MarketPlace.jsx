@@ -169,9 +169,10 @@ export default function Marketplace() {
     const categoryMap = new Map();
 
     // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
+    // Also filter out activated plugins
     const bySlug = new Map();
     plugins.forEach((p) => {
-        if (!bySlug.has(p.slug)) bySlug.set(p.slug, p);
+        if (!bySlug.has(p.slug) && p.activated !== true) bySlug.set(p.slug, p);
     });
 
     Array.from(bySlug.values()).forEach((p) => {
@@ -188,18 +189,18 @@ export default function Marketplace() {
         categoryMap.get(categoryKey).plugins.push(p);
     });
 
-    const categories = Array.from(categoryMap.entries());
+    const categories = Array.from(categoryMap.entries()).filter(([catKey, { plugins: list }]) => list.length > 0);
 
     return (
-        <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-mt-fluid">
+        <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg">
             {categories.map(([catKey, { info, plugins: list }]) => (
                 <section key={catKey} className="category-section">
-                    <h2 className="gv-heading-md gv-mb-sm">{info.title || catKey}</h2>
+                    <p className="gv-text-bold gv-text-lg">{info.title || catKey}</p>
                     {info.description && <p>{info.description}</p>}
                     {!info.description && <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
                     <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg">
                         {list.map((plugin) => (
-                            <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12">
+                            <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
                                 <div className="gv-span-2">
                                     <img className="gv-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                         alt={plugin.name} />
@@ -209,7 +210,7 @@ export default function Marketplace() {
                                     <p className="oc-card-content"> {plugin.description ? plugin.description : plugin.shortDescription} </p>
                                     <span className="gv-text-sm">{plugin.priceCurrency} {plugin.priceAmount}</span>
                                 </div>
-                                <div className="gv-span-1">
+                                <div className="gv-span-1 gv-content-center">
                                     <a
                                         href={`${getBaseUrl()}&plugin=${plugin.slug}`}
                                         className="gv-reset-button"
