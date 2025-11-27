@@ -1,13 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 
 export default function FeaturedCarousel() {
     const { plugins, assetsBaseUrl } = useMarketplace();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slidesPerView, setSlidesPerView] = useState(2);
-    const [isTransitioning, setIsTransitioning] = useState(false);
-    const trackRef = useRef(null);
-    
+
     useEffect(() => {
         const updateSlidesPerView = () => {
             if (window.innerWidth > 1024) {
@@ -32,51 +30,18 @@ export default function FeaturedCarousel() {
 
     const totalSlides = featuredPlugins.length;
     const maxIndex = Math.max(0, totalSlides - slidesPerView);
-    
-    // Create extended array with clones for infinite effect
-    // Clone slidesPerView items from the end at the beginning, and from the beginning at the end
-    const clonedPlugins = [
-        ...featuredPlugins.slice(-slidesPerView),  // Clone last slidesPerView items at the start
-        ...featuredPlugins,                        // Original items
-        ...featuredPlugins.slice(0, slidesPerView) // Clone first slidesPerView items at the end
-    ];
-    
-    // Adjust currentIndex to account for cloned slides at the beginning
-    const actualIndex = currentIndex + slidesPerView;
 
     const goToPrevious = () => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
-        setCurrentIndex(prev => prev - 1);
+        if (currentIndex > 0) {
+            setCurrentIndex(prev => prev - 1);
+        }
     };
 
     const goToNext = () => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
-        setCurrentIndex(prev => prev + 1);
-    };
-    
-    // Handle transition end to reset position for infinite loop
-    useEffect(() => {
-        const handleTransitionEnd = () => {
-            setIsTransitioning(false);
-            
-            // If we've moved past the last real slide, jump to the first real slide
-            if (currentIndex >= totalSlides) {
-                setCurrentIndex(0);
-            }
-            // If we've moved before the first real slide, jump to the last real slide
-            else if (currentIndex < 0) {
-                setCurrentIndex(totalSlides - 1);
-            }
-        };
-        
-        const track = trackRef.current;
-        if (track) {
-            track.addEventListener('transitionend', handleTransitionEnd);
-            return () => track.removeEventListener('transitionend', handleTransitionEnd);
+        if (currentIndex < maxIndex) {
+            setCurrentIndex(prev => prev + 1);
         }
-    }, [currentIndex, totalSlides]);
+    };
 
     // If no featured plugins, don't render anything
     if (!featuredPlugins || featuredPlugins.length === 0) {
@@ -84,8 +49,6 @@ export default function FeaturedCarousel() {
     }
 
     const goToSlide = (index) => {
-        if (isTransitioning) return;
-        setIsTransitioning(true);
         setCurrentIndex(Math.min(index, maxIndex));
     };
 
@@ -95,7 +58,7 @@ export default function FeaturedCarousel() {
             const url = new URL(window.location.href);
             url.searchParams.set("plugin", plugin.slug);
             window.history.pushState({}, "", url.toString());
-            
+
             // Dispatch custom event to notify app of navigation
             window.dispatchEvent(new PopStateEvent('popstate'));
         }
@@ -108,22 +71,27 @@ export default function FeaturedCarousel() {
             </div>
 
             <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
-                <div 
-                    ref={trackRef}
+                <div
                     className="gv-carousel-track"
                     style={{
                         display: 'flex',
-                        transition: isTransitioning ? 'transform 0.3s ease-in-out' : 'none',
-                        transform: `translateX(calc(-${actualIndex} * ((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView} + 1rem)))`,
+                        transition: 'transform 0.3s ease-in-out',
+                        transform: `translateX(calc(-${currentIndex} * ((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView} + 1rem)))`,
                         gap: '1rem'
                     }}
                 >
-                    {clonedPlugins.map((plugin, index) => {
+                    {featuredPlugins.map((plugin, index) => {
                         const title = plugin.name || 'Product';
                         const description = plugin.description || plugin.shortDescription || 'No description available.';
                         const isFree = plugin.licenseType === "free";
                         const price = isFree ? 'Free' : (plugin.priceCurrency && plugin.priceAmount) ? `${plugin.priceCurrency} ${plugin.priceAmount}` : '€ 0,-';
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+
+                        // Extract category name from plugin categories array
+                        const categoryObj = Array.isArray(plugin.categories) && plugin.categories.length
+                            ? (typeof plugin.categories[0] === 'object' ? plugin.categories[0] : { slug: String(plugin.categories[0]), title: String(plugin.categories[0]), description: null })
+                            : { slug: "Others", title: "Others", description: null };
+                        const categoryName = categoryObj.title || categoryObj.slug || "Others";
 
                         return (
                             <div
@@ -141,27 +109,19 @@ export default function FeaturedCarousel() {
                                 }}
                             >
                                 <header className="gv-product-header gv-area-header">
-                                    <div 
-                                        className="gv-content gv-stack-space-md gv-text-sm"
+                                    <div
+                                        className="gv-content gv-stack-space-md gv-text-sm gv-flex gv-flex-col gv-items-start"
                                         style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
                                             overflow: 'hidden'
                                         }}
                                     >
+                                      <div className="gv-badge gv-badge-info">{title}</div>
                                         <h5
                                             className="gv-title gv-header-sm"
-                                            style={{
-                                                overflow: 'hidden',
-                                                display: '-webkit-box',
-                                                WebkitLineClamp: 3,
-                                                WebkitBoxOrient: 'vertical',
-                                                textOverflow: 'ellipsis'
-                                            }}
                                         >
                                             {title}
                                         </h5>
-                                        <p 
+                                        <p
                                             style={{
                                                 overflow: 'hidden',
                                                 display: '-webkit-box',
@@ -172,7 +132,7 @@ export default function FeaturedCarousel() {
                                         >
                                             {description}
                                         </p>
-                                        
+
                                         <div className="gv-slide-footer gv-mt-lg gv-flex gv-align-center">
                                             <button
                                                 onClick={() => handleReadMore(plugin)}
@@ -180,7 +140,7 @@ export default function FeaturedCarousel() {
                                             >
                                                 Read more
                                             </button>
-                                            
+
                                             <span className="gv-price gv-text-bold gv-text-md gv-ml-md">
                                                 {price}
                                             </span>
@@ -208,25 +168,26 @@ export default function FeaturedCarousel() {
 
             {/* Navigation Controls: Arrows + Dots */}
             {totalSlides > slidesPerView && (
-                <div 
+                <div
                     className="gv-carousel-nav-wrapper gv-flex gv-justify-center gv-align-center gv-mt-sm gv-gap-fluid"
                 >
                     <button
                         onClick={goToPrevious}
+                        disabled={currentIndex === 0}
                         className="gv-carousel-nav gv-carousel-nav-prev"
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            cursor: 'pointer',
-                            opacity: 1
+                            cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
+                            opacity: currentIndex === 0 ? 0.5 : 1
                         }}
                         aria-label="Previous slide"
                     >
                         <img src={`${iconBase}chevron_left.svg`} alt="Previous" style={{ width: '24px', height: '24px' }} />
                     </button>
 
-                    <div 
+                    <div
                         className="gv-carousel-dots"
                         style={{
                             display: 'flex',
@@ -255,13 +216,14 @@ export default function FeaturedCarousel() {
 
                     <button
                         onClick={goToNext}
+                        disabled={currentIndex >= maxIndex}
                         className="gv-carousel-nav gv-carousel-nav-next"
                         style={{
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            cursor: 'pointer',
-                            opacity: 1
+                            cursor: currentIndex >= maxIndex ? 'not-allowed' : 'pointer',
+                            opacity: currentIndex >= maxIndex ? 0.5 : 1
                         }}
                         aria-label="Next slide"
                     >

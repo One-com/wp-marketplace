@@ -12,7 +12,7 @@ export default function PluginActions({ plugin }) {
     } = useMarketplace();
 
     const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
-    
+
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
     const pluginIsCheckingSubscription = isCheckingSubscription[plugin.slug];
@@ -21,7 +21,7 @@ export default function PluginActions({ plugin }) {
     const handleClick = (action) => {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
-        
+
         if (isOnecomBrand && isSpecialPlugin && isNotInstalled && action === "install") {
             // Dispatch custom event instead of calling handlePluginAction
             const event = new CustomEvent("onecom-plugin-provision", {
@@ -36,7 +36,7 @@ export default function PluginActions({ plugin }) {
             document.dispatchEvent(event);
             return;
         }
-        
+
         // Default behavior
         handlePluginAction(action, plugin);
     };
@@ -67,7 +67,7 @@ export default function PluginActions({ plugin }) {
 
         const adminPage = pluginAdminPages[plugin.slug] || plugin.slug;
         const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
-        
+
         if (adminUrl) {
             window.location.href = `${adminUrl}admin.php?page=${adminPage}`;
         } else {
@@ -78,10 +78,10 @@ export default function PluginActions({ plugin }) {
 
     // Check if we should show "Select" button instead of install/activate
     const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin && !plugin.installed && pluginSubscriptionStatus === false;
-    
+
     // Check if we should show skeleton loader (while checking subscription for special plugins)
     // Show skeleton if: checking OR status is undefined (not yet fetched)
-    const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin && !plugin.installed && 
+    const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin && !plugin.installed &&
         (pluginIsCheckingSubscription || pluginSubscriptionStatus === undefined);
 
     return (
@@ -120,7 +120,7 @@ export default function PluginActions({ plugin }) {
                 )
             ) : (
                 <button
-                    className="gv-button gv-button-secondary"
+                    className="gv-button gv-button-primary"
                     disabled={pluginInAction[plugin.slug]}
                     onClick={() => handleClick("install")}
                 >

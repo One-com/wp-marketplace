@@ -4,6 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { formatPluginPrice } from "../utils/priceFormatter";
 
 export default function ProductDetail({
     plugin,
@@ -27,11 +28,7 @@ export default function ProductDetail({
     const title = plugin.name || 'Product';
     const description = plugin.description || plugin.shortDescription || 'No description available.';
     const isFree = plugin.licenseType === "free";
-    const price = isFree 
-        ? 'Free'
-        : (plugin.priceCurrency && plugin.priceAmount) 
-            ? `${plugin.priceCurrency} ${plugin.priceAmount}`
-            : '€ 0,-';
+    const price = formatPluginPrice(plugin);
 
     // Derive features from description or plugin data
     const rawFeatureSource = plugin.features && plugin.features.length
@@ -85,11 +82,11 @@ export default function ProductDetail({
                     <div className="gv-content gv-stack-space-md gv-text-sm">
                         <h1 className="gv-title gv-header-lg">{title}</h1>
                         <p>{description}</p>
-                        {plugin.author && (
-                            <p className="gv-text-xs gv-mt-sm">
-                                Author: {plugin.authorUrl ? <a href={plugin.authorUrl}>{plugin.author}</a> : plugin.author}
-                            </p>
-                        )}
+                        {/*{plugin.author && (*/}
+                        {/*    <p className="gv-text-xs gv-mt-sm">*/}
+                        {/*        Author: {plugin.authorUrl ? <a href={plugin.authorUrl}>{plugin.author}</a> : plugin.author}*/}
+                        {/*    </p>*/}
+                        {/*)}*/}
                     </div>
                     <div className="gv-image">
                         <picture>

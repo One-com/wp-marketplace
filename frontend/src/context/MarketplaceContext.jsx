@@ -2,13 +2,13 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 
 const MarketplaceContext = createContext(null);
 
-export const MarketplaceProvider = ({ 
-    children, 
-    apiBaseUrl, 
-    useWPHandlers, 
-    wpConfig, 
-    enableDefaultStyles, 
-    assetsBaseUrl 
+export const MarketplaceProvider = ({
+    children,
+    apiBaseUrl,
+    useWPHandlers,
+    wpConfig,
+    enableDefaultStyles,
+    assetsBaseUrl
 }) => {
     const [pluginInAction, setPluginInAction] = useState({});
     const [subscriptionStatus, setSubscriptionStatus] = useState({});
@@ -18,7 +18,8 @@ export const MarketplaceProvider = ({
     const [loadingPlugin, setLoadingPlugin] = useState('');
     const [noticeState, setNoticeState] = useState({ visible: false, type: null, pluginSlug: null });
     const [errorState, setErrorState] = useState({ visible: false, type: null, pluginSlug: null });
-    
+    const [allPluginsActivated, setAllPluginsActivated] = useState(false);
+
     // Use ref to track which subscriptions have been checked to avoid recreation of fetchSubscriptionStatus
     const checkedSubscriptionsRef = useRef({});
 
@@ -28,7 +29,7 @@ export const MarketplaceProvider = ({
     // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
     const fetchSubscriptionStatus = useCallback(async (pluginSlug) => {
         if (!isOnecomBrand) return;
-        
+
         const isSpecialPlugin = pluginSlug === "wp-rocket" || pluginSlug === "rank-math-pro";
         if (!isSpecialPlugin) return;
 
@@ -40,7 +41,7 @@ export const MarketplaceProvider = ({
         // Mark as being checked
         checkedSubscriptionsRef.current[pluginSlug] = true;
         setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: true }));
-        
+
         try {
             const ajaxUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
             if (!ajaxUrl) {
@@ -50,7 +51,7 @@ export const MarketplaceProvider = ({
             }
 
             console.log(`[MarketplaceContext] Fetching subscription status for ${pluginSlug}`);
-            
+
             const formData = new FormData();
             formData.append('action', 'get_addon_purchase_status');
             formData.append('addon_purchase_check', 'true');
@@ -60,10 +61,10 @@ export const MarketplaceProvider = ({
                 method: 'POST',
                 body: formData
             });
-            
+
             const json = await res.json();
             console.log(`[MarketplaceContext] Subscription status response for ${pluginSlug}:`, json);
-            
+
             setSubscriptionStatus(prev => ({ ...prev, [pluginSlug]: json.is_purchased }));
         } catch (e) {
             console.error(`[MarketplaceContext] Failed to fetch subscription status for ${pluginSlug}`, e);
@@ -75,12 +76,65 @@ export const MarketplaceProvider = ({
 
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin) => {
+        // Check if this is Imagify plugin activation (handles 302 redirect case)
+        const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
+
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
-        
+
         // Set loading state for overlay
-        const actionText = action.charAt(0).toUpperCase() + action.slice(1) + 'ing';
+        const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
         setLoadingAction(actionText);
         setLoadingPlugin(plugin.name || plugin.slug);
+
+        // For Imagify, use setTimeout to allow React to render the loading overlay first
+        if (isImagifyActivation) {
+            // Build URL for activation
+            let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
+            const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
+
+            if (useWPHandlers) {
+                url = `${wpConfig.ajaxUrl}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
+            } else {
+                url = url + (url.includes('?') ? '&' : '?') + downloadParam;
+            }
+
+            // Allow React to render loading overlay, then execute Imagify flow
+            setTimeout(() => {
+                // Initiate the activation request (don't wait for response due to 302 redirect)
+                fetch(url, { method: "POST" }).catch(err => {
+                    console.log("Imagify activation request initiated, reload will proceed");
+                });
+
+                // Show success notice after delay
+                setTimeout(() => {
+                    setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
+                }, 1000);
+
+                // Clear loading overlay after success notice appears
+                setTimeout(() => {
+                    setLoadingAction('');
+                    setLoadingPlugin('');
+                    setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+                }, 1100);
+
+                // Update plugin state to activated
+                setTimeout(() => {
+                    setPlugins(prev =>
+                        prev.map(p =>
+                            p.slug === plugin.slug
+                                ? { ...p, installed: true, activated: true }
+                                : p
+                        )
+                    );
+                }, 1200);
+
+                // Reload after sufficient delay to show overlay, notice, and updated button
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2500);
+            }, 100);
+            return;
+        }
 
         try {
             let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
@@ -107,12 +161,16 @@ export const MarketplaceProvider = ({
                             : p
                     )
                 );
-                
+
                 // Show success notice for install and activate actions
                 if (action === 'install' && result.data.installed) {
                     setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
                 } else if (action === 'activate' && result.data.activated) {
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
+                    // Reload the page after successful activation
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 }
             } else {
                 // Show error toast for activation and installation errors
@@ -154,7 +212,9 @@ export const MarketplaceProvider = ({
         noticeState,
         setNoticeState,
         errorState,
-        setErrorState
+        setErrorState,
+        allPluginsActivated,
+        setAllPluginsActivated
     };
 
     return (

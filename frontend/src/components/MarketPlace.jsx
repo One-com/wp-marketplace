@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { formatPluginPrice } from "../utils/priceFormatter";
 
 export default function Marketplace() {
     const {
@@ -19,25 +20,27 @@ export default function Marketplace() {
         isOnecomBrand,
         plugins,
         setPlugins,
-        handlePluginAction
+        handlePluginAction,
+        allPluginsActivated,
+        setAllPluginsActivated
     } = useMarketplace();
 
     const [loading, setLoading] = useState(true);
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
     const [selectedPlugin, setSelectedPlugin] = useState(null);
-    
+
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
-    
+
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
-    
+
     // Determine if a plugin slug is in the URL
     const pluginFromQuery = typeof window !== "undefined"
         ? new URLSearchParams(window.location.search).get("plugin")
         : null;
-    
+
     // Get base page URL (without plugin parameter)
     const getBaseUrl = () => {
         if (typeof window === "undefined") return "";
@@ -45,7 +48,7 @@ export default function Marketplace() {
         url.searchParams.delete("plugin");
         return url.toString();
     };
-    
+
     // After plugins load, select plugin from query if present
     useEffect(() => {
         if (pluginFromQuery && plugins.length) {
@@ -56,7 +59,7 @@ export default function Marketplace() {
             setSelectedPlugin(null);
         }
     }, [pluginFromQuery, plugins]);
-    
+
     // Listen for browser back/forward navigation
     useEffect(() => {
         const handlePopState = () => {
@@ -70,11 +73,11 @@ export default function Marketplace() {
                 if (match) setSelectedPlugin(match);
             }
         };
-        
+
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, [plugins]);
-    
+
     const {t} = useTranslation();
 
     useEffect(() => {
@@ -93,10 +96,10 @@ export default function Marketplace() {
 
                 // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                 if (isOnecomBrand) {
-                    const specialPlugins = normalized.filter(p => 
+                    const specialPlugins = normalized.filter(p =>
                         p.slug === "wp-rocket" || p.slug === "rank-math-pro"
                     );
-                    
+
                     // Fetch subscription status for each special plugin
                     specialPlugins.forEach(plugin => {
                         fetchSubscriptionStatus(plugin.slug);
@@ -112,12 +115,22 @@ export default function Marketplace() {
         fetchPlugins();
     }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
 
+    // Update allPluginsActivated in context whenever plugins change
+    useEffect(() => {
+        if (plugins.length > 0) {
+            // Filter out activated plugins
+            const nonActivatedPlugins = plugins.filter(p => p.activated !== true);
+            const allActivated = nonActivatedPlugins.length === 0;
+            setAllPluginsActivated(allActivated);
+        }
+    }, [plugins, setAllPluginsActivated]);
+
     const handleDownloadClick = (e, plugin) => {
         e.stopPropagation();
-        
+
         // Set downloading state
         setDownloadingPlugins(prev => ({ ...prev, [plugin.slug]: true }));
-        
+
         // Reset after a short delay (download is triggered immediately)
         // The browser handles the actual download, so we simulate completion
         setTimeout(() => {
@@ -177,12 +190,12 @@ export default function Marketplace() {
 
     Array.from(bySlug.values()).forEach((p) => {
         // Handle new category object structure: { id, slug, title, description }
-        const categoryObj = Array.isArray(p.categories) && p.categories.length 
+        const categoryObj = Array.isArray(p.categories) && p.categories.length
             ? (typeof p.categories[0] === 'object' ? p.categories[0] : { slug: String(p.categories[0]), title: String(p.categories[0]), description: null })
             : { slug: "Others", title: "Others", description: null };
-        
+
         const categoryKey = categoryObj.slug || categoryObj.title || "Others";
-        
+
         if (!categoryMap.has(categoryKey)) {
             categoryMap.set(categoryKey, { info: categoryObj, plugins: [] });
         }
@@ -190,6 +203,29 @@ export default function Marketplace() {
     });
 
     const categories = Array.from(categoryMap.entries()).filter(([catKey, { plugins: list }]) => list.length > 0);
+
+    // If all plugins are activated, show the "You've got all our plugins!" message
+    if (allPluginsActivated) {
+        return (
+            <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
+                <div className="gv-text-center">
+                    <h5 className="gv-header-md gv-mb-sm">You've got all our plugins!</h5>
+                    <p className="gv-text-md gv-mb-lg">You can view and manage them in the My products page.</p>
+                    <button
+                        type="button"
+                        className="gv-button gv-button-primary"
+                        onClick={() => {
+                            // Navigate to plugins page
+                            window.location.href = '/wp-admin/plugins.php';
+                        }}
+                    >
+                        <span>View products</span>
+                        <gv-icon aria-hidden="true" src={`${iconBase}/arrow_right.svg`}></gv-icon>
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg">
@@ -208,7 +244,7 @@ export default function Marketplace() {
                                 <div className="gv-span-9">
                                     <p className="gv-text-lg">{plugin.name}</p>
                                     <p className="oc-card-content"> {plugin.description ? plugin.description : plugin.shortDescription} </p>
-                                    <span className="gv-text-sm">{plugin.priceCurrency} {plugin.priceAmount}</span>
+                                  <span className="gv-caption-lg gv-text-bold"> {formatPluginPrice(plugin)} </span>
                                 </div>
                                 <div className="gv-span-1 gv-content-center">
                                     <a
@@ -231,6 +267,7 @@ export default function Marketplace() {
                                             style={{ minWidth: "24px" }}
                                         />
                                     </a>
+
                                 </div>
                             </div>
                         ))}
