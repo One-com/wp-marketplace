@@ -1,32 +1,38 @@
 import React from 'react';
+import { useMarketplace } from '../context/MarketplaceContext';
 
 const ProductBanner = () => {
+    const { assetsBaseUrl } = useMarketplace();
+    const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.svg`;
+    const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.svg`;
 
     return (
-        <header className="gv-product-header">
-            <div className="gv-content gv-stack-space-md gv-text-sm">
-                <h1 className="gv-title gv-header-lg">one.com WP Marketplace</h1>
-                <p>Your place to find plugins, themes, and services for your site.</p>
-                <button type="button" className="gv-button gv-button-secondary">Learn more</button>
+        <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg">
+            <div className="gv-left-banner">
+                <div className="gv-image">
+                    <picture>
+                        <source media="(min-width: 600px)" srcSet={leftBannerUrl} />
+                        <img src={leftBannerUrl} alt="Left banner" />
+                    </picture>
+                </div>
             </div>
-            <div className="gv-image">
-                <picture>
-                    <source
-                        media="(min-width: 600px)"
-                        srcSet="
-              https://gravity.group.one/guide-images/product-image@2x.png 2x,
-              https://gravity.group.one/guide-images/product-image.png    1x
-            "
-                    />
-                    <img
-                        src="https://gravity.group.one/guide-images/product-image-mobile.png"
-                        srcSet="
-              https://gravity.group.one/guide-images/product-image-mobile@2x.png 2x,
-              https://gravity.group.one/guide-imagesproduct-image-mobile.png    1x
-            "
-                        alt="Product image"
-                    />
-                </picture>
+
+            <div className="gv-content gv-banner-content">
+                <h2 className="gv-banner-title">
+                    Build your online success: add plugins
+                </h2>
+                <p className="gv-banner-text gv-text-sm gv-mt-sm">
+                    {'{'}Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.{'}'}
+                </p>
+            </div>
+
+            <div className="gv-right-banner">
+                <div className="gv-image">
+                    <picture>
+                        <source media="(min-width: 600px)" srcSet={rightBannerUrl} />
+                        <img src={rightBannerUrl} alt="Product image" />
+                    </picture>
+                </div>
             </div>
         </header>
     );

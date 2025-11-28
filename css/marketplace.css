@@ -11,3 +11,45 @@
 .one-com_page_plugin-marketplace #wpcontent{
 	padding: 0;
 }
+
+/* Product Banner Styles */
+.gv-activated .marketplace-container .gv-product-header.gv-product-banner {
+	display: flex;
+  align-items:stretch;
+	justify-content: space-between;
+	background: var(--color-surface-toned);
+	position: relative;
+	overflow: hidden;
+}
+
+/*.gv-product-banner .gv-left-banner,*/
+/*.gv-product-banner .gv-right-banner {*/
+/*	flex: 0 0 auto;*/
+/*	max-width: 250px;*/
+/*}*/
+
+.gv-product-banner .gv-left-banner img,
+.gv-product-banner .gv-right-banner img {
+	width: 100%;
+	height: auto;
+	display: block;
+}
+
+.gv-product-banner .gv-banner-content {
+	flex: 1;
+	text-align: center;
+	padding: 0 1rem;
+}
+
+/* Responsive styles for Product Banner */
+@media (max-width: 1024px) {
+	.gv-product-banner .gv-left-banner {
+		display: none;
+	}
+}
+
+@media (max-width: 768px) {
+  .gv-activated .marketplace-container .gv-product-header.gv-product-banner {
+  align-items: end;
+  }
+}
