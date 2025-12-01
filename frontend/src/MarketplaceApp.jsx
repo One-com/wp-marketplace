@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Marketplace from "./components/MarketPlace";
 import ProductBanner from "./components/ProductBanner";
+import FeaturedCarousel from "./components/FeaturedCarousel";
+import LoadingOverlay from "./components/LoadingOverlay";
+import { MarketplaceProvider, useMarketplace } from "./context/MarketplaceContext";
 
-const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
+// Inner component that can access the context
+const MarketplaceContent = () => {
+    const { allPluginsActivated } = useMarketplace();
+
     // Track detail page visibility with state
     const [isDetailPage, setIsDetailPage] = useState(
         typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin")
@@ -32,20 +38,32 @@ const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyl
     }, []);
 
     return (
-        <div className="gv-activated">
-            <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
+        <>
+            <LoadingOverlay />
+            <div className="gv-activated">
+                <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
 
-                {!isDetailPage && <ProductBanner />}
+                    {!isDetailPage && <ProductBanner />}
+                    {!isDetailPage && !allPluginsActivated && <FeaturedCarousel />}
 
-                <Marketplace
-                    apiBaseUrl={apiBaseUrl}
-                    useWPHandlers={useWPHandlers}
-                    wpConfig={wpConfig}
-                    enableDefaultStyles={enableDefaultStyles}
-                    assetsBaseUrl={assetsBaseUrl}
-                />
+                    <Marketplace />
+                </div>
             </div>
-        </div>
+        </>
+    );
+};
+
+const MarketplaceApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
+    return (
+        <MarketplaceProvider
+            apiBaseUrl={apiBaseUrl}
+            useWPHandlers={useWPHandlers}
+            wpConfig={wpConfig}
+            enableDefaultStyles={enableDefaultStyles}
+            assetsBaseUrl={assetsBaseUrl}
+        >
+            <MarketplaceContent />
+        </MarketplaceProvider>
     );
 };
 

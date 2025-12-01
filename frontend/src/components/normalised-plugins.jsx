@@ -55,6 +55,7 @@ export function normalizePlugins(rawResponse) {
       priceCurrency,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
+      textKeys: plugin?.textKeys || {},
     };
   });
 
