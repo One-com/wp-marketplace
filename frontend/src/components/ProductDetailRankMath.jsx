@@ -14,7 +14,8 @@ export default function ProductDetailRankMath({
         assetsBaseUrl,
         useWPHandlers,
         pluginInAction,
-        plugins
+        plugins,
+        uiI18n
     } = useMarketplace();
     if (!plugin) return null;
 
@@ -32,33 +33,74 @@ export default function ProductDetailRankMath({
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
     const title = freePlugin?.name || plugin.name || 'Product';
     const description = freePlugin?.description || freePlugin?.shortDescription || plugin.description || plugin.shortDescription || 'No description available.';
-    
+
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
     const proDescription = proPlugin?.description || proPlugin?.shortDescription || 'Advanced SEO features for professionals';
-    const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount) 
+    const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount)
         ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}`
         : '€ 0,-';
 
-    // Derive features from description or plugin data
+    // Helper function to extract numbered properties dynamically from i18n object
+    const extractNumberedProps = (obj, baseName) => {
+        if (!obj || typeof obj !== 'object') return [];
+        const results = [];
+        let i = 1;
+        while (obj[`${baseName}${i}`]) {
+            const value = obj[`${baseName}${i}`];
+            if (value && value.trim() !== '') {
+                results.push(value);
+            }
+            i++;
+        }
+        return results;
+    };
+
+    // Extract key benefits from i18n (use freePlugin's i18n if available, otherwise plugin's i18n)
+    const i18nSource = freePlugin?.i18n || plugin.i18n;
+    const benefitsFromI18n = extractNumberedProps(i18nSource, 'keyBenefitContent');
+
+    // Extract key features from i18n (keyFeatureContent1 through keyFeatureContent6)
+    const keyFeaturesFromI18n = extractNumberedProps(i18nSource, 'keyFeatureContent');
+
+    // Extract core features (title/content pairs) from i18n
+    const coreFeaturesFromI18n = [];
+    if (i18nSource && typeof i18nSource === 'object') {
+        let i = 1;
+        while (i18nSource[`coreFeatureTitle${i}`] || i18nSource[`coreFeatureContent${i}`]) {
+            const title = i18nSource[`coreFeatureTitle${i}`];
+            const content = i18nSource[`coreFeatureContent${i}`];
+            if (title && title.trim() !== '' && content && content.trim() !== '') {
+                coreFeaturesFromI18n.push({ name: title, desc: content });
+            }
+            i++;
+        }
+    }
+
+    // Fallback: Derive features from description or plugin data if i18n data is not available
     const rawFeatureSource = (freePlugin?.features && freePlugin.features.length)
         ? freePlugin.features
         : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
 
-    const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
-    while (keyFeatures.length < 3) keyFeatures.push('Sample feature');
+    const fallbackKeyFeatures = rawFeatureSource.slice(0, 6).map(f => f.replace(/\.$/, ''));
+    while (fallbackKeyFeatures.length < 3) fallbackKeyFeatures.push('Sample feature');
 
-    const benefits = [
-        keyFeatures[0],
-        keyFeatures[1] || 'Improves performance',
-        keyFeatures[2] || 'Easy setup'
+    const fallbackBenefits = [
+        fallbackKeyFeatures[0],
+        fallbackKeyFeatures[1] || 'Improves performance',
+        fallbackKeyFeatures[2] || 'Easy setup'
     ];
 
-    const coreFeatures = [
-        { name: keyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
-        { name: keyFeatures[1], desc: 'Enhances your WordPress experience with reliable performance' },
-        { name: keyFeatures[2], desc: 'Easy to set up and configure with minimal technical knowledge' }
+    const fallbackCoreFeatures = [
+        { name: fallbackKeyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
+        { name: fallbackKeyFeatures[1] || 'Performance', desc: 'Enhances your WordPress experience with reliable performance' },
+        { name: fallbackKeyFeatures[2] || 'Easy Setup', desc: 'Easy to set up and configure with minimal technical knowledge' }
     ];
+
+    // Use i18n data if available, otherwise use fallbacks
+    const keyFeatures = keyFeaturesFromI18n.length > 0 ? keyFeaturesFromI18n : fallbackKeyFeatures;
+    const benefits = benefitsFromI18n.length > 0 ? benefitsFromI18n : fallbackBenefits;
+    const coreFeatures = coreFeaturesFromI18n.length > 0 ? coreFeaturesFromI18n : fallbackCoreFeatures;
 
     const content = (
         <div className="gv-surface-dim">
@@ -103,7 +145,7 @@ export default function ProductDetailRankMath({
                     </div>
                 </header>
 
-                <section className="gv-product-table gv-features-table gv-products-2 gv-area-table">
+                <section className="gv-product-table gv-features-table gv-products-2 gv-recommended-2 gv-area-table">
                     <div className="gv-dots-scroll-area">
                         <div className="gv-table-container">
                             <div className="gv-slider-nav">
@@ -135,41 +177,43 @@ export default function ProductDetailRankMath({
                                                         />
                                                     ) : (
                                                         freePlugin?.download && (
-                                                            <button type="button" className="gv-button gv-button-secondary">{freePlugin?.textKeys?.installButton || 'Install'}</button>
+                                                            <button type="button" className="gv-button gv-button-secondary">{uiI18n?.installButton || freePlugin?.i18n?.installButton || 'Install'}</button>
                                                         )
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="gv-product" role="columnheader">
-                                                <div className="gv-content">
-                                                    <h3 className="gv-title">{proTitle}</h3>
-                                                    <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
-                                                </div>
-                                                <div className="gv-bottom">
-                                                    <div className="gv-price-container">
-                                                        <div className="gv-price">
-                                                            <span className="gv-price-text">{proPrice}</span>
-                                                            <span className="gv-period">/mo</span>
-                                                        </div>
-                                                    </div>
-                                                    {useWPHandlers && proPlugin ? (
-                                                        <PluginActions
-                                                            plugin={proPlugin}
-                                                        />
-                                                    ) : (
-                                                        <button type="button" className="gv-button gv-button-primary">Select</button>
-                                                    )}
-                                                </div>
+                                          <div className="gv-product" role="columnheader">
+                                            <div className="gv-recommended-label">Recommended</div>
+                                            <div className="gv-content">
+                                              <h3 className="gv-title">{proTitle}</h3>
+                                              <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
                                             </div>
+                                            <div className="gv-bottom">
+                                              <div className="gv-price-container">
+                                                <div className="gv-price">
+                                                  <span className="gv-price-text">{proPrice}</span>
+                                                  <span className="gv-period">/mo</span>
+                                                </div>
+                                              </div>
+                                              {useWPHandlers && proPlugin ? (
+                                                <PluginActions
+                                                  plugin={proPlugin}
+                                                />
+                                              ) : (
+                                                <button type="button"
+                                                        className="gv-button gv-button-primary">Select</button>
+                                              )}
+                                            </div>
+                                          </div>
                                         </div>
                                     </div>
                                     <div className="gv-section" role="rowgroup">
                                         <div className="gv-section-header gv-table-row" role="row">
                                             <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{freePlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
+                                                <h4 className="gv-title">{uiI18n?.featureOverviewHeading || freePlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
                                             </div>
                                             <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{proPlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
+                                                <h4 className="gv-title">{uiI18n?.featureOverviewHeading || proPlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
                                             </div>
                                         </div>
                                         {keyFeatures.map((f, i) => (
@@ -197,7 +241,7 @@ export default function ProductDetailRankMath({
 
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.benefitHeading || 'Key benefits'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
                         <ul className="gv-list-items gv-list-check gv-mode-condensed">
                             {benefits.map((b, i) => <li key={i}>{b}</li>)}
                         </ul>
@@ -209,16 +253,11 @@ export default function ProductDetailRankMath({
                 </div>
 
                 <div className="gv-area-content gv-grid gv-gap-fluid">
-                    <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.featureOverviewHeading || 'Core features overview'}</h2>
-                        <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
-                            {coreFeatures.map((cf, i) => (
-                                <div className="gv-item gv-stack-space-sm" key={i}>
-                                    <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
-                                    <p>{cf.desc}</p>
-                                </div>
-                            ))}
-                        </div>
+                    <section className="gv-stack-space-md">
+                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features overview'}</h2>
+                        <ul className="gv-list-items gv-list-check gv-mode-condensed">
+                            {keyFeatures.map((f, i) => <li key={i}>{f}</li>)}
+                        </ul>
                     </section>
                 </div>
             </article>

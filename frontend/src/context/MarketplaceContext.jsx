@@ -14,6 +14,7 @@ export const MarketplaceProvider = ({
     const [subscriptionStatus, setSubscriptionStatus] = useState({});
     const [isCheckingSubscription, setIsCheckingSubscription] = useState({});
     const [plugins, setPlugins] = useState([]);
+    const [uiI18n, setUiI18n] = useState({});
     const [loadingAction, setLoadingAction] = useState('');
     const [loadingPlugin, setLoadingPlugin] = useState('');
     const [noticeState, setNoticeState] = useState({ visible: false, type: null, pluginSlug: null });
@@ -206,6 +207,8 @@ export const MarketplaceProvider = ({
         isOnecomBrand,
         plugins,
         setPlugins,
+        uiI18n,
+        setUiI18n,
         handlePluginAction,
         loadingAction,
         loadingPlugin,

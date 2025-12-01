@@ -101,18 +101,21 @@ export default function FeaturedCarousel() {
                                     minWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
                                     maxWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
                                     flex: '0 0 auto',
-                                    backgroundColor: '#E8F4F8',
+                                    backgroundColor: '#D9EBF7',
                                     borderRadius: '6px',
                                     display: 'flex',
                                     justifyContent: 'space-between',
-                                    maxHeight: '380px',
+                                    maxHeight: '456px',
                                 }}
                             >
-                                <header className="gv-product-header gv-area-header">
+                                <header className="gv-product-header gv-area-header"  style={{
+                                  border: 'none',
+                                  background:"#D9EBF7"
+                                }}>
                                     <div
                                         className="gv-content gv-stack-space-md gv-text-sm gv-flex gv-flex-col gv-items-start"
                                         style={{
-                                            overflow: 'hidden'
+                                            overflow: 'hidden',
                                         }}
                                     >
                                       <div className="gv-badge gv-badge-info">{title}</div>

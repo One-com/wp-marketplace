@@ -1,22 +1,24 @@
 export function normalizePlugins(rawResponse) {
-  // Only support the new response shape:
-  // { error: null, success: true, data: [ { ...plugin }, ... ] }
+  // Support the new response shape:
+  // { error: null, success: true, data: { catalog: [...], locale: "...", uiI18n: {...} } }
 
-  if (!rawResponse || !Array.isArray(rawResponse.data)) {
+  if (!rawResponse || !rawResponse.data || !Array.isArray(rawResponse.data.catalog)) {
     // Log a clear error when the response is not supported
-    // Keeping a minimal, non-crashing fallback of returning an empty list
-    console.error("Unsupported marketplace response shape. Expected { data: [ ... ] }.", rawResponse);
-    return [];
+    // Keeping a minimal, non-crashing fallback of returning an empty object
+    console.error("Unsupported marketplace response shape. Expected { data: { catalog: [...] } }.", rawResponse);
+    return { plugins: [], uiI18n: {}, locale: null };
   }
 
-  const items = rawResponse.data;
+  const items = rawResponse.data.catalog;
+  const uiI18n = rawResponse.data.uiI18n || {};
+  const locale = rawResponse.data.locale || null;
 
-  if (items.length === 0) return [];
+  if (items.length === 0) return { plugins: [], uiI18n, locale };
 
   // Map to normalized structure
   const normalized = items.map((plugin) => {
-    // Prefer description coming from textKeys.description, then fallback to description field
-    const descriptionFromTextKeys = plugin?.textKeys?.description;
+    // Prefer description coming from i18n.description, then fallback to description field
+    const descriptionFromTextKeys = plugin?.i18n?.description;
     const description =
       (typeof descriptionFromTextKeys === "string" && descriptionFromTextKeys)
         ? descriptionFromTextKeys
@@ -55,16 +57,18 @@ export function normalizePlugins(rawResponse) {
       priceCurrency,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
-      textKeys: plugin?.textKeys || {},
+      i18n: plugin?.i18n || {},
     };
   });
 
   // Deduplicate by slug (first occurrence wins)
   const seen = new Set();
-  return normalized.filter((p) => {
+  const plugins = normalized.filter((p) => {
     const key = p.slug || p.name || JSON.stringify(p);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
   });
+
+  return { plugins, uiI18n, locale };
 }

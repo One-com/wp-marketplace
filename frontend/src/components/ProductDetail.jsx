@@ -14,7 +14,8 @@ export default function ProductDetail({
     const {
         assetsBaseUrl,
         useWPHandlers,
-        pluginInAction
+        pluginInAction,
+        uiI18n
     } = useMarketplace();
     if (!plugin) return null;
 
@@ -30,25 +31,65 @@ export default function ProductDetail({
     const isFree = plugin.licenseType === "free";
     const price = formatPluginPrice(plugin);
 
-    // Derive features from description or plugin data
+    // Helper function to extract numbered properties dynamically from i18n object
+    const extractNumberedProps = (obj, baseName) => {
+        if (!obj || typeof obj !== 'object') return [];
+        const results = [];
+        let i = 1;
+        while (obj[`${baseName}${i}`]) {
+            const value = obj[`${baseName}${i}`];
+            if (value && value.trim() !== '') {
+                results.push(value);
+            }
+            i++;
+        }
+        return results;
+    };
+
+    // Extract key benefits from i18n (keyBenefitContent1, keyBenefitContent2, etc.)
+    const benefitsFromI18n = extractNumberedProps(plugin.i18n, 'keyBenefitContent');
+
+    // Extract key features from i18n (keyFeatureContent1 through keyFeatureContent6)
+    const keyFeaturesFromI18n = extractNumberedProps(plugin.i18n, 'keyFeatureContent');
+
+    // Extract core features (title/content pairs) from i18n
+    const coreFeaturesFromI18n = [];
+    if (plugin.i18n && typeof plugin.i18n === 'object') {
+        let i = 1;
+        while (plugin.i18n[`coreFeatureTitle${i}`] || plugin.i18n[`coreFeatureContent${i}`]) {
+            const title = plugin.i18n[`coreFeatureTitle${i}`];
+            const content = plugin.i18n[`coreFeatureContent${i}`];
+            if (title && title.trim() !== '' && content && content.trim() !== '') {
+                coreFeaturesFromI18n.push({ name: title, desc: content });
+            }
+            i++;
+        }
+    }
+
+    // Fallback: Derive features from description or plugin data if i18n data is not available
     const rawFeatureSource = plugin.features && plugin.features.length
         ? plugin.features
         : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
 
-    const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
-    while (keyFeatures.length < 3) keyFeatures.push('Sample feature');
+    const fallbackKeyFeatures = rawFeatureSource.slice(0, 6).map(f => f.replace(/\.$/, ''));
+    while (fallbackKeyFeatures.length < 3) fallbackKeyFeatures.push('Sample feature');
 
-    const benefits = [
-        keyFeatures[0],
-        keyFeatures[1] || 'Improves performance',
-        keyFeatures[2] || 'Easy setup'
+    const fallbackBenefits = [
+        fallbackKeyFeatures[0],
+        fallbackKeyFeatures[1] || 'Improves performance',
+        fallbackKeyFeatures[2] || 'Easy setup'
     ];
 
-    const coreFeatures = [
-        { name: keyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
-        { name: keyFeatures[1], desc: 'Enhances your WordPress experience with reliable performance' },
-        { name: keyFeatures[2], desc: 'Easy to set up and configure with minimal technical knowledge' }
+    const fallbackCoreFeatures = [
+        { name: fallbackKeyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
+        { name: fallbackKeyFeatures[1] || 'Performance', desc: 'Enhances your WordPress experience with reliable performance' },
+        { name: fallbackKeyFeatures[2] || 'Easy Setup', desc: 'Easy to set up and configure with minimal technical knowledge' }
     ];
+
+    // Use i18n data if available, otherwise use fallbacks
+    const keyFeatures = keyFeaturesFromI18n.length > 0 ? keyFeaturesFromI18n : fallbackKeyFeatures;
+    const benefits = benefitsFromI18n.length > 0 ? benefitsFromI18n : fallbackBenefits;
+    const coreFeatures = coreFeaturesFromI18n.length > 0 ? coreFeaturesFromI18n : fallbackCoreFeatures;
 
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
@@ -144,7 +185,7 @@ export default function ProductDetail({
                             <div className="gv-section" role="rowgroup">
                                 <div className="gv-section-header gv-table-row" role="row">
                                     <div className="gv-cell" role="cell">
-                                        <h4 className="gv-title">{plugin.textKeys?.featureOverviewHeading || 'Key features'}</h4>
+                                        <h4 className="gv-title">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features'}</h4>
                                     </div>
                                 </div>
                                 {keyFeatures.map((f, i) => (
@@ -162,7 +203,7 @@ export default function ProductDetail({
                 {/* Details / Benefits */}
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.benefitHeading || 'Key benefits'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
                         <ul className="gv-list-items gv-list-check gv-mode-condensed">
                             {benefits.map((b, i) => <li key={i}>{b}</li>)}
                         </ul>
@@ -180,7 +221,7 @@ export default function ProductDetail({
                 {/* Core Features Overview */}
                 <div className="gv-area-content gv-grid gv-gap-fluid">
                     <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.featureOverviewHeading || 'Core features overview'}</h2>
+                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
                         <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                             {coreFeatures.map((cf, i) => (
                                 <div className="gv-item gv-stack-space-sm" key={i}>

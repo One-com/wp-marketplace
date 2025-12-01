@@ -41,6 +41,20 @@
 	padding: 0 1rem;
 }
 
+#marketplace-root .gv-activated{
+  max-width:1440px;
+  margin: auto;
+}
+
+.buttons-min-width{
+  min-width:312px
+}
+
+#marketplace-root .gv-activated .gv-features-table.gv-product-table.gv-recommended-2 .gv-product:nth-child(2):before,
+#marketplace-root.gv-activated .gv-features-table.gv-product-table.gv-recommended-2 .gv-cell:nth-child(2):before{
+  width:auto;
+}
+
 /* Responsive styles for Product Banner */
 @media (max-width: 1024px) {
 	.gv-product-banner .gv-left-banner {
@@ -48,8 +62,9 @@
 	}
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .gv-activated .marketplace-container .gv-product-header.gv-product-banner {
-  align-items: end;
+  /*align-items: end;*/
+    max-height: 320px;
   }
 }

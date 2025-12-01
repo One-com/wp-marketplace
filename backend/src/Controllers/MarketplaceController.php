@@ -233,10 +233,11 @@ class MarketplaceController {
 			'locale' => get_locale(),
 			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
-			'wpConfig' => [
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
-			],
+ 		'wpConfig' => [
+ 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+ 			'adminUrl' => admin_url(),
+ 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+ 		],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
 			'assetsBaseUrl' => $base_url,
 			'labels'=>array(
@@ -292,7 +293,10 @@ class MarketplaceController {
 			return $plugin;
 		};
 
-		if ( isset( $plugins['data'] ) && is_array( $plugins['data'] ) && ( array_values( $plugins['data'] ) === $plugins['data'] ) ) {
+		if ( ! empty( $plugins['data']['catalog'] ) && is_array( $plugins['data']['catalog'] ) ) {
+			// New API response structure: data.catalog array
+			$plugins['data']['catalog'] = array_map( $add_state, $plugins['data']['catalog'] );
+		} elseif ( isset( $plugins['data'] ) && is_array( $plugins['data'] ) && ( array_values( $plugins['data'] ) === $plugins['data'] ) ) {
 			// data is a numerically-indexed list of plugins
 			$plugins['data'] = array_map( $add_state, $plugins['data'] );
 		} elseif ( ! empty( $plugins['data']['sections'] ) && is_array( $plugins['data']['sections'] ) ) {

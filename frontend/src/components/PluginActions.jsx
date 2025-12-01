@@ -8,7 +8,8 @@ export default function PluginActions({ plugin }) {
         subscriptionStatus,
         isCheckingSubscription,
         isOnecomBrand,
-        handlePluginAction
+        handlePluginAction,
+        uiI18n
     } = useMarketplace();
 
     const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
@@ -53,27 +54,33 @@ export default function PluginActions({ plugin }) {
     };
 
     const handleManage = () => {
-        // Redirect to plugin's settings page
-        // Common plugin admin pages
-        const pluginAdminPages = {
-            'wp-rocket': 'wp-rocket',
-            'rank-math-pro': 'rank-math',
-            'seo-by-rank-math': 'rank-math',
-            'akismet': 'akismet-key-config',
-            'jetpack': 'jetpack',
-            'wordfence': 'Wordfence',
-            'yoast': 'wpseo_dashboard'
-        };
+        // Check if plugin has a redirectUrl from API response
+        if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
+            // Get the admin URL from config (provided by PHP)
+            const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
 
-        const adminPage = pluginAdminPages[plugin.slug] || plugin.slug;
-        const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
-
-        if (adminUrl) {
-            window.location.href = `${adminUrl}admin.php?page=${adminPage}`;
-        } else {
-            // Fallback to plugins page
-            window.location.href = '/wp-admin/plugins.php';
+            if (adminUrl) {
+                // Construct full URL using adminUrl from PHP config
+                // adminUrl is like "https://example.com/wp-admin/"
+                // redirectUrl comes as "wp-admin\/admin.php?page=termly" (JSON unescapes \/ to /)
+                // Strip "wp-admin/" prefix from redirectUrl if present to avoid duplication
+                let cleanPath = plugin.redirectUrl;
+                if (cleanPath.startsWith('wp-admin/')) {
+                    cleanPath = cleanPath.substring('wp-admin/'.length);
+                }
+                const fullUrl = `${adminUrl}${cleanPath}`;
+                window.location.href = fullUrl;
+            } else {
+                // Fallback: use window.location.origin if adminUrl not available
+                const siteUrl = window.location.origin;
+                const fullUrl = `${siteUrl}/${plugin.redirectUrl}`;
+                window.location.href = fullUrl;
+            }
+            return;
         }
+
+        // Fallback to plugins page
+        window.location.href = '/wp-admin/plugins.php';
     };
 
     // Check if we should show "Select" button instead of install/activate
@@ -115,7 +122,7 @@ export default function PluginActions({ plugin }) {
                     >
                         {pluginInAction[plugin.slug]
                             ? (marketplaceConfig?.labels?.activating || 'Activating...')
-                            : (plugin.textKeys?.activateButton || 'Activate')}
+                            : (uiI18n?.activateButton || plugin.i18n?.activateButton || 'Activate')}
                     </button>
                 )
             ) : (
@@ -126,7 +133,7 @@ export default function PluginActions({ plugin }) {
                 >
                     {pluginInAction[plugin.slug]
                         ? (marketplaceConfig?.labels?.installing || 'Installing...')
-                        : (plugin.textKeys?.installButton || 'Install')}
+                        : (uiI18n?.installButton || plugin.i18n?.installButton || 'Install')}
                 </button>
             )}
         </div>

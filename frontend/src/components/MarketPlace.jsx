@@ -4,6 +4,7 @@ import "@group.one/gravity";
 import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
+import ErrorState from "./ErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice } from "../utils/priceFormatter";
 
@@ -20,12 +21,14 @@ export default function Marketplace() {
         isOnecomBrand,
         plugins,
         setPlugins,
+        setUiI18n,
         handlePluginAction,
         allPluginsActivated,
         setAllPluginsActivated
     } = useMarketplace();
 
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(false);
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
     const [selectedPlugin, setSelectedPlugin] = useState(null);
 
@@ -91,12 +94,30 @@ export default function Marketplace() {
                 hasFetchedPlugins.current = true;
                 const res = await fetch(`${apiBaseUrl}`);
                 const json = await res.json();
-                const normalized = normalizePlugins(json);
-                setPlugins(normalized);
+
+                // Check for API error response (success: false)
+                if (json && json.success === false) {
+                    console.error("API returned error:", json.error);
+                    setError(true);
+                    setLoading(false);
+                    return;
+                }
+
+                // Check for blank/empty response
+                if (!json || !json.data || !json.data.catalog || (Array.isArray(json.data.catalog) && json.data.catalog.length === 0)) {
+                    console.error("API returned empty or blank response");
+                    setError(true);
+                    setLoading(false);
+                    return;
+                }
+
+                const { plugins: normalizedPlugins, uiI18n: apiUiI18n } = normalizePlugins(json);
+                setPlugins(normalizedPlugins);
+                setUiI18n(apiUiI18n);
 
                 // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                 if (isOnecomBrand) {
-                    const specialPlugins = normalized.filter(p =>
+                    const specialPlugins = normalizedPlugins.filter(p =>
                         p.slug === "wp-rocket" || p.slug === "rank-math-pro"
                     );
 
@@ -107,6 +128,7 @@ export default function Marketplace() {
                 }
             } catch (e) {
                 console.error("Failed to fetch plugins", e);
+                setError(true);
             } finally {
                 setLoading(false);
             }
@@ -162,6 +184,11 @@ export default function Marketplace() {
 
     if (loading) return <p>Loading plugins...</p>;
 
+    // Show error state if API failed or returned error
+    if (error) {
+        return <ErrorState />;
+    }
+
     // Early return: show full page detail instead of list
     if (selectedPlugin && pluginFromQuery) {
         const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
@@ -213,7 +240,7 @@ export default function Marketplace() {
                     <p className="gv-text-md gv-mb-lg">You can view and manage them in the My products page.</p>
                     <button
                         type="button"
-                        className="gv-button gv-button-primary"
+                        className="gv-button gv-button-primary  buttons-min-width"
                         onClick={() => {
                             // Navigate to plugins page
                             window.location.href = '/wp-admin/plugins.php';
@@ -243,7 +270,7 @@ export default function Marketplace() {
                                 </div>
                                 <div className="gv-span-9">
                                     <p className="gv-text-lg">{plugin.name}</p>
-                                    <p className="oc-card-content"> {plugin.description ? plugin.description : plugin.shortDescription} </p>
+                                    <p className="oc-card-content"> {plugin.i18n.description ? plugin.i18n.description : plugin.subtitle} </p>
                                   <span className="gv-caption-lg gv-text-bold"> {formatPluginPrice(plugin)} </span>
                                 </div>
                                 <div className="gv-span-1 gv-content-center">

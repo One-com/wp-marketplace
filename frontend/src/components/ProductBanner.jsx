@@ -17,7 +17,7 @@ const ProductBanner = () => {
                 </div>
             </div>
 
-            <div className="gv-content gv-banner-content">
+            <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0">
                 <h2 className="gv-banner-title">
                     Build your online success: add plugins
                 </h2>
@@ -26,7 +26,7 @@ const ProductBanner = () => {
                 </p>
             </div>
 
-            <div className="gv-right-banner">
+            <div className="gv-right-banner gv-max-mob-pl-md">
                 <div className="gv-image">
                     <picture>
                         <source media="(min-width: 600px)" srcSet={rightBannerUrl} />
