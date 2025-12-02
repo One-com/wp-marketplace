@@ -8,6 +8,10 @@
 
 /* Add your custom marketplace styles here */
 
+body.one-com_page_plugin-marketplace{
+  background: #F7F7F7;
+}
+
 .one-com_page_plugin-marketplace #wpcontent{
 	padding: 0;
 }
