@@ -4497,8 +4497,8 @@ const ProductBanner = () => {
   const {
     assetsBaseUrl
   } = (0,_context_MarketplaceContext__WEBPACK_IMPORTED_MODULE_1__.useMarketplace)();
-  const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.svg`;
-  const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.svg`;
+  const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.png`;
+  const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.png`;
   return (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("header", {
     className: "gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg"
   }, (0,react__WEBPACK_IMPORTED_MODULE_0__.createElement)("div", {

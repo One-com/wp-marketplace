@@ -3,8 +3,8 @@ import { useMarketplace } from '../context/MarketplaceContext';
 
 const ProductBanner = () => {
     const { assetsBaseUrl } = useMarketplace();
-    const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.svg`;
-    const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.svg`;
+    const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.png`;
+    const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.png`;
 
     return (
         <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg">
