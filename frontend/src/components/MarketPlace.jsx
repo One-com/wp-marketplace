@@ -209,10 +209,12 @@ export default function Marketplace() {
     const categoryMap = new Map();
 
     // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
-    // Also filter out activated plugins
+    // Also filter out activated plugins and seo-by-rank-math from marketplace listing
     const bySlug = new Map();
     plugins.forEach((p) => {
-        if (!bySlug.has(p.slug) && p.activated !== true) bySlug.set(p.slug, p);
+        if (!bySlug.has(p.slug) && p.activated !== true && p.slug !== "seo-by-rank-math") {
+            bySlug.set(p.slug, p);
+        }
     });
 
     Array.from(bySlug.values()).forEach((p) => {
@@ -265,12 +267,12 @@ export default function Marketplace() {
                         {list.map((plugin) => (
                             <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
                                 <div className="gv-span-2">
-                                    <img className="gv-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
+                                    <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                         alt={plugin.name} />
                                 </div>
                                 <div className="gv-span-9">
                                     <p className="gv-text-lg">{plugin.name}</p>
-                                    <p className="oc-card-content"> {plugin.i18n.description ? plugin.i18n.description : plugin.subtitle} </p>
+                                    <p className="oc-card-content"> {plugin.i18n.description || plugin.i18n.subtitle || plugin.description} </p>
                                   <span className="gv-caption-lg gv-text-bold"> {formatPluginPrice(plugin)} </span>
                                 </div>
                                 <div className="gv-span-1 gv-content-center">

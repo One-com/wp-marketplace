@@ -27,7 +27,7 @@ export default function ProductDetail({
 
     // Extract data with fallbacks
     const title = plugin.name || 'Product';
-    const description = plugin.description || plugin.shortDescription || 'No description available.';
+    const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || 'No description available.';
     const isFree = plugin.licenseType === "free";
     const price = formatPluginPrice(plugin);
 

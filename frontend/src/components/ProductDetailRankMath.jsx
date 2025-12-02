@@ -32,11 +32,11 @@ export default function ProductDetailRankMath({
 
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
     const title = freePlugin?.name || plugin.name || 'Product';
-    const description = freePlugin?.description || freePlugin?.shortDescription || plugin.description || plugin.shortDescription || 'No description available.';
+    const description = freePlugin?.i18n?.description || freePlugin?.i18n?.subtitle || freePlugin?.description;
 
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
-    const proDescription = proPlugin?.description || proPlugin?.shortDescription || 'Advanced SEO features for professionals';
+    const proDescription = proPlugin?.i18n?.description || proPlugin?.i18n?.subtitle || proPlugin?.description;
     const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount)
         ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}`
         : '€ 0,-';
