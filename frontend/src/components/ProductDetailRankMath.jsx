@@ -89,7 +89,7 @@ export default function ProductDetailRankMath({
 
     const content = (
         <div className="gv-surface-dim">
-            <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid">
+            <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid gv-p-0">
                 <nav className="gv-breadcrumbs gv-area-nav">
                     <a
                         href="#"
