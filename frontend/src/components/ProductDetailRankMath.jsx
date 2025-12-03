@@ -112,7 +112,7 @@ export default function ProductDetailRankMath({
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
-                        <h1 className="gv-title gv-header-lg">{title}</h1>
+                        <h1 className="gv-title gv-header-lg">Rank Math</h1>
                         <p>{description}</p>
                     </div>
                     <div className="gv-image">
