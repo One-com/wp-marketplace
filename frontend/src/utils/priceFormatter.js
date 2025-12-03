@@ -32,19 +32,28 @@ export const formatPluginPrice = (plugin) => {
 
     // Handle new API format with prices array
     if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
-        // Find the first active price
-        const activePrice = plugin.prices.find(price => price.isActive === true);
+        // Find the first active price, or use first price if isActive is not present
+        let priceToUse = plugin.prices.find(price => price.isActive === true);
 
-        if (activePrice && activePrice.amount && activePrice.currency) {
-            const symbol = getCurrencySymbol(activePrice.currency);
-            return `${symbol} ${activePrice.amount}`;
+        // If no price with isActive:true found, use first price (for formats without isActive)
+        if (!priceToUse) {
+            priceToUse = plugin.prices[0];
+        }
+
+        if (priceToUse && priceToUse.amount && priceToUse.currency) {
+            const symbol = getCurrencySymbol(priceToUse.currency);
+            // Format amount to 2 decimal places
+            const formattedAmount = Number(priceToUse.amount).toFixed(2);
+            return `${symbol} ${formattedAmount}`;
         }
     }
 
     // Backward compatibility: Handle old format with priceCurrency and priceAmount
     if (plugin.priceCurrency && plugin.priceAmount) {
         const symbol = getCurrencySymbol(plugin.priceCurrency);
-        return `${symbol} ${plugin.priceAmount}`;
+        // Format amount to 2 decimal places
+        const formattedAmount = Number(plugin.priceAmount).toFixed(2);
+        return `${symbol} ${formattedAmount}`;
     }
 
     // Return blank for premium products without prices
