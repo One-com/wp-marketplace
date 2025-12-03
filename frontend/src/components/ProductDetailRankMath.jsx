@@ -170,12 +170,13 @@ export default function ProductDetailRankMath({
                                             <div className="gv-bottom">
                                               <div className="gv-price-container">
                                                 <div className="gv-price">
-                                                  <span className="gv-price-text">{proPrice},-</span>
-                                                  <span className="gv-period">/mo</span>
+                                                  <span className="gv-price-text">{proPrice}{proPrice && `,-`}</span>
+                                                  {proPrice && <span className="gv-period">/mo</span>}
                                                 </div>
+                                                {proPrice &&
                                                 <div className="gv-price-info">
                                                   <div className="gv-info">1 year [{proPrice}]/mo.</div>
-                                                </div>
+                                                </div>}
                                               </div>
                                               {useWPHandlers && proPlugin ? (
                                                 <PluginActions

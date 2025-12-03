@@ -127,7 +127,7 @@ export default function PluginActions({ plugin }) {
                 )
             ) : (
                 <button
-                    className="gv-button gv-button-primary"
+                    className={`gv-button ${plugin.slug === "seo-by-rank-math" ? "gv-button-secondary" : "gv-button-primary"}`}
                     disabled={pluginInAction[plugin.slug]}
                     onClick={() => handleClick("install")}
                 >

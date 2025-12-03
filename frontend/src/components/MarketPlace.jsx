@@ -273,7 +273,10 @@ export default function Marketplace() {
                                 <div className="gv-span-9">
                                     <p className="gv-text-lg">{plugin.name}</p>
                                     <p className="oc-card-content"> {plugin.i18n.description || plugin.i18n.subtitle || plugin.description} </p>
-                                  <span className="gv-caption-lg gv-text-bold"> {formatPluginPrice(plugin)} </span>
+                                  <span className="gv-caption-lg gv-text-bold">
+                                    {formatPluginPrice(plugin)}
+                                    {plugin.licenseType !== "free" && formatPluginPrice(plugin) && formatPluginPrice(plugin) !== 'Free' && <span className="gv-period">/mo</span>}
+                                  </span>
                                 </div>
                                 <div className="gv-span-1 gv-content-center">
                                     <a

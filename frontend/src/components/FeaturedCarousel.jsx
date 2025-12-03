@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { formatPluginPrice } from "../utils/priceFormatter";
 
 export default function FeaturedCarousel() {
-    const { plugins, assetsBaseUrl } = useMarketplace();
+    const { plugins, assetsBaseUrl,uiI18n } = useMarketplace();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slidesPerView, setSlidesPerView] = useState(2);
 
@@ -22,8 +23,8 @@ export default function FeaturedCarousel() {
         return () => window.removeEventListener('resize', updateSlidesPerView);
     }, []);
 
-    // Filter featured plugins that are not active
-    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true);
+    // Filter featured plugins that are not active and reverse the order
+    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true).reverse();
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -81,10 +82,9 @@ export default function FeaturedCarousel() {
                     }}
                 >
                     {featuredPlugins.map((plugin, index) => {
-                        const title = plugin.name || 'Product';
-                        const description = plugin.description || plugin.shortDescription || 'No description available.';
-                        const isFree = plugin.licenseType === "free";
-                        const price = isFree ? 'Free' : (plugin.priceCurrency && plugin.priceAmount) ? `${plugin.priceCurrency} ${plugin.priceAmount}` : '€ 0,-';
+                        const title = plugin?.i18n?.featuredTitle;
+                        const description = plugin?.i18n?.featuredContent;
+                        const price = formatPluginPrice(plugin);
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
                         // Extract category name from plugin categories array
@@ -115,7 +115,7 @@ export default function FeaturedCarousel() {
                                     <div
                                         className="gv-content gv-stack-space-md gv-text-sm gv-flex gv-flex-col gv-items-start"
                                     >
-                                      <div className="gv-badge gv-badge-info">{title}</div>
+                                      <div className="gv-badge gv-badge-info">{plugin?.name}</div>
                                         <h5
                                             className="gv-title gv-header-sm"
                                         >
@@ -138,11 +138,12 @@ export default function FeaturedCarousel() {
                                                 onClick={() => handleReadMore(plugin)}
                                                 className="gv-button gv-button-secondary"
                                             >
-                                                Read more
+                                              {uiI18n?.featuredCta}
                                             </button>
 
                                             <span className="gv-price gv-text-bold gv-text-md gv-ml-md">
                                                 {price}
+                                                {plugin.licenseType !== "free" && price && price !== 'Free' && <span className="gv-period">/mo</span>}
                                             </span>
                                         </div>
                                     </div>

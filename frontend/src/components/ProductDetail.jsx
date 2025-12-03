@@ -28,6 +28,7 @@ export default function ProductDetail({
     // Extract data with fallbacks
     const title = plugin.name || 'Product';
     const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || 'No description available.';
+    const subTitle = plugin.i18n?.subtitle;
     const isFree = plugin.licenseType === "free";
     const price = formatPluginPrice(plugin);
 
@@ -73,7 +74,7 @@ export default function ProductDetail({
 
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
-            <article className="gv-layout-product gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
+            <article className="gv-layout-product gv-max-mob-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                 <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
                     <a
                         href="#"
@@ -130,18 +131,18 @@ export default function ProductDetail({
                         <div className="gv-table" role="table">
                             <div className="gv-table-header" role="rowgroup">
                                 <div className="gv-table-row" role="row">
-                                    <div className="gv-product" role="columnheader">
+                                    <div className="gv-product gv-p-0" role="columnheader">
                                         <div className="gv-content">
                                             <h3 className="gv-title">{title}</h3>
-                                            <p>{description.substring(0, 120)}{description.length > 120 ? '…' : ''}</p>
+                                            <p>{subTitle}</p>
                                         </div>
                                         <div className="gv-bottom">
                                             <div className="gv-price-container">
                                                 <div className="gv-price">
-                                                    <span className="gv-price-text">{price} {!isFree && `,-`}</span>
-                                                    {!isFree && <span className="gv-period">/mo</span>}
+                                                    <span className="gv-price-text">{price} {!isFree && price && `,-`}</span>
+                                                    {!isFree && price && <span className="gv-period">/mo</span>}
                                                 </div>
-                                              {!isFree &&
+                                              {!isFree && price &&
                                                 <div className="gv-price-info">
                                                   <div className="gv-info">1 year [{price}]/mo.</div>
                                                 </div>}
@@ -170,7 +171,7 @@ export default function ProductDetail({
                                 <div className="gv-section" role="rowgroup">
                                     <div className="gv-section-header gv-table-row" role="row">
                                         <div className="gv-cell" role="cell">
-                                            <h4 className="gv-title">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features'}</h4>
+                                            <h4 className="gv-title">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading}</h4>
                                         </div>
                                     </div>
                                     {keyFeatures.map((f, i) => (
@@ -196,14 +197,6 @@ export default function ProductDetail({
                             </ul>
                         </section>
                     )}
-
-                    <section className="gv-text-max gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">Why choose {title}?</h2>
-                        <p>
-                            This plugin helps you enhance your site with reliable performance and simplicity.
-                            It is designed to integrate smoothly and scale as your needs grow.
-                        </p>
-                    </section>
                 </div>
 
                 {/* Core Features Overview */}

@@ -19,10 +19,10 @@ const ProductBanner = () => {
 
             <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0">
                 <h2 className="gv-banner-title">
-                    Build your online success: add plugins
+                  Fuel your online success with powerful add-ons
                 </h2>
                 <p className="gv-banner-text gv-text-sm gv-mt-sm">
-                    {'{'}Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.{'}'}
+                  Boost the performance, security, marketing, and design of your WordPress site with tools that help your website grow faster and work smarter.
                 </p>
             </div>
 
