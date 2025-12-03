@@ -118,7 +118,7 @@ export default function Marketplace() {
                 // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                 if (isOnecomBrand) {
                     const specialPlugins = normalizedPlugins.filter(p =>
-                        p.slug === "wp-rocket" || p.slug === "rank-math-pro"
+                        p.slug === "wp-rocket" || p.slug === "seo-by-rank-math-pro"
                     );
 
                     // Fetch subscription status for each special plugin
@@ -178,7 +178,7 @@ export default function Marketplace() {
         if (!plugin) return false;
         const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
         const isOnecomBrand = brand === "onecom";
-        const isRankMathPlugin = plugin.slug === "rank-math-pro" || plugin.slug === "seo-by-rank-math";
+        const isRankMathPlugin = plugin.slug === "seo-by-rank-math-pro" || plugin.slug === "seo-by-rank-math";
         return isOnecomBrand && isRankMathPlugin;
     };
 
@@ -260,10 +260,10 @@ export default function Marketplace() {
         <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg">
             {categories.map(([catKey, { info, plugins: list }]) => (
                 <section key={catKey} className="category-section">
-                    <p className="gv-text-bold gv-text-lg">{info.title || catKey}</p>
+                    <p className="gv-text-bold gv-text-lg gv-mb-xs">{info.title || catKey}</p>
                     {info.description && <p>{info.description}</p>}
                     {!info.description && <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
-                    <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-lg gv-max-mob-mb-lg gv-max-mob-pb-lg">
+                    <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-md gv-max-mob-mb-lg gv-max-mob-pb-lg">
                         {list.map((plugin) => (
                             <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
                                 <div className="gv-span-2">
@@ -271,8 +271,8 @@ export default function Marketplace() {
                                         alt={plugin.name} />
                                 </div>
                                 <div className="gv-span-9">
-                                    <p className="gv-text-lg">{plugin.name}</p>
-                                    <p className="oc-card-content"> {plugin.i18n.description || plugin.i18n.subtitle || plugin.description} </p>
+                                    <p className="gv-text-lg gv-mb-xs">{plugin.name}</p>
+                                    <p className="oc-card-content gv-mb-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                   <span className="gv-caption-lg gv-text-bold">
                                     {formatPluginPrice(plugin)}
                                     {plugin.licenseType !== "free" && formatPluginPrice(plugin) && formatPluginPrice(plugin) !== 'Free' && <span className="gv-period">/mo</span>}

@@ -67,7 +67,7 @@ export default function FeaturedCarousel() {
 
     return (
         <section className="gv-featured-carousel gv-w-full">
-            <div className="gv-carousel-header gv-mb-md">
+            <div className="gv-carousel-header gv-mb-lg">
                 <h5 className="gv-title gv-heading-sm">Recommended for you</h5>
             </div>
 

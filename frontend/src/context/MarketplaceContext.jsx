@@ -31,7 +31,7 @@ export const MarketplaceProvider = ({
     const fetchSubscriptionStatus = useCallback(async (pluginSlug) => {
         if (!isOnecomBrand) return;
 
-        const isSpecialPlugin = pluginSlug === "wp-rocket" || pluginSlug === "rank-math-pro";
+        const isSpecialPlugin = pluginSlug === "wp-rocket" || pluginSlug === "seo-by-rank-math-pro";
         if (!isSpecialPlugin) return;
 
         // If already checked or checking, skip

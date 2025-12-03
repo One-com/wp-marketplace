@@ -31,6 +31,8 @@ body.one-com_page_onecom-marketplace{
 	background: var(--color-surface-toned);
 	position: relative;
 	overflow: hidden;
+  border-radius: 6px;
+  border-color: #E2E2E2;
 }
 
 .gv-activated .marketplace-container .gv-product-header.gv-area-header{

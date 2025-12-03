@@ -12,7 +12,7 @@ export default function PluginActions({ plugin }) {
         uiI18n
     } = useMarketplace();
 
-    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "rank-math-pro";
+    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "seo-by-rank-math-pro";
 
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];

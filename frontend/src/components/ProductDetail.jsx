@@ -19,6 +19,11 @@ export default function ProductDetail({
     } = useMarketplace();
     if (!plugin) return null;
 
+    // Scroll to top when component mounts or plugin changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [plugin]);
+
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
@@ -74,7 +79,7 @@ export default function ProductDetail({
 
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
-            <article className="gv-layout-product gv-max-mob-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
+            <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                 <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
                     <a
                         href="#"

@@ -20,9 +20,14 @@ export default function ProductDetailRankMath({
     } = useMarketplace();
     if (!plugin) return null;
 
+    // Scroll to top when component mounts or plugin changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [plugin]);
+
     // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
     const freePlugin = plugins.find(p => p.slug === "seo-by-rank-math") || null;
-    const proPlugin = plugins.find(p => p.slug === "rank-math-pro") || null;
+    const proPlugin = plugins.find(p => p.slug === "seo-by-rank-math-pro") || null;
 
     // Use the clicked plugin for header/main content, but always use freePlugin for first column
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -33,11 +38,12 @@ export default function ProductDetailRankMath({
 
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
     const title = freePlugin?.name || plugin.name || 'Product';
-    const description = freePlugin?.i18n?.description || freePlugin?.i18n?.subtitle || freePlugin?.description;
+    const description = freePlugin?.i18n?.description || freePlugin?.i18n?.subtitle;
+    const subtitle = freePlugin?.i18n?.subtitle;
 
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
-    const proDescription = proPlugin?.i18n?.description || proPlugin?.i18n?.subtitle || proPlugin?.description;
+    const proDescription = proPlugin?.i18n?.subtitle || proPlugin?.i18n?.description;
     const proPrice = proPlugin ? formatPluginPrice(proPlugin) : '';
 
     // Helper function to extract numbered properties dynamically from i18n object
@@ -139,10 +145,10 @@ export default function ProductDetailRankMath({
                                 <div className="gv-table" role="table">
                                     <div className="gv-table-header" role="rowgroup">
                                         <div className="gv-table-row" role="row">
-                                            <div className="gv-product" role="columnheader">
+                                            <div className="gv-product gv-p-0" role="columnheader">
                                                 <div className="gv-content">
                                                     <h3 className="gv-title">{title}</h3>
-                                                    <p>{description.substring(0, 120)}{description.length > 120 ? '…' : ''}</p>
+                                                    <p>{subtitle}</p>
                                                 </div>
                                                 <div className="gv-bottom">
                                                     <div className="gv-price-container">
@@ -161,7 +167,7 @@ export default function ProductDetailRankMath({
                                                     )}
                                                 </div>
                                             </div>
-                                          <div className="gv-product" role="columnheader">
+                                          <div className="gv-product gv-p-0" role="columnheader">
                                             <div className="gv-recommended-label">Recommended</div>
                                             <div className="gv-content">
                                               <h3 className="gv-title">{proTitle}</h3>
