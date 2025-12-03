@@ -17,7 +17,6 @@ body.one-com_page_onecom-marketplace{
 }
 
 .gv-activated img.gv-icon-tile{
-  height: 48px;
   width: 48px;
   background: #ffffff;
   border-radius: 8px;
@@ -34,11 +33,9 @@ body.one-com_page_onecom-marketplace{
 	overflow: hidden;
 }
 
-/*.gv-product-banner .gv-left-banner,*/
-/*.gv-product-banner .gv-right-banner {*/
-/*	flex: 0 0 auto;*/
-/*	max-width: 250px;*/
-/*}*/
+.gv-activated .marketplace-container .gv-product-header.gv-area-header{
+  max-height: 456px;
+}
 
 .gv-product-banner .gv-left-banner img,
 .gv-product-banner .gv-right-banner img {

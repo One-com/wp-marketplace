@@ -4,6 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { formatPluginPrice } from "../utils/priceFormatter";
 
 export default function ProductDetailRankMath({
     plugin,
@@ -37,9 +38,7 @@ export default function ProductDetailRankMath({
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
     const proDescription = proPlugin?.i18n?.description || proPlugin?.i18n?.subtitle || proPlugin?.description;
-    const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount)
-        ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}`
-        : '€ 0,-';
+    const proPrice = proPlugin ? formatPluginPrice(proPlugin) : '';
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -77,30 +76,10 @@ export default function ProductDetailRankMath({
         }
     }
 
-    // Fallback: Derive features from description or plugin data if i18n data is not available
-    const rawFeatureSource = (freePlugin?.features && freePlugin.features.length)
-        ? freePlugin.features
-        : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
-
-    const fallbackKeyFeatures = rawFeatureSource.slice(0, 6).map(f => f.replace(/\.$/, ''));
-    while (fallbackKeyFeatures.length < 3) fallbackKeyFeatures.push('Sample feature');
-
-    const fallbackBenefits = [
-        fallbackKeyFeatures[0],
-        fallbackKeyFeatures[1] || 'Improves performance',
-        fallbackKeyFeatures[2] || 'Easy setup'
-    ];
-
-    const fallbackCoreFeatures = [
-        { name: fallbackKeyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
-        { name: fallbackKeyFeatures[1] || 'Performance', desc: 'Enhances your WordPress experience with reliable performance' },
-        { name: fallbackKeyFeatures[2] || 'Easy Setup', desc: 'Easy to set up and configure with minimal technical knowledge' }
-    ];
-
-    // Use i18n data if available, otherwise use fallbacks
-    const keyFeatures = keyFeaturesFromI18n.length > 0 ? keyFeaturesFromI18n : fallbackKeyFeatures;
-    const benefits = benefitsFromI18n.length > 0 ? benefitsFromI18n : fallbackBenefits;
-    const coreFeatures = coreFeaturesFromI18n.length > 0 ? coreFeaturesFromI18n : fallbackCoreFeatures;
+    // Use only i18n data - no fallbacks
+    const keyFeatures = keyFeaturesFromI18n;
+    const benefits = benefitsFromI18n;
+    const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
         <div className="gv-surface-dim">
@@ -191,8 +170,11 @@ export default function ProductDetailRankMath({
                                             <div className="gv-bottom">
                                               <div className="gv-price-container">
                                                 <div className="gv-price">
-                                                  <span className="gv-price-text">{proPrice}</span>
+                                                  <span className="gv-price-text">{proPrice},-</span>
                                                   <span className="gv-period">/mo</span>
+                                                </div>
+                                                <div className="gv-price-info">
+                                                  <div className="gv-info">1 year [{proPrice}]/mo.</div>
                                                 </div>
                                               </div>
                                               {useWPHandlers && proPlugin ? (
@@ -207,26 +189,28 @@ export default function ProductDetailRankMath({
                                           </div>
                                         </div>
                                     </div>
-                                    <div className="gv-section" role="rowgroup">
-                                        <div className="gv-section-header gv-table-row" role="row">
-                                            <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{uiI18n?.featureOverviewHeading || freePlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
+                                    {keyFeatures.length > 0 && (
+                                        <div className="gv-section" role="rowgroup">
+                                            <div className="gv-section-header gv-table-row" role="row">
+                                                <div className="gv-cell" role="cell">
+                                                    <h4 className="gv-title">{uiI18n?.featureOverviewHeading || freePlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
+                                                </div>
+                                                <div className="gv-cell" role="cell">
+                                                    <h4 className="gv-title">{uiI18n?.featureOverviewHeading || proPlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
+                                                </div>
                                             </div>
-                                            <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{uiI18n?.featureOverviewHeading || proPlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
-                                            </div>
+                                            {keyFeatures.map((f, i) => (
+                                                <div className="gv-table-row" role="row" key={i}>
+                                                    <div className="gv-cell" role="cell">
+                                                        <span className="gv-cell-text">{f}</span>
+                                                    </div>
+                                                    <div className="gv-cell" role="cell">
+                                                        <span className="gv-cell-text">{f}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-                                        {keyFeatures.map((f, i) => (
-                                            <div className="gv-table-row" role="row" key={i}>
-                                                <div className="gv-cell" role="cell">
-                                                    <span className="gv-cell-text">{f}</span>
-                                                </div>
-                                                <div className="gv-cell" role="cell">
-                                                    <span className="gv-cell-text">{f}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -240,26 +224,30 @@ export default function ProductDetailRankMath({
                 </section>
 
                 <div className="gv-area-details gv-grid gv-gap-fluid">
-                    <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
-                        <ul className="gv-list-items gv-list-check gv-mode-condensed">
-                            {benefits.map((b, i) => <li key={i}>{b}</li>)}
-                        </ul>
-                    </section>
+                    {benefits.length > 0 && (
+                        <section className="gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
+                            <ul className="gv-list-items gv-list-check gv-mode-condensed">
+                                {benefits.map((b, i) => <li key={i}>{b}</li>)}
+                            </ul>
+                        </section>
+                    )}
                     <div className="gv-text-max gv-text-sm gv-stack-space-md">
                         <h2 className="gv-title gv-text-bold gv-text-lg">{title}</h2>
                         <p>{description}</p>
                     </div>
                 </div>
 
-                <div className="gv-area-content gv-grid gv-gap-fluid">
-                    <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features overview'}</h2>
-                        <ul className="gv-list-items gv-list-check gv-mode-condensed">
-                            {keyFeatures.map((f, i) => <li key={i}>{f}</li>)}
-                        </ul>
-                    </section>
-                </div>
+                {keyFeatures.length > 0 && (
+                    <div className="gv-area-content gv-grid gv-gap-fluid">
+                        <section className="gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features overview'}</h2>
+                            <ul className="gv-list-items gv-list-check gv-mode-condensed">
+                                {keyFeatures.map((f, i) => <li key={i}>{f}</li>)}
+                            </ul>
+                        </section>
+                    </div>
+                )}
             </article>
         </div>
     );

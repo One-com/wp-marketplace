@@ -114,9 +114,6 @@ export default function FeaturedCarousel() {
                                 }}>
                                     <div
                                         className="gv-content gv-stack-space-md gv-text-sm gv-flex gv-flex-col gv-items-start"
-                                        style={{
-                                            overflow: 'hidden',
-                                        }}
                                     >
                                       <div className="gv-badge gv-badge-info">{title}</div>
                                         <h5

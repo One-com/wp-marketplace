@@ -66,30 +66,10 @@ export default function ProductDetail({
         }
     }
 
-    // Fallback: Derive features from description or plugin data if i18n data is not available
-    const rawFeatureSource = plugin.features && plugin.features.length
-        ? plugin.features
-        : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
-
-    const fallbackKeyFeatures = rawFeatureSource.slice(0, 6).map(f => f.replace(/\.$/, ''));
-    while (fallbackKeyFeatures.length < 3) fallbackKeyFeatures.push('Sample feature');
-
-    const fallbackBenefits = [
-        fallbackKeyFeatures[0],
-        fallbackKeyFeatures[1] || 'Improves performance',
-        fallbackKeyFeatures[2] || 'Easy setup'
-    ];
-
-    const fallbackCoreFeatures = [
-        { name: fallbackKeyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
-        { name: fallbackKeyFeatures[1] || 'Performance', desc: 'Enhances your WordPress experience with reliable performance' },
-        { name: fallbackKeyFeatures[2] || 'Easy Setup', desc: 'Easy to set up and configure with minimal technical knowledge' }
-    ];
-
-    // Use i18n data if available, otherwise use fallbacks
-    const keyFeatures = keyFeaturesFromI18n.length > 0 ? keyFeaturesFromI18n : fallbackKeyFeatures;
-    const benefits = benefitsFromI18n.length > 0 ? benefitsFromI18n : fallbackBenefits;
-    const coreFeatures = coreFeaturesFromI18n.length > 0 ? coreFeaturesFromI18n : fallbackCoreFeatures;
+    // Use only i18n data - no fallbacks
+    const keyFeatures = keyFeaturesFromI18n;
+    const benefits = benefitsFromI18n;
+    const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
@@ -158,9 +138,13 @@ export default function ProductDetail({
                                         <div className="gv-bottom">
                                             <div className="gv-price-container">
                                                 <div className="gv-price">
-                                                    <span className="gv-price-text">{price}</span>
+                                                    <span className="gv-price-text">{price} {!isFree && `,-`}</span>
                                                     {!isFree && <span className="gv-period">/mo</span>}
                                                 </div>
+                                              {!isFree &&
+                                                <div className="gv-price-info">
+                                                  <div className="gv-info">1 year [{price}]/mo.</div>
+                                                </div>}
                                             </div>
                                             {useWPHandlers ? (
                                                 <PluginActions
@@ -182,32 +166,36 @@ export default function ProductDetail({
                                 </div>
                             </div>
 
-                            <div className="gv-section" role="rowgroup">
-                                <div className="gv-section-header gv-table-row" role="row">
-                                    <div className="gv-cell" role="cell">
-                                        <h4 className="gv-title">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features'}</h4>
-                                    </div>
-                                </div>
-                                {keyFeatures.map((f, i) => (
-                                    <div className="gv-table-row" role="row" key={i}>
+                            {keyFeatures.length > 0 && (
+                                <div className="gv-section" role="rowgroup">
+                                    <div className="gv-section-header gv-table-row" role="row">
                                         <div className="gv-cell" role="cell">
-                                            <span className="gv-cell-text">{f}</span>
+                                            <h4 className="gv-title">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features'}</h4>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                    {keyFeatures.map((f, i) => (
+                                        <div className="gv-table-row" role="row" key={i}>
+                                            <div className="gv-cell" role="cell">
+                                                <span className="gv-cell-text">{f}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </section>
 
                 {/* Details / Benefits */}
                 <div className="gv-area-details gv-grid gv-gap-fluid">
-                    <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
-                        <ul className="gv-list-items gv-list-check gv-mode-condensed">
-                            {benefits.map((b, i) => <li key={i}>{b}</li>)}
-                        </ul>
-                    </section>
+                    {benefits.length > 0 && (
+                        <section className="gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
+                            <ul className="gv-list-items gv-list-check gv-mode-condensed">
+                                {benefits.map((b, i) => <li key={i}>{b}</li>)}
+                            </ul>
+                        </section>
+                    )}
 
                     <section className="gv-text-max gv-text-sm gv-stack-space-md">
                         <h2 className="gv-title gv-text-bold gv-text-lg">Why choose {title}?</h2>
@@ -219,19 +207,21 @@ export default function ProductDetail({
                 </div>
 
                 {/* Core Features Overview */}
-                <div className="gv-area-content gv-grid gv-gap-fluid">
-                    <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
-                        <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
-                            {coreFeatures.map((cf, i) => (
-                                <div className="gv-item gv-stack-space-sm" key={i}>
-                                    <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
-                                    <p>{cf.desc}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                </div>
+                {coreFeatures.length > 0 && (
+                    <div className="gv-area-content gv-grid gv-gap-fluid">
+                        <section className="gv-text-sm gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
+                            <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                                {coreFeatures.map((cf, i) => (
+                                    <div className="gv-item gv-stack-space-sm" key={i}>
+                                        <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
+                                        <p>{cf.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+                )}
             </article>
         </div>
     );
