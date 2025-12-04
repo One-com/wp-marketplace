@@ -133,7 +133,7 @@ export default function FeaturedCarousel() {
                                             {description}
                                         </p>
 
-                                        <div className="gv-slide-footer gv-mt-lg gv-flex gv-align-center">
+                                        <div className="gv-slide-footer gv-mt-lg gv-flex gv-align-center gv-flex-wrap gv-items-center">
                                             <button
                                                 onClick={() => handleReadMore(plugin)}
                                                 className="gv-button gv-button-secondary"
@@ -189,13 +189,7 @@ export default function FeaturedCarousel() {
                     </button>
 
                     <div
-                        className="gv-carousel-dots"
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '0.5rem'
-                        }}
-                    >
+                        className="gv-carousel-dots gv-flex-wrap gv-items-center gv-flex gv-justify-center  gv-gap-sm">
                         {Array.from({ length: maxIndex + 1 }).map((_, index) => (
                             <button
                                 key={index}

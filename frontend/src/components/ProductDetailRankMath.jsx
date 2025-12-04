@@ -105,7 +105,7 @@ export default function ProductDetailRankMath({
                             }
                         }}
                     >
-                        <gv-icon aria-hidden="true" src={`${iconBase}chevron_left.svg`}></gv-icon>
+                        <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
                         <span>Back</span>
                     </a>
                 </nav>
