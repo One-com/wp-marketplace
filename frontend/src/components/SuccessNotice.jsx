@@ -52,17 +52,25 @@ export default function SuccessNotice({ plugin }) {
     const isInstalled = noticeState.type === 'installed';
     const isActivated = noticeState.type === 'activated';
 
+    // Helper function to replace {0} with plugin name
+    const formatMessage = (message, pluginName) => {
+        if (!message) return '';
+        return message.replace('{0}', pluginName || '');
+    };
+
+    const pluginName = plugin?.name || '';
+
     return (
         <div className="gv-notice gv-notice-success gv-p-lg gv-max-mob-pt-lg gv-mb-0 gv-mt-lg" style={{'gridColumn': '1 / -1','width':'100%'}}>
             <img className="gv-notice-icon" src={`${iconBase}icons/success.svg`} alt="Success" />
             <div className="gv-notice-content">
                 <div className="gv-notice-title">
-                    {isInstalled && "Plugin was installed."}
-                    {isActivated && "Plugin was activated."}
+                    {isInstalled && formatMessage(uiI18n?.notifications?.pluginInstalled || 'Plugin was installed.', pluginName)}
+                    {isActivated && formatMessage(uiI18n?.notifications?.pluginActivated || 'Plugin was activated.', pluginName)}
                 </div>
                 <p>
-                    {isInstalled && "Activate it now to start using it."}
-                    {isActivated && "You can start using it."}
+                    {isInstalled && (uiI18n?.notifications?.activateNow || 'Activate it now to start using it.')}
+                    {isActivated && formatMessage(uiI18n?.notifications?.manageInMyProducts || '{0} plugin was activated for this site. You can manage it on the My products page.', pluginName)}
                 </p>
             </div>
             {isInstalled && (
@@ -80,7 +88,8 @@ export default function SuccessNotice({ plugin }) {
                     className="gv-action gv-button gv-button-neutral"
                     onClick={handleManage}
                 >
-                    {uiI18n?.labels?.manage || 'Manage'}
+                    <span>{uiI18n?.featuredCta || 'Get Started'}</span>
+                    <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_forward.svg`}></gv-icon>
                 </button>
             )}
             <button

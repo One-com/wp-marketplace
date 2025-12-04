@@ -5,7 +5,8 @@ export default function ErrorToast({ plugin }) {
     const {
         assetsBaseUrl,
         errorState,
-        setErrorState
+        setErrorState,
+        uiI18n
     } = useMarketplace();
 
     if (!errorState || !errorState.visible || errorState.pluginSlug !== plugin?.slug) {
@@ -22,6 +23,14 @@ export default function ErrorToast({ plugin }) {
     const isActivateError = errorState.type === 'activate';
     const isInstallError = errorState.type === 'install';
 
+    // Helper function to replace {0} with plugin name
+    const formatMessage = (message, pluginName) => {
+        if (!message) return '';
+        return message.replace('{0}', pluginName || '');
+    };
+
+    const pluginName = plugin?.name || '';
+
     return (
         <div className="gv-toast-container">
             <div className="gv-toast gv-toast-alert gv-visible">
@@ -31,8 +40,8 @@ export default function ErrorToast({ plugin }) {
                     src={`${iconBase}icons/error.svg`}
                 ></gv-icon>
                 <div className="gv-toast-content">
-                    {isActivateError && "Couldn't activate plugin."}
-                    {isInstallError && "Couldn't install plugin."}
+                    {isActivateError && formatMessage(uiI18n?.notifications?.pluginActivationFailed || "Couldn't activate plugin.", pluginName)}
+                    {isInstallError && formatMessage(uiI18n?.notifications?.pluginInstallationFailed || "Couldn't install plugin.", pluginName)}
                 </div>
                 <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>

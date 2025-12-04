@@ -131,7 +131,7 @@ export const MarketplaceProvider = ({
 
                 // Reload after sufficient delay to show overlay, notice, and updated button
                 setTimeout(() => {
-                    window.location.reload();
+                    // window.location.reload();
                 }, 2500);
             }, 100);
             return;
