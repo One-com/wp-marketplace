@@ -89,7 +89,7 @@ body.one-com_page_onecom-marketplace{
 }
 
 @media (min-width: 768px) {
-  #marketplace-root .gv-activated .marketplace-container .gv-product-header.gv-area-header .gv-content{
+  #marketplace-root .gv-activated .marketplace-container .gv-carousel-slide .gv-product-header.gv-area-header .gv-content{
     flex: 0 0 59%;
   }
   #marketplace-root .gv-activated .marketplace-container .gv-product-header.gv-area-header {
