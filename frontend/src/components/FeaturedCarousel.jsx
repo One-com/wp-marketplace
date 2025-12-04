@@ -84,7 +84,8 @@ export default function FeaturedCarousel() {
                     {featuredPlugins.map((plugin, index) => {
                         const title = plugin?.i18n?.featuredTitle;
                         const description = plugin?.i18n?.featuredContent;
-                        const price = formatPluginPrice(plugin);
+                        const freeLabel = uiI18n?.labels?.free || 'Free';
+                        const price = formatPluginPrice(plugin, freeLabel);
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
                         // Extract category name from plugin categories array
@@ -143,7 +144,7 @@ export default function FeaturedCarousel() {
 
                                             <span className="gv-price gv-text-bold gv-text-md gv-ml-md">
                                                 {price}
-                                                {plugin.licenseType !== "free" && price && price !== 'Free' && <span className="gv-period">/mo</span>}
+                                                {plugin.licenseType !== "free" && price && price !== freeLabel && <span className="gv-period">/mo</span>}
                                             </span>
                                         </div>
                                     </div>

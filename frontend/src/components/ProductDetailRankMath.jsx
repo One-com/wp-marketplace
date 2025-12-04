@@ -16,7 +16,8 @@ export default function ProductDetailRankMath({
         useWPHandlers,
         pluginInAction,
         plugins,
-        uiI18n
+        uiI18n,
+        subscriptionStatus
     } = useMarketplace();
     if (!plugin) return null;
 
@@ -44,7 +45,7 @@ export default function ProductDetailRankMath({
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
     const proDescription = proPlugin?.i18n?.subtitle || proPlugin?.i18n?.description;
-    const proPrice = proPlugin ? formatPluginPrice(proPlugin) : '';
+    const proPrice = proPlugin ? formatPluginPrice(proPlugin, uiI18n?.labels?.free || 'Free') : '';
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -98,10 +99,10 @@ export default function ProductDetailRankMath({
                         href="#"
                         onClick={e => {
                             e.preventDefault();
-                            if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-                                window.history.back();
-                            } else if (onClose) {
+                            if (onClose) {
                                 onClose();
+                            } else if (typeof window !== "undefined" && window.history) {
+                                window.history.back();
                             }
                         }}
                     >
@@ -156,7 +157,7 @@ export default function ProductDetailRankMath({
                                                 <div className="gv-bottom">
                                                     <div className="gv-price-container">
                                                         <div className="gv-price">
-                                                            <span className="gv-price-text">Free</span>
+                                                            <span className="gv-price-text">{uiI18n?.labels?.free || 'Free'}</span>
                                                         </div>
                                                     </div>
                                                     {useWPHandlers && freePlugin ? (
@@ -177,6 +178,7 @@ export default function ProductDetailRankMath({
                                               <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
                                             </div>
                                             <div className="gv-bottom">
+                                              {!subscriptionStatus["seo-by-rank-math-pro"] && (
                                               <div className="gv-price-container">
                                                 <div className="gv-price">
                                                   <span className="gv-price-text">{proPrice}{proPrice && `,-`}</span>
@@ -187,6 +189,7 @@ export default function ProductDetailRankMath({
                                                   <div className="gv-info">1 year [{proPrice}]/mo.</div>
                                                 </div>}
                                               </div>
+                                              )}
                                               {useWPHandlers && proPlugin ? (
                                                 <PluginActions
                                                   plugin={proPlugin}

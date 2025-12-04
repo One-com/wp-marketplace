@@ -15,7 +15,8 @@ export default function ProductDetail({
         assetsBaseUrl,
         useWPHandlers,
         pluginInAction,
-        uiI18n
+        uiI18n,
+        subscriptionStatus
     } = useMarketplace();
     if (!plugin) return null;
 
@@ -35,7 +36,7 @@ export default function ProductDetail({
     const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || 'No description available.';
     const subTitle = plugin.i18n?.subtitle;
     const isFree = plugin.licenseType === "free";
-    const price = formatPluginPrice(plugin);
+    const price = formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free');
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -85,10 +86,10 @@ export default function ProductDetail({
                         href="#"
                         onClick={e => {
                             e.preventDefault();
-                            if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-                                window.history.back();
-                            } else if (onClose) {
+                            if (onClose) {
                                 onClose();
+                            } else if (typeof window !== "undefined" && window.history) {
+                                window.history.back();
                             }
                         }}
                         className="gv-flex gv-items-center gv-gap-xs"
@@ -142,6 +143,7 @@ export default function ProductDetail({
                                             <p>{subTitle}</p>
                                         </div>
                                         <div className="gv-bottom">
+                                            {!subscriptionStatus[plugin.slug] && (
                                             <div className="gv-price-container">
                                                 <div className="gv-price">
                                                     <span className="gv-price-text">{price} {!isFree && price && `,-`}</span>
@@ -152,6 +154,7 @@ export default function ProductDetail({
                                                   <div className="gv-info">1 year [{price}]/mo.</div>
                                                 </div>}
                                             </div>
+                                            )}
                                             {useWPHandlers ? (
                                                 <PluginActions
                                                     plugin={plugin}

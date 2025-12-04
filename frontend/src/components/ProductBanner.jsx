@@ -2,7 +2,7 @@ import React from 'react';
 import { useMarketplace } from '../context/MarketplaceContext';
 
 const ProductBanner = () => {
-    const { assetsBaseUrl } = useMarketplace();
+    const { assetsBaseUrl, uiI18n } = useMarketplace();
     const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.png`;
     const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.png`;
 
@@ -19,10 +19,10 @@ const ProductBanner = () => {
 
             <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0">
                 <h2 className="gv-banner-title">
-                  Fuel your online success with powerful add-ons
+                  {uiI18n?.headings?.pageTitle}
                 </h2>
                 <p className="gv-banner-text gv-text-sm gv-mt-sm">
-                  Boost the performance, security, marketing, and design of your WordPress site with tools that help your website grow faster and work smarter.
+                  {uiI18n?.text?.pageContent}
                 </p>
             </div>
 

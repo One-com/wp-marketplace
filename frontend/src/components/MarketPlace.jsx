@@ -21,6 +21,7 @@ export default function Marketplace() {
         isOnecomBrand,
         plugins,
         setPlugins,
+        uiI18n,
         setUiI18n,
         handlePluginAction,
         allPluginsActivated,
@@ -198,7 +199,7 @@ export default function Marketplace() {
                 onClose={() => {
                     // Return to listing (clear selection and URL)
                     setSelectedPlugin(null);
-                    window.location.href = getBaseUrl();
+                    window.history.back();
                 }}
                 usePortal={false}
             />
@@ -264,45 +265,49 @@ export default function Marketplace() {
                     {info.description && <p className="gv-text-sm">{info.description}</p>}
                     {!info.description && <p className="gv-text-sm">A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
                     <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-md gv-max-mob-mb-lg gv-max-mob-pb-lg">
-                        {list.map((plugin) => (
-                            <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
-                                <div className="gv-span-2">
-                                    <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
-                                        alt={plugin.name} />
-                                </div>
-                                <div className="gv-span-8">
-                                    <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
-                                    <p className="oc-card-content gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
-                                  <span className="gv-caption-lg gv-text-bold">
-                                    {formatPluginPrice(plugin)}
-                                    {plugin.licenseType !== "free" && formatPluginPrice(plugin) && formatPluginPrice(plugin) !== 'Free' && <span className="gv-period">/mo</span>}
-                                  </span>
-                                </div>
-                                <div className="gv-span-2 gv-content-center">
-                                    <a
-                                        href={`${getBaseUrl()}&plugin=${plugin.slug}`}
-                                        className="gv-reset-button"
-                                        style={{ display: "inline-block" }}
-                                        aria-label={`View details for ${plugin.name}`}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setSelectedPlugin(plugin);
-                                            const url = new URL(window.location.href);
-                                            url.searchParams.set("plugin", plugin.slug);
-                                            window.history.pushState({}, '', url.toString());
-                                        }}
-                                    >
-                                        <img
-                                            className="gv-tile"
-                                            src={`${iconBase}arrow_forward.svg`}
-                                            alt={`View ${plugin.name} details`}
-                                            style={{ minWidth: "24px" }}
-                                        />
-                                    </a>
+                        {list.map((plugin) => {
+                            const freeLabel = uiI18n?.labels?.free || 'Free';
+                            const price = formatPluginPrice(plugin, freeLabel);
+                            return (
+                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                                    <div className="gv-span-2">
+                                        <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
+                                            alt={plugin.name} />
+                                    </div>
+                                    <div className="gv-span-8">
+                                        <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
+                                        <p className="oc-card-content gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
+                                      <span className="gv-caption-lg gv-text-bold">
+                                        {price}
+                                        {plugin.licenseType !== "free" && price && price !== freeLabel && <span className="gv-period">/mo</span>}
+                                      </span>
+                                    </div>
+                                    <div className="gv-span-2 gv-content-center gv-text-right">
+                                        <a
+                                            href={`${getBaseUrl()}&plugin=${plugin.slug}`}
+                                            className="gv-reset-button"
+                                            style={{ display: "inline-block" }}
+                                            aria-label={`View details for ${plugin.name}`}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                setSelectedPlugin(plugin);
+                                                const url = new URL(window.location.href);
+                                                url.searchParams.set("plugin", plugin.slug);
+                                                window.history.pushState({}, '', url.toString());
+                                            }}
+                                        >
+                                            <img
+                                                className="gv-tile"
+                                                src={`${iconBase}arrow_forward.svg`}
+                                                alt={`View ${plugin.name} details`}
+                                                style={{ minWidth: "24px" }}
+                                            />
+                                        </a>
 
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </section>
             ))}

@@ -111,7 +111,7 @@ export default function PluginActions({ plugin }) {
                         className="gv-button gv-button-primary"
                         onClick={handleManage}
                     >
-                       <span>Manage</span>
+                       <span>{uiI18n?.labels?.manage || 'Manage'}</span>
                         <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_right.svg`}></gv-icon>
                     </button>
                 ) : (

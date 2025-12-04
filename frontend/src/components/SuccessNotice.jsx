@@ -6,7 +6,8 @@ export default function SuccessNotice({ plugin }) {
         assetsBaseUrl,
         noticeState,
         setNoticeState,
-        handlePluginAction
+        handlePluginAction,
+        uiI18n
     } = useMarketplace();
 
     if (!noticeState || !noticeState.visible || noticeState.pluginSlug !== plugin?.slug) {
@@ -39,7 +40,7 @@ export default function SuccessNotice({ plugin }) {
 
         const adminPage = pluginAdminPages[plugin.slug] || plugin.slug;
         const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
-        
+
         if (adminUrl) {
             window.location.href = `${adminUrl}admin.php?page=${adminPage}`;
         } else {
@@ -79,7 +80,7 @@ export default function SuccessNotice({ plugin }) {
                     className="gv-action gv-button gv-button-neutral"
                     onClick={handleManage}
                 >
-                    Manage
+                    {uiI18n?.labels?.manage || 'Manage'}
                 </button>
             )}
             <button

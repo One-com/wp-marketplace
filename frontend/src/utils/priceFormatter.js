@@ -21,13 +21,14 @@ const getCurrencySymbol = (currencyCode) => {
 /**
  * Formats the price display for a plugin based on its license type
  * @param {Object} plugin - The plugin object containing price and license information
+ * @param {string} freeLabel - Optional label for free plugins (defaults to 'Free')
  * @returns {string} - Formatted price string ('Free', 'Symbol Amount', or blank)
  */
-export const formatPluginPrice = (plugin) => {
+export const formatPluginPrice = (plugin, freeLabel = 'Free') => {
     const isFree = plugin.licenseType === "free";
 
     if (isFree) {
-        return 'Free';
+        return freeLabel;
     }
 
     // Handle new API format with prices array
