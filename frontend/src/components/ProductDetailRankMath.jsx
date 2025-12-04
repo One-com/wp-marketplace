@@ -65,8 +65,12 @@ export default function ProductDetailRankMath({
     const i18nSource = freePlugin?.i18n || plugin.i18n;
     const benefitsFromI18n = extractNumberedProps(i18nSource, 'keyBenefitContent');
 
-    // Extract key features from i18n (keyFeatureContent1 through keyFeatureContent6)
-    const keyFeaturesFromI18n = extractNumberedProps(i18nSource, 'keyFeatureContent');
+    // Extract key features separately for both free and pro plugins
+    const freeKeyFeatures = extractNumberedProps(freePlugin?.i18n, 'keyFeatureContent');
+    const proKeyFeatures = extractNumberedProps(proPlugin?.i18n, 'keyFeatureContent');
+
+    // Determine the maximum number of features to display all from both plugins
+    const maxFeatures = Math.max(freeKeyFeatures.length, proKeyFeatures.length);
 
     // Extract core features (title/content pairs) from i18n
     const coreFeaturesFromI18n = [];
@@ -83,7 +87,6 @@ export default function ProductDetailRankMath({
     }
 
     // Use only i18n data - no fallbacks
-    const keyFeatures = keyFeaturesFromI18n;
     const benefits = benefitsFromI18n;
     const coreFeatures = coreFeaturesFromI18n;
 
@@ -112,8 +115,8 @@ export default function ProductDetailRankMath({
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
-                        <h1 className="gv-title gv-header-lg">Rank Math</h1>
-                        <p>{description}</p>
+                        <h3 className="gv-title gv-header-lg">Rank Math</h3>
+                        <p className="gv-text-sm">{description}</p>
                     </div>
                     <div className="gv-image">
                         <picture>
@@ -196,23 +199,23 @@ export default function ProductDetailRankMath({
                                           </div>
                                         </div>
                                     </div>
-                                    {keyFeatures.length > 0 && (
+                                    {maxFeatures > 0 && (
                                         <div className="gv-section" role="rowgroup">
                                             <div className="gv-section-header gv-table-row" role="row">
                                                 <div className="gv-cell" role="cell">
-                                                    <h4 className="gv-title">{uiI18n?.featureOverviewHeading || freePlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
+                                                    <h4 className="gv-title">{uiI18n?.keyFeatureHeading || freePlugin?.i18n?.keyFeatureHeading || 'Key features'}</h4>
                                                 </div>
                                                 <div className="gv-cell" role="cell">
-                                                    <h4 className="gv-title">{uiI18n?.featureOverviewHeading || proPlugin?.i18n?.featureOverviewHeading || 'Key features'}</h4>
+                                                    <h4 className="gv-title">{uiI18n?.keyFeatureHeading || proPlugin?.i18n?.keyFeatureHeading || 'Key features'}</h4>
                                                 </div>
                                             </div>
-                                            {keyFeatures.map((f, i) => (
+                                            {Array.from({ length: maxFeatures }).map((_, i) => (
                                                 <div className="gv-table-row" role="row" key={i}>
                                                     <div className="gv-cell" role="cell">
-                                                        <span className="gv-cell-text">{f}</span>
+                                                        <span className="gv-cell-text">{freeKeyFeatures[i] || ''}</span>
                                                     </div>
                                                     <div className="gv-cell" role="cell">
-                                                        <span className="gv-cell-text">{f}</span>
+                                                        <span className="gv-cell-text">{proKeyFeatures[i] || ''}</span>
                                                     </div>
                                                 </div>
                                             ))}
@@ -239,19 +242,20 @@ export default function ProductDetailRankMath({
                             </ul>
                         </section>
                     )}
-                    <div className="gv-text-max gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{title}</h2>
-                        <p>{description}</p>
-                    </div>
                 </div>
 
-                {keyFeatures.length > 0 && (
+                {coreFeatures.length > 0 && (
                     <div className="gv-area-content gv-grid gv-gap-fluid">
-                        <section className="gv-stack-space-md">
-                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Key features overview'}</h2>
-                            <ul className="gv-list-items gv-list-check gv-mode-condensed">
-                                {keyFeatures.map((f, i) => <li key={i}>{f}</li>)}
-                            </ul>
+                        <section className="gv-text-sm gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
+                            <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                                {coreFeatures.map((cf, i) => (
+                                    <div className="gv-item gv-stack-space-sm" key={i}>
+                                        <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
+                                        <p className="gv-text-sm">{cf.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
                         </section>
                     </div>
                 )}

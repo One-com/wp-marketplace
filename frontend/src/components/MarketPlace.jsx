@@ -261,8 +261,8 @@ export default function Marketplace() {
             {categories.map(([catKey, { info, plugins: list }]) => (
                 <section key={catKey} className="category-section">
                     <p className="gv-text-bold gv-text-lg gv-mb-xs">{info.title || catKey}</p>
-                    {info.description && <p>{info.description}</p>}
-                    {!info.description && <p>A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
+                    {info.description && <p className="gv-text-sm">{info.description}</p>}
+                    {!info.description && <p className="gv-text-sm">A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
                     <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-md gv-max-mob-mb-lg gv-max-mob-pb-lg">
                         {list.map((plugin) => (
                             <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
@@ -270,15 +270,15 @@ export default function Marketplace() {
                                     <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                         alt={plugin.name} />
                                 </div>
-                                <div className="gv-span-9">
-                                    <p className="gv-text-lg gv-mb-xs">{plugin.name}</p>
-                                    <p className="oc-card-content gv-mb-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
+                                <div className="gv-span-8">
+                                    <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
+                                    <p className="oc-card-content gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                   <span className="gv-caption-lg gv-text-bold">
                                     {formatPluginPrice(plugin)}
                                     {plugin.licenseType !== "free" && formatPluginPrice(plugin) && formatPluginPrice(plugin) !== 'Free' && <span className="gv-period">/mo</span>}
                                   </span>
                                 </div>
-                                <div className="gv-span-1 gv-content-center">
+                                <div className="gv-span-2 gv-content-center">
                                     <a
                                         href={`${getBaseUrl()}&plugin=${plugin.slug}`}
                                         className="gv-reset-button"

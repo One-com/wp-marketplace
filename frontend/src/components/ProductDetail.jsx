@@ -107,8 +107,8 @@ export default function ProductDetail({
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
-                        <h1 className="gv-title gv-header-lg">{title}</h1>
-                        <p>{description}</p>
+                        <h3 className="gv-title gv-header-lg">{title}</h3>
+                        <p className="gv-text-sm">{description}</p>
                         {/*{plugin.author && (*/}
                         {/*    <p className="gv-text-xs gv-mt-sm">*/}
                         {/*        Author: {plugin.authorUrl ? <a href={plugin.authorUrl}>{plugin.author}</a> : plugin.author}*/}
@@ -136,7 +136,7 @@ export default function ProductDetail({
                         <div className="gv-table" role="table">
                             <div className="gv-table-header" role="rowgroup">
                                 <div className="gv-table-row" role="row">
-                                    <div className="gv-product gv-p-0" role="columnheader">
+                                    <div className="gv-product gv-p-0 oc-border-none" role="columnheader">
                                         <div className="gv-content">
                                             <h3 className="gv-title">{title}</h3>
                                             <p>{subTitle}</p>
@@ -173,10 +173,10 @@ export default function ProductDetail({
                             </div>
 
                             {keyFeatures.length > 0 && (
-                                <div className="gv-section" role="rowgroup">
+                                <div className="gv-section oc-left-border-0" role="rowgroup">
                                     <div className="gv-section-header gv-table-row" role="row">
                                         <div className="gv-cell" role="cell">
-                                            <h4 className="gv-title">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading}</h4>
+                                            <h4 className="gv-title">{uiI18n?.keyFeatureHeading || plugin.i18n?.keyFeatureHeading}</h4>
                                         </div>
                                     </div>
                                     {keyFeatures.map((f, i) => (
@@ -213,7 +213,7 @@ export default function ProductDetail({
                                 {coreFeatures.map((cf, i) => (
                                     <div className="gv-item gv-stack-space-sm" key={i}>
                                         <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
-                                        <p>{cf.desc}</p>
+                                        <p className="gv-text-sm">{cf.desc}</p>
                                     </div>
                                 ))}
                             </div>

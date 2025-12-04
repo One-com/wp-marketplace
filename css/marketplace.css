@@ -37,8 +37,16 @@ body.one-com_page_onecom-marketplace{
 
 .gv-activated .marketplace-container .gv-product-header.gv-area-header{
   max-height: 456px;
+  border-color: #E2E2E2;
 }
-
+.gv-activated .gv-features-table.gv-product-table .gv-product.oc-border-none{
+  border-top: none;
+  border-left: none;
+}
+.gv-activated .gv-features-table.gv-product-table .oc-left-border-0 .gv-section-header .gv-cell,
+.gv-activated .gv-features-table.gv-product-table .oc-left-border-0 .gv-table-row .gv-cell{
+  border-left: none;
+}
 .gv-product-banner .gv-left-banner img,
 .gv-product-banner .gv-right-banner img {
 	width: 100%;
@@ -77,5 +85,14 @@ body.one-com_page_onecom-marketplace{
   .gv-activated .marketplace-container .gv-product-header.gv-product-banner {
   /*align-items: end;*/
     max-height: 320px;
+  }
+}
+
+@media (min-width: 768px) {
+  #marketplace-root .gv-activated .marketplace-container .gv-product-header.gv-area-header .gv-content{
+    flex: 0 0 58%;
+  }
+  #marketplace-root .gv-activated .marketplace-container .gv-product-header.gv-area-header {
+    align-items: flex-start;
   }
 }

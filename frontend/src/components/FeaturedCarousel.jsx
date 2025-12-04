@@ -121,7 +121,7 @@ export default function FeaturedCarousel() {
                                         >
                                             {title}
                                         </h5>
-                                        <p
+                                        <p className="gv-text-sm"
                                             style={{
                                                 overflow: 'hidden',
                                                 display: '-webkit-box',
@@ -202,8 +202,8 @@ export default function FeaturedCarousel() {
                                 onClick={() => goToSlide(index)}
                                 className="gv-carousel-dot"
                                 style={{
-                                    width: '12px',
-                                    height: '12px',
+                                    width: '8px',
+                                    height: '8px',
                                     borderRadius: '50%',
                                     border: 'none',
                                     background: currentIndex === index ? '#0066CC' : '#D0D0D0',
