@@ -24,6 +24,9 @@ export const MarketplaceProvider = ({
     // Use ref to track which subscriptions have been checked to avoid recreation of fetchSubscriptionStatus
     const checkedSubscriptionsRef = useRef({});
 
+    // Use ref to track reload timeout so it can be cancelled if user navigates
+    const reloadTimeoutRef = useRef(null);
+
     const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
     const isOnecomBrand = brand === "onecom";
 
@@ -74,6 +77,14 @@ export const MarketplaceProvider = ({
             setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: false }));
         }
     }, [isOnecomBrand]);
+
+    // Function to cancel scheduled reload (called when user clicks "Get Started")
+    const cancelReload = useCallback(() => {
+        if (reloadTimeoutRef.current) {
+            clearTimeout(reloadTimeoutRef.current);
+            reloadTimeoutRef.current = null;
+        }
+    }, []);
 
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin) => {
@@ -129,10 +140,11 @@ export const MarketplaceProvider = ({
                     );
                 }, 1200);
 
-                // Reload after sufficient delay to show overlay, notice, and updated button
-                setTimeout(() => {
+                // Schedule reload after showing the success notice and updated state
+                // User can cancel this by clicking "Get Started" button
+                reloadTimeoutRef.current = setTimeout(() => {
                     window.location.reload();
-                }, 2500);
+                }, 5000);
             }, 100);
             return;
         }
@@ -168,10 +180,11 @@ export const MarketplaceProvider = ({
                     setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
                 } else if (action === 'activate' && result.data.activated) {
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
-                    // Reload the page after successful activation
-                    setTimeout(() => {
+                    // Schedule reload after activation to refresh plugin state
+                    // User can cancel this by clicking "Get Started" button
+                    reloadTimeoutRef.current = setTimeout(() => {
                         window.location.reload();
-                    }, 1500);
+                    }, 3000);
                 }
             } else {
                 // Show error toast for activation and installation errors
@@ -210,6 +223,7 @@ export const MarketplaceProvider = ({
         uiI18n,
         setUiI18n,
         handlePluginAction,
+        cancelReload,
         loadingAction,
         loadingPlugin,
         noticeState,

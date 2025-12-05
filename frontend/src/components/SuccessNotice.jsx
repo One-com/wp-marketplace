@@ -7,6 +7,7 @@ export default function SuccessNotice({ plugin }) {
         noticeState,
         setNoticeState,
         handlePluginAction,
+        cancelReload,
         uiI18n
     } = useMarketplace();
 
@@ -26,6 +27,9 @@ export default function SuccessNotice({ plugin }) {
     };
 
     const handleManage = () => {
+        // Cancel the scheduled reload since user is navigating manually
+        cancelReload();
+
         // Check if plugin has a redirectUrl from API response
         if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
             // Get the admin URL from config (provided by PHP)
