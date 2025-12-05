@@ -10,6 +10,7 @@ const MarketplaceContent = () => {
     const { allPluginsActivated } = useMarketplace();
 
     // Track detail page visibility with state
+    // CI/CD test
     const [isDetailPage, setIsDetailPage] = useState(
         typeof window !== "undefined" && new URLSearchParams(window.location.search).get("plugin")
     );

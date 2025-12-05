@@ -2,6 +2,8 @@
 
 A reusable WordPress plugin module for managing and displaying a marketplace of plugins with a React frontend and PHP backend. Designed to be embedded into other plugins while providing install/activate functionality and a REST API.
 
+<!-- CI/CD test change -->
+
 ---
 
 ## Table of Contents

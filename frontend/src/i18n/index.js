@@ -2,6 +2,7 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
 // Import all translations
+// CI/CD test change
 import en_GB from "./locales/en_GB.json";
 import da_DK from "./locales/da_DK.json";
 import de_DE from "./locales/de_DE.json";
