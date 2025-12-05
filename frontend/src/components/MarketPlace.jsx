@@ -264,17 +264,17 @@ export default function Marketplace() {
                     <p className="gv-text-bold gv-text-lg gv-mb-xs">{info.title || catKey}</p>
                     {info.description && <p className="gv-text-sm">{info.description}</p>}
                     {!info.description && <p className="gv-text-sm">A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
-                    <div className="product-grid gv-grid gv-gap-lg gv-tab-grid-cols-1 gv-desk-grid-cols-3 gv-mt-md gv-max-mob-mb-lg gv-max-mob-pb-lg">
+                    <div className="product-grid gv-grid gv-gap-lg  gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
                         {list.map((plugin) => {
                             const freeLabel = uiI18n?.labels?.free || 'Free';
                             const price = formatPluginPrice(plugin, freeLabel);
                             return (
                                 <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
-                                    <div className="gv-span-2">
+                                    <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                                         <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                             alt={plugin.name} />
                                     </div>
-                                    <div className="gv-span-8">
+                                    <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
                                         <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
                                         <p className="oc-card-content gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">

@@ -7,7 +7,7 @@ const ProductBanner = () => {
     const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.png`;
 
     return (
-        <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg">
+        <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg gv-max-mob-pt-md">
             <div className="gv-left-banner">
                 <div className="gv-image">
                     <picture>
@@ -17,7 +17,7 @@ const ProductBanner = () => {
                 </div>
             </div>
 
-            <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0">
+            <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0 gv-desk-lg-text-center gv-tab-text-left">
                 <h2 className="gv-banner-title">
                   {uiI18n?.headings?.pageTitle}
                 </h2>

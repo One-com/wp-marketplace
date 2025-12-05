@@ -67,8 +67,8 @@ export default function FeaturedCarousel() {
 
     return (
         <section className="gv-featured-carousel gv-w-full">
-            <div className="gv-carousel-header gv-mb-lg">
-                <h5 className="gv-title gv-heading-sm">Recommended for you</h5>
+            <div className="gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0">
+                <h5 className="gv-title gv-heading-sm gv-recommended-heading">Recommended for you</h5>
             </div>
 
             <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -114,7 +114,7 @@ export default function FeaturedCarousel() {
                                   background:"#D9EBF7"
                                 }}>
                                     <div
-                                        className="gv-content gv-stack-space-md gv-text-sm gv-flex gv-flex-col gv-items-start"
+                                        className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start"
                                     >
                                       <div className="gv-badge gv-badge-info">{plugin?.name}</div>
                                         <h5
@@ -134,10 +134,10 @@ export default function FeaturedCarousel() {
                                             {description}
                                         </p>
 
-                                        <div className="gv-slide-footer gv-mt-lg gv-flex gv-align-center gv-flex-wrap gv-items-center">
+                                        <div className="gv-slide-footer gv-flex gv-align-center gv-flex-wrap gv-items-center">
                                             <button
                                                 onClick={() => handleReadMore(plugin)}
-                                                className="gv-button gv-button-secondary"
+                                                className="gv-button gv-button-secondary gv-w-auto"
                                             >
                                               {uiI18n?.featuredCta}
                                             </button>
@@ -148,7 +148,7 @@ export default function FeaturedCarousel() {
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="gv-image">
+                                    <div className="gv-image gv-max-mob-pl-md">
                                         <picture>
                                             <source
                                                 media="(min-width: 600px)"
