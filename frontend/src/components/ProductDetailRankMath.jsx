@@ -254,7 +254,7 @@ export default function ProductDetailRankMath({
                             <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                                 {coreFeatures.map((cf, i) => (
                                     <div className="gv-item gv-stack-space-sm" key={i}>
-                                        <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
+                                        <h3 className="gv-title gv-text-bold gv-text-lg">{cf.name}</h3>
                                         <p className="gv-text-sm">{cf.desc}</p>
                                     </div>
                                 ))}
