@@ -191,10 +191,6 @@ export default function Marketplace() {
             return true;
         }
 
-        // Debug logging
-        console.log('[shouldShowPlugin] Checking plugin:', plugin.slug, 'Rules:', plugin.rules);
-        console.log('[shouldShowPlugin] Active plugins:', activePlugins);
-
         // Check mustHavePlugins rule
         if (plugin.rules.mustHavePlugins && Array.isArray(plugin.rules.mustHavePlugins)) {
             // If the array is empty, no requirements exist, so show the plugin
@@ -206,8 +202,6 @@ export default function Marketplace() {
             const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
                 activePlugins.includes(requiredSlug)
             );
-
-            console.log('[shouldShowPlugin] mustHavePlugins check:', plugin.rules.mustHavePlugins, 'Result:', hasRequiredPlugin);
 
             // If mustHavePlugins rule exists but no required plugin is active, hide the plugin
             if (!hasRequiredPlugin) {

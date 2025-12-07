@@ -228,11 +228,9 @@ class MarketplaceController {
 
 		// Get all active plugin slugs to evaluate rules on frontend
 		$active_plugins = $this->get_active_plugin_slugs();
-		error_log( '[MarketplaceController] Active plugins being passed to frontend: ' . print_r( $active_plugins, true ) );
 
 		// Get active theme author to evaluate theme-based rules on frontend
 		$active_theme_author = $this->get_active_theme_author();
-		error_log( '[MarketplaceController] Active theme author: ' . $active_theme_author );
 
 		// Localize JS with config
 		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', [
@@ -399,13 +397,10 @@ class MarketplaceController {
 	 */
 	private function get_active_plugin_slugs(): array {
 		if ( ! function_exists( 'get_option' ) ) {
-			error_log( '[MarketplaceController] get_option function does not exist' );
 			return [];
 		}
 
 		$active_plugins = get_option( 'active_plugins', [] );
-		error_log( '[MarketplaceController] Active plugins from get_option: ' . print_r( $active_plugins, true ) );
-
 		$slugs = [];
 
 		foreach ( $active_plugins as $plugin_path ) {
@@ -421,9 +416,7 @@ class MarketplaceController {
 		}
 
 		// Remove duplicates and return
-		$result = array_values( array_unique( $slugs ) );
-		error_log( '[MarketplaceController] Extracted plugin slugs: ' . print_r( $result, true ) );
-		return $result;
+		return array_values( array_unique( $slugs ) );
 	}
 
 	/**
