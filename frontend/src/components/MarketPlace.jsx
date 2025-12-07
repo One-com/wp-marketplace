@@ -28,6 +28,16 @@ export default function Marketplace() {
         setAllPluginsActivated
     } = useMarketplace();
 
+    // Get active plugin slugs from WordPress config
+    const activePlugins = typeof window !== "undefined" && window.marketplaceConfig?.activePlugins
+        ? window.marketplaceConfig.activePlugins
+        : [];
+
+    // Get active theme author from WordPress config
+    const activeThemeAuthor = typeof window !== "undefined" && window.marketplaceConfig?.activeThemeAuthor
+        ? window.marketplaceConfig.activeThemeAuthor
+        : "";
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
@@ -174,6 +184,51 @@ export default function Marketplace() {
         }
     }, [selectedPlugin]);
 
+    // Helper function to check if a plugin should be visible based on its rules
+    const shouldShowPlugin = (plugin) => {
+        // If plugin has no rules, show it by default
+        if (!plugin.rules) {
+            return true;
+        }
+
+        // Debug logging
+        console.log('[shouldShowPlugin] Checking plugin:', plugin.slug, 'Rules:', plugin.rules);
+        console.log('[shouldShowPlugin] Active plugins:', activePlugins);
+
+        // Check mustHavePlugins rule
+        if (plugin.rules.mustHavePlugins && Array.isArray(plugin.rules.mustHavePlugins)) {
+            // If the array is empty, no requirements exist, so show the plugin
+            if (plugin.rules.mustHavePlugins.length === 0) {
+                return true;
+            }
+
+            // Plugin should be visible if ANY of the required plugins is active
+            const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
+                activePlugins.includes(requiredSlug)
+            );
+
+            console.log('[shouldShowPlugin] mustHavePlugins check:', plugin.rules.mustHavePlugins, 'Result:', hasRequiredPlugin);
+
+            // If mustHavePlugins rule exists but no required plugin is active, hide the plugin
+            if (!hasRequiredPlugin) {
+                return false;
+            }
+        }
+
+        // Check mustHaveThemesByAuthor rule
+        if (plugin.rules.mustHaveThemesByAuthor && typeof plugin.rules.mustHaveThemesByAuthor === 'string') {
+            // Plugin should be visible only if the active theme author matches the required author
+            const requiredAuthor = plugin.rules.mustHaveThemesByAuthor;
+            if (activeThemeAuthor !== requiredAuthor) {
+                return false;
+            }
+        }
+
+        // Add support for other rule types here in the future
+        // For now, if all rules pass (or don't exist), show the plugin
+        return true;
+    };
+
     // Helper function to determine if we should use ProductDetailRankMath
     const shouldUseRankMathDetail = (plugin) => {
         if (!plugin) return false;
@@ -210,10 +265,10 @@ export default function Marketplace() {
     const categoryMap = new Map();
 
     // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
-    // Also filter out activated plugins and seo-by-rank-math from marketplace listing
+    // Also filter out activated plugins, seo-by-rank-math, and plugins that don't pass rules check
     const bySlug = new Map();
     plugins.forEach((p) => {
-        if (!bySlug.has(p.slug) && p.activated !== true && p.slug !== "seo-by-rank-math") {
+        if (!bySlug.has(p.slug) && p.activated !== true && p.slug !== "seo-by-rank-math" && shouldShowPlugin(p)) {
             bySlug.set(p.slug, p);
         }
     });

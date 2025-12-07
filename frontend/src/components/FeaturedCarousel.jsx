@@ -7,6 +7,16 @@ export default function FeaturedCarousel() {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slidesPerView, setSlidesPerView] = useState(2);
 
+    // Get active plugin slugs from WordPress config
+    const activePlugins = typeof window !== "undefined" && window.marketplaceConfig?.activePlugins
+        ? window.marketplaceConfig.activePlugins
+        : [];
+
+    // Get active theme author from WordPress config
+    const activeThemeAuthor = typeof window !== "undefined" && window.marketplaceConfig?.activeThemeAuthor
+        ? window.marketplaceConfig.activeThemeAuthor
+        : "";
+
     useEffect(() => {
         const updateSlidesPerView = () => {
             if (window.innerWidth > 1024) {
@@ -23,8 +33,47 @@ export default function FeaturedCarousel() {
         return () => window.removeEventListener('resize', updateSlidesPerView);
     }, []);
 
-    // Filter featured plugins that are not active and reverse the order
-    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true).reverse();
+    // Helper function to check if a plugin should be visible based on its rules
+    const shouldShowPlugin = (plugin) => {
+        // If plugin has no rules, show it by default
+        if (!plugin.rules) {
+            return true;
+        }
+
+        // Check mustHavePlugins rule
+        if (plugin.rules.mustHavePlugins && Array.isArray(plugin.rules.mustHavePlugins)) {
+            // If the array is empty, no requirements exist, so show the plugin
+            if (plugin.rules.mustHavePlugins.length === 0) {
+                return true;
+            }
+
+            // Plugin should be visible if ANY of the required plugins is active
+            const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
+                activePlugins.includes(requiredSlug)
+            );
+
+            // If mustHavePlugins rule exists but no required plugin is active, hide the plugin
+            if (!hasRequiredPlugin) {
+                return false;
+            }
+        }
+
+        // Check mustHaveThemesByAuthor rule
+        if (plugin.rules.mustHaveThemesByAuthor && typeof plugin.rules.mustHaveThemesByAuthor === 'string') {
+            // Plugin should be visible only if the active theme author matches the required author
+            const requiredAuthor = plugin.rules.mustHaveThemesByAuthor;
+            if (activeThemeAuthor !== requiredAuthor) {
+                return false;
+            }
+        }
+
+        // Add support for other rule types here in the future
+        // For now, if all rules pass (or don't exist), show the plugin
+        return true;
+    };
+
+    // Filter featured plugins that are not active, pass rules check, and reverse the order
+    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true && shouldShowPlugin(plugin)).reverse();
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";

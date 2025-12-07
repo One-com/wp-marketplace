@@ -17,7 +17,7 @@ const ProductBanner = () => {
                 </div>
             </div>
 
-            <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0 gv-desk-lg-text-center gv-tab-text-left">
+            <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0 gv-desk-lg-text-center gv-tab-text-left gv-flex gv-flex-col gv-align-center gv-justify-center gv-pt-0">
                 <h2 className="gv-banner-title">
                   {uiI18n?.headings?.pageTitle}
                 </h2>

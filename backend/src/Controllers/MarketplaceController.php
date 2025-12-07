@@ -226,6 +226,14 @@ class MarketplaceController {
 			);
 		}
 
+		// Get all active plugin slugs to evaluate rules on frontend
+		$active_plugins = $this->get_active_plugin_slugs();
+		error_log( '[MarketplaceController] Active plugins being passed to frontend: ' . print_r( $active_plugins, true ) );
+
+		// Get active theme author to evaluate theme-based rules on frontend
+		$active_theme_author = $this->get_active_theme_author();
+		error_log( '[MarketplaceController] Active theme author: ' . $active_theme_author );
+
 		// Localize JS with config
 		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', [
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
@@ -233,13 +241,15 @@ class MarketplaceController {
 			'locale' => get_locale(),
 			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
- 		'wpConfig' => [
- 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
- 			'adminUrl' => admin_url(),
- 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
- 		],
+		'wpConfig' => [
+			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+			'adminUrl' => admin_url(),
+			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+		],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
 			'assetsBaseUrl' => $base_url,
+			'activePlugins' => $active_plugins,
+			'activeThemeAuthor' => $active_theme_author,
 			'labels'=>array(
 				'install' => __('Install', 'onecom-wp'),
 				'installing' => __('Installing', 'onecom-wp'),
@@ -362,6 +372,58 @@ class MarketplaceController {
  		'installed' => true,
  		'activated' => false,
  	]);
+	}
+
+	/**
+	 * Get the author of the currently active theme.
+	 *
+	 * @return string Theme author or empty string if not available.
+	 */
+	private function get_active_theme_author(): string {
+		if ( ! function_exists( 'wp_get_theme' ) ) {
+			return '';
+		}
+
+		$theme = wp_get_theme();
+		$author = $theme->get( 'Author' );
+
+		return is_string( $author ) ? $author : '';
+	}
+
+	/**
+	 * Get all active plugin slugs on the site.
+	 * Extracts slugs from active plugin paths (e.g., 'plugin-dir/plugin-file.php' -> 'plugin-dir').
+	 * For single-file plugins, the slug is the filename without .php extension.
+	 *
+	 * @return array Array of active plugin slugs.
+	 */
+	private function get_active_plugin_slugs(): array {
+		if ( ! function_exists( 'get_option' ) ) {
+			error_log( '[MarketplaceController] get_option function does not exist' );
+			return [];
+		}
+
+		$active_plugins = get_option( 'active_plugins', [] );
+		error_log( '[MarketplaceController] Active plugins from get_option: ' . print_r( $active_plugins, true ) );
+
+		$slugs = [];
+
+		foreach ( $active_plugins as $plugin_path ) {
+			// Plugin path is like 'plugin-dir/plugin-file.php' or 'single-file-plugin.php'
+			if ( strpos( $plugin_path, '/' ) !== false ) {
+				// Multi-file plugin: extract directory name as slug
+				$parts = explode( '/', $plugin_path );
+				$slugs[] = $parts[0];
+			} else {
+				// Single-file plugin: use filename without .php as slug
+				$slugs[] = str_replace( '.php', '', $plugin_path );
+			}
+		}
+
+		// Remove duplicates and return
+		$result = array_values( array_unique( $slugs ) );
+		error_log( '[MarketplaceController] Extracted plugin slugs: ' . print_r( $result, true ) );
+		return $result;
 	}
 
 	/**
