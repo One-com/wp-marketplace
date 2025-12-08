@@ -123,9 +123,10 @@ body.one-com_page_onecom-marketplace{
     flex-direction:column;
     align-items:unset;
   }
-{
-  /* flex: 0 0 44%; */
-}
+  #marketplace-root .gv-activated .gv-layout-product:not(.gv-product-single) .gv-product-header .gv-image{
+    overflow: hidden;
+    min-height: auto;
+  }
 }
 
 @media (min-width: 1025px) {
