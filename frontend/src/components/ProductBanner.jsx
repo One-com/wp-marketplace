@@ -2,12 +2,12 @@ import React from 'react';
 import { useMarketplace } from '../context/MarketplaceContext';
 
 const ProductBanner = () => {
-    const { assetsBaseUrl } = useMarketplace();
-    const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.svg`;
-    const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.svg`;
+    const { assetsBaseUrl, uiI18n } = useMarketplace();
+    const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.png`;
+    const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.png`;
 
     return (
-        <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg">
+        <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg gv-max-mob-pt-md">
             <div className="gv-left-banner">
                 <div className="gv-image">
                     <picture>
@@ -17,16 +17,16 @@ const ProductBanner = () => {
                 </div>
             </div>
 
-            <div className="gv-content gv-banner-content">
+            <div className="gv-content gv-banner-content gv-max-mob-pt-0 gv-max-mob-pb-0 gv-desk-lg-text-center gv-tab-text-left gv-flex gv-flex-col gv-align-center gv-justify-center gv-pt-0">
                 <h2 className="gv-banner-title">
-                    Build your online success: add plugins
+                  {uiI18n?.headings?.pageTitle}
                 </h2>
                 <p className="gv-banner-text gv-text-sm gv-mt-sm">
-                    {'{'}Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.{'}'}
+                  {uiI18n?.text?.pageContent}
                 </p>
             </div>
 
-            <div className="gv-right-banner">
+            <div className="gv-right-banner gv-max-mob-pl-md">
                 <div className="gv-image">
                     <picture>
                         <source media="(min-width: 600px)" srcSet={rightBannerUrl} />

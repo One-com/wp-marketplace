@@ -13,7 +13,9 @@ class MarketplaceModel {
 	}
 
 	public function fetch_plugins( array $payload = [] ): array {
-		$args = [];
+		$args = [
+			'timeout' => 30,
+		];
 
 		if ( ! empty( $payload ) ) {
 			$args['body'] = $payload;

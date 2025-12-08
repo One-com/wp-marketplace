@@ -4,6 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { formatPluginPrice } from "../utils/priceFormatter";
 
 export default function ProductDetailRankMath({
     plugin,
@@ -14,13 +15,20 @@ export default function ProductDetailRankMath({
         assetsBaseUrl,
         useWPHandlers,
         pluginInAction,
-        plugins
+        plugins,
+        uiI18n,
+        subscriptionStatus
     } = useMarketplace();
     if (!plugin) return null;
 
+    // Scroll to top when component mounts or plugin changes
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [plugin]);
+
     // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
     const freePlugin = plugins.find(p => p.slug === "seo-by-rank-math") || null;
-    const proPlugin = plugins.find(p => p.slug === "rank-math-pro") || null;
+    const proPlugin = plugins.find(p => p.slug === "seo-by-rank-math-pro") || null;
 
     // Use the clicked plugin for header/main content, but always use freePlugin for first column
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -31,51 +39,83 @@ export default function ProductDetailRankMath({
 
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
     const title = freePlugin?.name || plugin.name || 'Product';
-    const description = freePlugin?.description || freePlugin?.shortDescription || plugin.description || plugin.shortDescription || 'No description available.';
-    
+    const description = freePlugin?.i18n?.description || freePlugin?.i18n?.subtitle;
+    const subtitle = freePlugin?.i18n?.subtitle;
+
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
-    const proDescription = proPlugin?.description || proPlugin?.shortDescription || 'Advanced SEO features for professionals';
-    const proPrice = (proPlugin?.priceCurrency && proPlugin?.priceAmount) 
-        ? `${proPlugin.priceCurrency} ${proPlugin.priceAmount}`
-        : '€ 0,-';
+    const proDescription = proPlugin?.i18n?.subtitle || proPlugin?.i18n?.description;
+    const proPrice = proPlugin ? formatPluginPrice(proPlugin, uiI18n?.labels?.free || 'Free') : '';
 
-    // Derive features from description or plugin data
-    const rawFeatureSource = (freePlugin?.features && freePlugin.features.length)
-        ? freePlugin.features
-        : description.split(/[.?!]/).map(s => s.trim()).filter(Boolean);
+    // Helper function to extract numbered properties dynamically from i18n object
+    const extractNumberedProps = (obj, baseName) => {
+        if (!obj || typeof obj !== 'object') return [];
+        const results = [];
+        let i = 1;
+        while (obj[`${baseName}${i}`]) {
+            const value = obj[`${baseName}${i}`];
+            if (value && value.trim() !== '') {
+                results.push(value);
+            }
+            i++;
+        }
+        return results;
+    };
 
-    const keyFeatures = rawFeatureSource.slice(0, 3).map(f => f.replace(/\.$/, ''));
-    while (keyFeatures.length < 3) keyFeatures.push('Sample feature');
+    // Extract key benefits from i18n (use freePlugin's i18n if available, otherwise plugin's i18n)
+    const i18nSource = freePlugin?.i18n || plugin.i18n;
+    const benefitsFromI18n = extractNumberedProps(i18nSource, 'keyBenefitContent');
 
-    const benefits = [
-        keyFeatures[0],
-        keyFeatures[1] || 'Improves performance',
-        keyFeatures[2] || 'Easy setup'
-    ];
+    // Extract key features separately for both free and pro plugins
+    const freeKeyFeatures = extractNumberedProps(freePlugin?.i18n, 'keyFeatureContent');
+    const proKeyFeatures = extractNumberedProps(proPlugin?.i18n, 'keyFeatureContent');
 
-    const coreFeatures = [
-        { name: keyFeatures[0], desc: description.substring(0, 150) || 'Feature description' },
-        { name: keyFeatures[1], desc: 'Enhances your WordPress experience with reliable performance' },
-        { name: keyFeatures[2], desc: 'Easy to set up and configure with minimal technical knowledge' }
-    ];
+    // Determine the maximum number of features to display all from both plugins
+    const maxFeatures = Math.max(freeKeyFeatures.length, proKeyFeatures.length);
+
+    // Extract core features (title/content pairs) from i18n
+    const coreFeaturesFromI18n = [];
+    if (i18nSource && typeof i18nSource === 'object') {
+        let i = 1;
+        while (i18nSource[`coreFeatureTitle${i}`] || i18nSource[`coreFeatureContent${i}`]) {
+            const title = i18nSource[`coreFeatureTitle${i}`];
+            const content = i18nSource[`coreFeatureContent${i}`];
+            if (title && title.trim() !== '' && content && content.trim() !== '') {
+                coreFeaturesFromI18n.push({ name: title, desc: content });
+            }
+            i++;
+        }
+    }
+
+    // Use only i18n data - no fallbacks
+    const benefits = benefitsFromI18n;
+    const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
         <div className="gv-surface-dim">
-            <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid">
+            <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid gv-p-0">
                 <nav className="gv-breadcrumbs gv-area-nav">
                     <a
                         href="#"
                         onClick={e => {
                             e.preventDefault();
+                            // First check if history is available and has navigable records
                             if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-                                window.history.back();
+                                try {
+                                    window.history.back();
+                                } catch (error) {
+                                    // If history.back() fails, fallback to onClose
+                                    if (onClose) {
+                                        onClose();
+                                    }
+                                }
                             } else if (onClose) {
+                                // Fallback to onClose if history is not available or empty
                                 onClose();
                             }
                         }}
                     >
-                        <gv-icon aria-hidden="true" src={`${iconBase}chevron_left.svg`}></gv-icon>
+                        <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
                         <span>Back</span>
                     </a>
                 </nav>
@@ -85,8 +125,8 @@ export default function ProductDetailRankMath({
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
-                        <h1 className="gv-title gv-header-lg">{title}</h1>
-                        <p>{description}</p>
+                        <h3 className="gv-title gv-header-lg">Rank Math</h3>
+                        <p className="gv-text-sm">{description}</p>
                     </div>
                     <div className="gv-image">
                         <picture>
@@ -103,7 +143,7 @@ export default function ProductDetailRankMath({
                     </div>
                 </header>
 
-                <section className="gv-product-table gv-features-table gv-products-2 gv-area-table">
+                <section className="gv-product-table gv-features-table gv-products-2 gv-recommended-2 gv-area-table">
                     <div className="gv-dots-scroll-area">
                         <div className="gv-table-container">
                             <div className="gv-slider-nav">
@@ -118,15 +158,15 @@ export default function ProductDetailRankMath({
                                 <div className="gv-table" role="table">
                                     <div className="gv-table-header" role="rowgroup">
                                         <div className="gv-table-row" role="row">
-                                            <div className="gv-product" role="columnheader">
+                                            <div className="gv-product gv-p-0" role="columnheader">
                                                 <div className="gv-content">
                                                     <h3 className="gv-title">{title}</h3>
-                                                    <p>{description.substring(0, 120)}{description.length > 120 ? '…' : ''}</p>
+                                                    <p>{subtitle}</p>
                                                 </div>
                                                 <div className="gv-bottom">
                                                     <div className="gv-price-container">
                                                         <div className="gv-price">
-                                                            <span className="gv-price-text">Free</span>
+                                                            <span className="gv-price-text">{uiI18n?.labels?.free || 'Free'}</span>
                                                         </div>
                                                     </div>
                                                     {useWPHandlers && freePlugin ? (
@@ -135,54 +175,64 @@ export default function ProductDetailRankMath({
                                                         />
                                                     ) : (
                                                         freePlugin?.download && (
-                                                            <button type="button" className="gv-button gv-button-secondary">{freePlugin?.textKeys?.installButton || 'Install'}</button>
+                                                            <button type="button" className="gv-button gv-button-secondary">{uiI18n?.installButton || freePlugin?.i18n?.installButton || 'Install'}</button>
                                                         )
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="gv-product" role="columnheader">
-                                                <div className="gv-content">
-                                                    <h3 className="gv-title">{proTitle}</h3>
-                                                    <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
+                                          <div className="gv-product gv-p-0" role="columnheader">
+                                            <div className="gv-recommended-label">Recommended</div>
+                                            <div className="gv-content">
+                                              <h3 className="gv-title">{proTitle}</h3>
+                                              <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
+                                            </div>
+                                            <div className="gv-bottom">
+                                              {!subscriptionStatus["seo-by-rank-math-pro"] && (
+                                              <div className="gv-price-container">
+                                                <div className="gv-price">
+                                                  <span className="gv-price-text">{proPrice}{proPrice && `,-`}</span>
+                                                  {proPrice && <span className="gv-period">/mo</span>}
                                                 </div>
-                                                <div className="gv-bottom">
-                                                    <div className="gv-price-container">
-                                                        <div className="gv-price">
-                                                            <span className="gv-price-text">{proPrice}</span>
-                                                            <span className="gv-period">/mo</span>
-                                                        </div>
+                                                {proPrice &&
+                                                <div className="gv-price-info">
+                                                  <div className="gv-info">1 year [{proPrice}]/mo.</div>
+                                                </div>}
+                                              </div>
+                                              )}
+                                              {useWPHandlers && proPlugin ? (
+                                                <PluginActions
+                                                  plugin={proPlugin}
+                                                />
+                                              ) : (
+                                                <button type="button"
+                                                        className="gv-button gv-button-primary">Select</button>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                    </div>
+                                    {maxFeatures > 0 && (
+                                        <div className="gv-section" role="rowgroup">
+                                            <div className="gv-section-header gv-table-row" role="row">
+                                                <div className="gv-cell" role="cell">
+                                                    <h4 className="gv-title">{uiI18n?.keyFeatureHeading || freePlugin?.i18n?.keyFeatureHeading || 'Key features'}</h4>
+                                                </div>
+                                                <div className="gv-cell" role="cell">
+                                                    <h4 className="gv-title">{uiI18n?.keyFeatureHeading || proPlugin?.i18n?.keyFeatureHeading || 'Key features'}</h4>
+                                                </div>
+                                            </div>
+                                            {Array.from({ length: maxFeatures }).map((_, i) => (
+                                                <div className="gv-table-row" role="row" key={i}>
+                                                    <div className="gv-cell" role="cell">
+                                                        <span className="gv-cell-text">{freeKeyFeatures[i] || ''}</span>
                                                     </div>
-                                                    {useWPHandlers && proPlugin ? (
-                                                        <PluginActions
-                                                            plugin={proPlugin}
-                                                        />
-                                                    ) : (
-                                                        <button type="button" className="gv-button gv-button-primary">Select</button>
-                                                    )}
+                                                    <div className="gv-cell" role="cell">
+                                                        <span className="gv-cell-text">{proKeyFeatures[i] || ''}</span>
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            ))}
                                         </div>
-                                    </div>
-                                    <div className="gv-section" role="rowgroup">
-                                        <div className="gv-section-header gv-table-row" role="row">
-                                            <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{freePlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
-                                            </div>
-                                            <div className="gv-cell" role="cell">
-                                                <h4 className="gv-title">{proPlugin?.textKeys?.featureOverviewHeading || 'Key features'}</h4>
-                                            </div>
-                                        </div>
-                                        {keyFeatures.map((f, i) => (
-                                            <div className="gv-table-row" role="row" key={i}>
-                                                <div className="gv-cell" role="cell">
-                                                    <span className="gv-cell-text">{f}</span>
-                                                </div>
-                                                <div className="gv-cell" role="cell">
-                                                    <span className="gv-cell-text">{f}</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -196,31 +246,31 @@ export default function ProductDetailRankMath({
                 </section>
 
                 <div className="gv-area-details gv-grid gv-gap-fluid">
-                    <section className="gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.benefitHeading || 'Key benefits'}</h2>
-                        <ul className="gv-list-items gv-list-check gv-mode-condensed">
-                            {benefits.map((b, i) => <li key={i}>{b}</li>)}
-                        </ul>
-                    </section>
-                    <div className="gv-text-max gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{title}</h2>
-                        <p>{description}</p>
-                    </div>
+                    {benefits.length > 0 && (
+                        <section className="gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
+                            <ul className="gv-list-items gv-list-check gv-mode-condensed">
+                                {benefits.map((b, i) => <li key={i}>{b}</li>)}
+                            </ul>
+                        </section>
+                    )}
                 </div>
 
-                <div className="gv-area-content gv-grid gv-gap-fluid">
-                    <section className="gv-text-sm gv-stack-space-md">
-                        <h2 className="gv-title gv-text-bold gv-text-lg">{plugin.textKeys?.featureOverviewHeading || 'Core features overview'}</h2>
-                        <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
-                            {coreFeatures.map((cf, i) => (
-                                <div className="gv-item gv-stack-space-sm" key={i}>
-                                    <h3 className="gv-title gv-text-bold gv-text-sm">{cf.name}</h3>
-                                    <p>{cf.desc}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                </div>
+                {coreFeatures.length > 0 && (
+                    <div className="gv-area-content gv-grid gv-gap-fluid">
+                        <section className="gv-text-sm gv-stack-space-md">
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
+                            <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                                {coreFeatures.map((cf, i) => (
+                                    <div className="gv-item gv-stack-space-sm" key={i}>
+                                        <h3 className="gv-title gv-text-bold gv-text-lg">{cf.name}</h3>
+                                        <p className="gv-text-sm">{cf.desc}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+                )}
             </article>
         </div>
     );

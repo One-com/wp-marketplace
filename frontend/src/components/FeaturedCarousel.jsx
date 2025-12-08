@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { formatPluginPrice } from "../utils/priceFormatter";
 
 export default function FeaturedCarousel() {
-    const { plugins, assetsBaseUrl } = useMarketplace();
+    const { plugins, assetsBaseUrl,uiI18n } = useMarketplace();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slidesPerView, setSlidesPerView] = useState(2);
+
+    // Get active plugin slugs from WordPress config
+    const activePlugins = typeof window !== "undefined" && window.marketplaceConfig?.activePlugins
+        ? window.marketplaceConfig.activePlugins
+        : [];
+
+    // Get active theme author from WordPress config
+    const activeThemeAuthor = typeof window !== "undefined" && window.marketplaceConfig?.activeThemeAuthor
+        ? window.marketplaceConfig.activeThemeAuthor
+        : "";
 
     useEffect(() => {
         const updateSlidesPerView = () => {
@@ -22,8 +33,47 @@ export default function FeaturedCarousel() {
         return () => window.removeEventListener('resize', updateSlidesPerView);
     }, []);
 
-    // Filter featured plugins that are not active
-    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true);
+    // Helper function to check if a plugin should be visible based on its rules
+    const shouldShowPlugin = (plugin) => {
+        // If plugin has no rules, show it by default
+        if (!plugin.rules) {
+            return true;
+        }
+
+        // Check mustHavePlugins rule
+        if (plugin.rules.mustHavePlugins && Array.isArray(plugin.rules.mustHavePlugins)) {
+            // If the array is empty, no requirements exist, so show the plugin
+            if (plugin.rules.mustHavePlugins.length === 0) {
+                return true;
+            }
+
+            // Plugin should be visible if ANY of the required plugins is active
+            const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
+                activePlugins.includes(requiredSlug)
+            );
+
+            // If mustHavePlugins rule exists but no required plugin is active, hide the plugin
+            if (!hasRequiredPlugin) {
+                return false;
+            }
+        }
+
+        // Check mustHaveThemesByAuthor rule
+        if (plugin.rules.mustHaveThemesByAuthor && typeof plugin.rules.mustHaveThemesByAuthor === 'string') {
+            // Plugin should be visible only if the active theme author matches the required author
+            const requiredAuthor = plugin.rules.mustHaveThemesByAuthor;
+            if (activeThemeAuthor !== requiredAuthor) {
+                return false;
+            }
+        }
+
+        // Add support for other rule types here in the future
+        // For now, if all rules pass (or don't exist), show the plugin
+        return true;
+    };
+
+    // Filter featured plugins that are not active, pass rules check, and reverse the order
+    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true && shouldShowPlugin(plugin)).reverse();
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -66,8 +116,8 @@ export default function FeaturedCarousel() {
 
     return (
         <section className="gv-featured-carousel gv-w-full">
-            <div className="gv-carousel-header gv-mb-md">
-                <h5 className="gv-title gv-heading-sm">Recommended for you</h5>
+            <div className="gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0">
+                <h5 className="gv-title gv-heading-sm gv-recommended-heading">Recommended for you</h5>
             </div>
 
             <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
@@ -81,10 +131,10 @@ export default function FeaturedCarousel() {
                     }}
                 >
                     {featuredPlugins.map((plugin, index) => {
-                        const title = plugin.name || 'Product';
-                        const description = plugin.description || plugin.shortDescription || 'No description available.';
-                        const isFree = plugin.licenseType === "free";
-                        const price = isFree ? 'Free' : (plugin.priceCurrency && plugin.priceAmount) ? `${plugin.priceCurrency} ${plugin.priceAmount}` : '€ 0,-';
+                        const title = plugin?.i18n?.featuredTitle;
+                        const description = plugin?.i18n?.featuredContent;
+                        const freeLabel = uiI18n?.labels?.free || 'Free';
+                        const price = formatPluginPrice(plugin, freeLabel);
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
                         // Extract category name from plugin categories array
@@ -96,32 +146,32 @@ export default function FeaturedCarousel() {
                         return (
                             <div
                                 key={`slide-${index}`}
-                                className="gv-carousel-slide"
+                                className="gv-carousel-slide gv-border-alt"
                                 style={{
                                     minWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
                                     maxWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
                                     flex: '0 0 auto',
-                                    backgroundColor: '#E8F4F8',
+                                    backgroundColor: '#D9EBF7',
                                     borderRadius: '6px',
                                     display: 'flex',
                                     justifyContent: 'space-between',
-                                    maxHeight: '380px',
+                                    maxHeight: '456px',
                                 }}
                             >
-                                <header className="gv-product-header gv-area-header">
+                                <header className="gv-product-header gv-area-header"  style={{
+                                  border: 'none',
+                                  background:"#D9EBF7"
+                                }}>
                                     <div
-                                        className="gv-content gv-stack-space-md gv-text-sm gv-flex gv-flex-col gv-items-start"
-                                        style={{
-                                            overflow: 'hidden'
-                                        }}
+                                        className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start"
                                     >
-                                      <div className="gv-badge gv-badge-info">{title}</div>
+                                      <div className="gv-badge gv-badge-info">{plugin?.name}</div>
                                         <h5
                                             className="gv-title gv-header-sm"
                                         >
                                             {title}
                                         </h5>
-                                        <p
+                                        <p className="gv-text-sm"
                                             style={{
                                                 overflow: 'hidden',
                                                 display: '-webkit-box',
@@ -133,20 +183,21 @@ export default function FeaturedCarousel() {
                                             {description}
                                         </p>
 
-                                        <div className="gv-slide-footer gv-mt-lg gv-flex gv-align-center">
+                                        <div className="gv-slide-footer gv-flex gv-align-center gv-flex-wrap gv-items-center">
                                             <button
                                                 onClick={() => handleReadMore(plugin)}
-                                                className="gv-button gv-button-secondary"
+                                                className="gv-button gv-button-secondary gv-w-auto"
                                             >
-                                                Read more
+                                              {uiI18n?.featuredCta}
                                             </button>
 
                                             <span className="gv-price gv-text-bold gv-text-md gv-ml-md">
                                                 {price}
+                                                {plugin.licenseType !== "free" && price && price !== freeLabel && <span className="gv-period">/mo</span>}
                                             </span>
                                         </div>
                                     </div>
-                                    <div className="gv-image">
+                                    <div className="gv-image gv-max-mob-pl-md">
                                         <picture>
                                             <source
                                                 media="(min-width: 600px)"
@@ -188,21 +239,15 @@ export default function FeaturedCarousel() {
                     </button>
 
                     <div
-                        className="gv-carousel-dots"
-                        style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            gap: '0.5rem'
-                        }}
-                    >
+                        className="gv-carousel-dots gv-flex-wrap gv-items-center gv-flex gv-justify-center  gv-gap-sm">
                         {Array.from({ length: maxIndex + 1 }).map((_, index) => (
                             <button
                                 key={index}
                                 onClick={() => goToSlide(index)}
                                 className="gv-carousel-dot"
                                 style={{
-                                    width: '12px',
-                                    height: '12px',
+                                    width: '8px',
+                                    height: '8px',
                                     borderRadius: '50%',
                                     border: 'none',
                                     background: currentIndex === index ? '#0066CC' : '#D0D0D0',

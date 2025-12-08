@@ -6,7 +6,9 @@ export default function SuccessNotice({ plugin }) {
         assetsBaseUrl,
         noticeState,
         setNoticeState,
-        handlePluginAction
+        handlePluginAction,
+        cancelReload,
+        uiI18n
     } = useMarketplace();
 
     if (!noticeState || !noticeState.visible || noticeState.pluginSlug !== plugin?.slug) {
@@ -25,43 +27,60 @@ export default function SuccessNotice({ plugin }) {
     };
 
     const handleManage = () => {
-        // Redirect to plugin's settings page
-        // Common plugin admin pages
-        const pluginAdminPages = {
-            'wp-rocket': 'wp-rocket',
-            'rank-math-pro': 'rank-math',
-            'seo-by-rank-math': 'rank-math',
-            'akismet': 'akismet-key-config',
-            'jetpack': 'jetpack',
-            'wordfence': 'Wordfence',
-            'yoast': 'wpseo_dashboard'
-        };
+        // Cancel the scheduled reload since user is navigating manually
+        cancelReload();
 
-        const adminPage = pluginAdminPages[plugin.slug] || plugin.slug;
-        const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
-        
-        if (adminUrl) {
-            window.location.href = `${adminUrl}admin.php?page=${adminPage}`;
-        } else {
-            // Fallback to plugins page
-            window.location.href = '/wp-admin/plugins.php';
+        // Check if plugin has a redirectUrl from API response
+        if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
+            // Get the admin URL from config (provided by PHP)
+            const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
+
+            if (adminUrl) {
+                // Construct full URL using adminUrl from PHP config
+                // adminUrl is like "https://example.com/wp-admin/"
+                // redirectUrl comes as "wp-admin\/admin.php?page=termly" (JSON unescapes \/ to /)
+                // Strip "wp-admin/" prefix from redirectUrl if present to avoid duplication
+                let cleanPath = plugin.redirectUrl;
+                if (cleanPath.startsWith('wp-admin/')) {
+                    cleanPath = cleanPath.substring('wp-admin/'.length);
+                }
+                const fullUrl = `${adminUrl}${cleanPath}`;
+                window.location.href = fullUrl;
+            } else {
+                // Fallback: use window.location.origin if adminUrl not available
+                const siteUrl = window.location.origin;
+                const fullUrl = `${siteUrl}/${plugin.redirectUrl}`;
+                window.location.href = fullUrl;
+            }
+            return;
         }
+
+        // Fallback to plugins page
+        window.location.href = '/wp-admin/plugins.php';
     };
 
     const isInstalled = noticeState.type === 'installed';
     const isActivated = noticeState.type === 'activated';
+
+    // Helper function to replace {0} with plugin name
+    const formatMessage = (message, pluginName) => {
+        if (!message) return '';
+        return message.replace('{0}', pluginName || '');
+    };
+
+    const pluginName = plugin?.name || '';
 
     return (
         <div className="gv-notice gv-notice-success gv-p-lg gv-max-mob-pt-lg gv-mb-0 gv-mt-lg" style={{'gridColumn': '1 / -1','width':'100%'}}>
             <img className="gv-notice-icon" src={`${iconBase}icons/success.svg`} alt="Success" />
             <div className="gv-notice-content">
                 <div className="gv-notice-title">
-                    {isInstalled && "Plugin was installed."}
-                    {isActivated && "Plugin was activated."}
+                    {isInstalled && formatMessage(uiI18n?.notifications?.pluginInstalled || 'Plugin was installed.', pluginName)}
+                    {isActivated && formatMessage(uiI18n?.notifications?.pluginActivated || 'Plugin was activated.', pluginName)}
                 </div>
-                <p>
-                    {isInstalled && "Activate it now to start using it."}
-                    {isActivated && "You can start using it."}
+                <p className="gv-text-sm">
+                    {isInstalled && (uiI18n?.notifications?.activateNow || 'Activate it now to start using it.')}
+                    {isActivated && formatMessage(uiI18n?.notifications?.manageInMyProducts || '{0} plugin was activated for this site. You can manage it on the My products page.', pluginName)}
                 </p>
             </div>
             {isInstalled && (
@@ -70,7 +89,7 @@ export default function SuccessNotice({ plugin }) {
                     className="gv-action gv-button gv-button-neutral"
                     onClick={handleActivate}
                 >
-                    Activate
+                  {uiI18n?.activateButton}
                 </button>
             )}
             {isActivated && (
@@ -79,7 +98,8 @@ export default function SuccessNotice({ plugin }) {
                     className="gv-action gv-button gv-button-neutral"
                     onClick={handleManage}
                 >
-                    Manage
+                    <span>{uiI18n?.featuredCta || 'Get Started'}</span>
+                    <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_forward.svg`}></gv-icon>
                 </button>
             )}
             <button
