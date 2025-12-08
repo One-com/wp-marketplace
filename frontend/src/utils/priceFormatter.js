@@ -4,8 +4,8 @@
 const CURRENCY_SYMBOLS = {
     'EUR': '€',
     'USD': '$',
+    'GBP': '£',
     // Add more currencies here as needed
-    // 'GBP': '£',
     // 'JPY': '¥',
 };
 

@@ -31,9 +31,17 @@ const MarketplaceContent = () => {
             checkDetailPage();
         };
 
+        // Listen for programmatic URL changes (from replaceState)
+        const originalReplaceState = window.history.replaceState;
+        window.history.replaceState = function(...args) {
+            originalReplaceState.apply(this, args);
+            checkDetailPage();
+        };
+
         return () => {
             window.removeEventListener('popstate', checkDetailPage);
             window.history.pushState = originalPushState;
+            window.history.replaceState = originalReplaceState;
         };
     }, []);
 

@@ -146,7 +146,7 @@ export default function FeaturedCarousel() {
                         return (
                             <div
                                 key={`slide-${index}`}
-                                className="gv-carousel-slide"
+                                className="gv-carousel-slide gv-border-alt"
                                 style={{
                                     minWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
                                     maxWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,

@@ -248,7 +248,15 @@ export default function Marketplace() {
                 onClose={() => {
                     // Return to listing (clear selection and URL)
                     setSelectedPlugin(null);
-                    window.history.back();
+                    // Check if history.back() will work (has navigable history)
+                    if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        // In new-tab scenario, manually remove plugin parameter from URL
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete("plugin");
+                        window.history.replaceState({}, '', url.toString());
+                    }
                 }}
                 usePortal={false}
             />
@@ -325,7 +333,7 @@ export default function Marketplace() {
                                     </div>
                                     <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
                                         <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
-                                        <p className="oc-card-content gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
+                                        <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">
                                         {price}
                                         {plugin.licenseType !== "free" && price && price !== freeLabel && <span className="gv-period">/mo</span>}

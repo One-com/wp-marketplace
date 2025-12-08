@@ -99,10 +99,19 @@ export default function ProductDetailRankMath({
                         href="#"
                         onClick={e => {
                             e.preventDefault();
-                            if (onClose) {
+                            // First check if history is available and has navigable records
+                            if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+                                try {
+                                    window.history.back();
+                                } catch (error) {
+                                    // If history.back() fails, fallback to onClose
+                                    if (onClose) {
+                                        onClose();
+                                    }
+                                }
+                            } else if (onClose) {
+                                // Fallback to onClose if history is not available or empty
                                 onClose();
-                            } else if (typeof window !== "undefined" && window.history) {
-                                window.history.back();
                             }
                         }}
                     >
