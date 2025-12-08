@@ -119,6 +119,10 @@ body.one-com_page_onecom-marketplace{
   #marketplace-root .gv-activated .marketplace-container .gv-carousel-slide .gv-product-header.gv-area-header .gv-content{
     flex: 0 0 50%;
   }
+  #marketplace-root .gv-activated header.gv-product-header.gv-area-header{
+    flex-direction:column;
+    align-items:unset;
+  }
 {
   /* flex: 0 0 44%; */
 }
