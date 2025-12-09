@@ -405,10 +405,10 @@ export default function ProductDetailRankMath({
                         <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
                         <span>Back</span>
                     </a>
+                <SuccessNotice plugin={freePlugin} />
+                <ErrorToast plugin={freePlugin} />
                 </nav>
 
-                <SuccessNotice plugin={plugin} />
-                <ErrorToast plugin={plugin} />
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">
