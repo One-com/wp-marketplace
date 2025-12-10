@@ -7,7 +7,7 @@ import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorState from "./ErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice } from "../utils/priceFormatter";
-import { trackMarketplaceVisit, trackPluginDetailVisit } from "../utils/mixpanelTracking";
+import { trackMarketplaceVisit, trackPluginDetailVisit, trackPageView } from "../utils/mixpanelTracking";
 
 export default function Marketplace() {
     const {
@@ -46,6 +46,12 @@ export default function Marketplace() {
 
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
+
+    // Use ref to track if marketplace visit has been tracked (prevent duplicates)
+    const hasTrackedMarketplaceVisit = useRef(false);
+
+    // Use ref to track last tracked plugin detail to prevent duplicate tracking
+    const lastTrackedPluginSlug = useRef(null);
 
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -110,6 +116,12 @@ export default function Marketplace() {
                 // Check for API error response (success: false)
                 if (json && json.success === false) {
                     console.error("API returned error:", json.error);
+                    // Track page view with content render failure
+                    trackPageView({
+                        pageType: 'marketplace',
+                        category: 'marketplace_home',
+                        contentRenderStatus: false,
+                    });
                     setError(true);
                     setLoading(false);
                     return;
@@ -118,6 +130,12 @@ export default function Marketplace() {
                 // Check for blank/empty response
                 if (!json || !json.data || !json.data.catalog || (Array.isArray(json.data.catalog) && json.data.catalog.length === 0)) {
                     console.error("API returned empty or blank response");
+                    // Track page view with content render failure
+                    trackPageView({
+                        pageType: 'marketplace',
+                        category: 'marketplace_home',
+                        contentRenderStatus: false,
+                    });
                     setError(true);
                     setLoading(false);
                     return;
@@ -140,6 +158,12 @@ export default function Marketplace() {
                 }
             } catch (e) {
                 console.error("Failed to fetch plugins", e);
+                // Track page view with content render failure
+                trackPageView({
+                    pageType: 'marketplace',
+                    category: 'marketplace_home',
+                    contentRenderStatus: false,
+                });
                 setError(true);
             } finally {
                 setLoading(false);
@@ -161,15 +185,39 @@ export default function Marketplace() {
 
     // Track marketplace visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
-        if (!loading && !error && plugins.length > 0 && !pluginFromQuery) {
-            trackMarketplaceVisit();
+        if (!loading && !error && plugins.length > 0 && !pluginFromQuery && !hasTrackedMarketplaceVisit.current) {
+            // Check if this is a reload caused by plugin activation
+            const skipPageView = sessionStorage.getItem('mp_skip_page_view');
+            if (skipPageView === 'true') {
+                // Clear the flag and skip tracking
+                sessionStorage.removeItem('mp_skip_page_view');
+                console.log('[Marketplace] Skipping page view tracking after activation reload');
+            } else {
+                // Normal page load, track the visit
+                trackMarketplaceVisit();
+            }
+            hasTrackedMarketplaceVisit.current = true;
         }
     }, [loading, error, plugins.length, pluginFromQuery]);
 
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
-        if (selectedPlugin && pluginFromQuery) {
-            trackPluginDetailVisit(selectedPlugin);
+        if (selectedPlugin && pluginFromQuery && lastTrackedPluginSlug.current !== selectedPlugin.slug) {
+            // Check if this is a reload caused by plugin activation
+            const skipPageView = sessionStorage.getItem('mp_skip_page_view');
+            if (skipPageView === 'true') {
+                // Clear the flag and skip tracking
+                sessionStorage.removeItem('mp_skip_page_view');
+                console.log('[Marketplace] Skipping plugin detail page view tracking after activation reload');
+            } else {
+                // Normal page load, track the visit
+                trackPluginDetailVisit(selectedPlugin);
+            }
+            lastTrackedPluginSlug.current = selectedPlugin.slug;
+        }
+        // Reset when returning to marketplace list
+        if (!pluginFromQuery) {
+            lastTrackedPluginSlug.current = null;
         }
     }, [selectedPlugin, pluginFromQuery]);
 
