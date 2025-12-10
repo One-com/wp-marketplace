@@ -5,7 +5,7 @@ export default function LoadingOverlay() {
     const { loadingAction, loadingPlugin, assetsBaseUrl } = useMarketplace();
 
     // Don't show overlay if no action is in progress
-    if (!loadingAction || !loadingPlugin) {
+    if (!loadingAction) {
         return null;
     }
 
@@ -16,7 +16,7 @@ export default function LoadingOverlay() {
         <div className='loading-overlay show'>
             <div className="gv-loader-container gv-pos-center gv-pos-absolute">
                 <gv-loader src={spinnerSrc}></gv-loader>
-                <p>{loadingAction} {loadingPlugin} ...</p>
+                <p>{loadingAction}</p>
             </div>
         </div>
     );
