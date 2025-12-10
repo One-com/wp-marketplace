@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { trackPluginAction } from '../utils/mixpanelTracking';
 
 const MarketplaceContext = createContext(null);
 
@@ -189,6 +190,9 @@ export const MarketplaceProvider = ({
                     )
                 );
 
+                // Track success result
+                trackPluginAction({ action, plugin, result: 'success' });
+
                 // Show success notice for install and activate actions
                 if (action === 'install' && result.data.installed) {
                     setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
@@ -201,6 +205,14 @@ export const MarketplaceProvider = ({
                     }, 3000);
                 }
             } else {
+                // Track error result
+                trackPluginAction({
+                    action,
+                    plugin,
+                    result: 'error',
+                    error_message: result.data?.message || 'Unknown error'
+                });
+
                 // Show error toast for activation and installation errors
                 if (action === 'activate') {
                     setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
@@ -212,6 +224,14 @@ export const MarketplaceProvider = ({
             }
         } catch (err) {
             console.error("Plugin action failed", err);
+
+            // Track network/fetch error
+            trackPluginAction({
+                action,
+                plugin,
+                result: 'error',
+                error_message: err.message || 'Network error'
+            });
         } finally {
             setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
             // Clear loading state

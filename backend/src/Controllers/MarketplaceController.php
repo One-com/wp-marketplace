@@ -232,18 +232,43 @@ class MarketplaceController {
 		// Get active theme author to evaluate theme-based rules on frontend
 		$active_theme_author = $this->get_active_theme_author();
 
+		// Get current user information
+		$current_user = wp_get_current_user();
+		$wp_user = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
+		$wp_admin_email = $current_user->user_email ? hash( 'sha256', $current_user->user_email ) : '';
+		$wp_role = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
+
+		// Get WordPress environment information
+		$wp_version = get_bloginfo( 'version' );
+		$php_version = phpversion();
+		$locale = get_locale();
+		$site_url = get_site_url();
+		$home_url = get_home_url();
+
+		// Parse domain information
+		$parsed_url = parse_url( $home_url );
+		$domain = isset( $parsed_url['host'] ) ? hash( 'sha256', $parsed_url['host'] ) : '';
+		$fqdn = isset( $parsed_url['host'] ) ? hash( 'sha256', $parsed_url['host'] ) : '';
+		$subdomain = isset( $parsed_url['host'] ) ? hash( 'sha256', explode( '.', $parsed_url['host'] )[0] ) : '';
+
+		// Get environment type (production, staging, development)
+		$env = wp_get_environment_type();
+		if ( empty( $env ) ) {
+			$env = 'production'; // Default to production if not set
+		}
+
 		// Localize JS with config
 		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', [
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
 			'apiUrl'     => $this->config['api_url'],
-			'locale' => get_locale(),
+			'locale' => $locale,
 			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
-		'wpConfig' => [
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'adminUrl' => admin_url(),
-			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
-		],
+			'wpConfig' => [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
 			'assetsBaseUrl' => $base_url,
 			'activePlugins' => $active_plugins,
@@ -263,6 +288,37 @@ class MarketplaceController {
 				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
 				'moreDetails' => __('More details', 'onecom-wp'),
 			),
+			'mixpanel' => [
+				'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
+				'globalProperties' => [
+					'application' => 'WP Marketplace',
+					'brand' => $this->config['brand'],
+					'env' => $env,
+					'locale' => $locale,
+					'wp_locale' => $locale,
+					'wp_version' => $wp_version,
+					'php_version' => $php_version,
+					'wp_user' => $wp_user, // Hashed
+					'wp_admin_email' => $wp_admin_email, // Hashed
+					'wp_role' => $wp_role,
+					'domain' => $domain, // Hashed
+					'fqdn' => $fqdn, // Hashed
+					'subdomain' => $subdomain, // Hashed
+					'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+					// Properties that need to be filled in manually:
+					'account_owner' => '', // TODO: Set this value based on your logic
+					'addon_types' => [], // TODO: Set this value based on active addons
+					'cluster' => '', // TODO: Set this value based on your infrastructure
+					'customer_country' => '', // TODO: Set this value based on customer location
+					'hosting_package' => '', // TODO: Set this value based on hosting plan
+					'hosting_type' => '', // TODO: Set this value based on hosting type
+					'is_mwp' => false, // TODO: Set this value based on managed WordPress status
+					'is_one_hop' => false, // TODO: Set this value based on one-hop status
+					'package_features' => [], // TODO: Set this value based on package features
+					'user_id' => '', // TODO: Set this value based on customer ID
+					'webroot' => '', // TODO: Set this value based on webroot configuration
+				],
+			],
 		] );
 
 		echo '<div id="marketplace-root" class="gv-activated"></div>';

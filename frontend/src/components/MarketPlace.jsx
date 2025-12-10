@@ -7,6 +7,7 @@ import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorState from "./ErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice } from "../utils/priceFormatter";
+import { trackMarketplaceVisit, trackPluginDetailVisit } from "../utils/mixpanelTracking";
 
 export default function Marketplace() {
     const {
@@ -157,6 +158,20 @@ export default function Marketplace() {
             setAllPluginsActivated(allActivated);
         }
     }, [plugins, setAllPluginsActivated]);
+
+    // Track marketplace visit when plugins are loaded and no plugin detail is shown
+    useEffect(() => {
+        if (!loading && !error && plugins.length > 0 && !pluginFromQuery) {
+            trackMarketplaceVisit();
+        }
+    }, [loading, error, plugins.length, pluginFromQuery]);
+
+    // Track plugin detail page visit when selectedPlugin changes
+    useEffect(() => {
+        if (selectedPlugin && pluginFromQuery) {
+            trackPluginDetailVisit(selectedPlugin);
+        }
+    }, [selectedPlugin, pluginFromQuery]);
 
     const handleDownloadClick = (e, plugin) => {
         e.stopPropagation();
