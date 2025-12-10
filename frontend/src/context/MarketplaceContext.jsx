@@ -93,10 +93,24 @@ export const MarketplaceProvider = ({
 
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
 
-        // Set loading state for overlay
-        const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
-        setLoadingAction(actionText);
-        setLoadingPlugin(plugin.name || plugin.slug);
+        // Set loading state for overlay using API response keys
+        const pluginName = plugin.name || plugin.slug;
+        let loadingMessage = '';
+
+        if (action === 'activate') {
+            const activatingMsg = uiI18n?.notifications?.activating || 'Activating {0}';
+            loadingMessage = activatingMsg.replace('{0}', pluginName);
+        } else if (action === 'install') {
+            const installingMsg = uiI18n?.notifications?.installing || 'Installing {0}';
+            loadingMessage = installingMsg.replace('{0}', pluginName);
+        } else {
+            // Fallback for other actions
+            const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
+            loadingMessage = `${actionText} ${pluginName}`;
+        }
+
+        setLoadingAction(loadingMessage);
+        setLoadingPlugin('');
 
         // For Imagify, use setTimeout to allow React to render the loading overlay first
         if (isImagifyActivation) {
@@ -204,7 +218,7 @@ export const MarketplaceProvider = ({
             setLoadingAction('');
             setLoadingPlugin('');
         }
-    }, [apiBaseUrl, useWPHandlers, wpConfig]);
+    }, [apiBaseUrl, useWPHandlers, wpConfig, uiI18n]);
 
     const value = {
         apiBaseUrl,

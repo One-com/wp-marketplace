@@ -83,6 +83,14 @@ export default function PluginActions({ plugin }) {
         window.location.href = '/wp-admin/plugins.php';
     };
 
+    // Helper function to replace {0} with plugin name
+    const formatMessage = (message, pluginName) => {
+        if (!message) return '';
+        return message.replace('{0}', pluginName || '');
+    };
+
+    const pluginName = plugin?.name || '';
+
     // Check if we should show "Select" button instead of install/activate
     const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin && !plugin.installed && pluginSubscriptionStatus === false;
 
@@ -121,7 +129,7 @@ export default function PluginActions({ plugin }) {
                         onClick={() => handleClick("activate")}
                     >
                         {pluginInAction[plugin.slug]
-                            ? (marketplaceConfig?.labels?.activating || 'Activating...')
+                            ? formatMessage(uiI18n?.notifications?.activating || 'Activating {0}', pluginName)
                             : (uiI18n?.activateButton || plugin.i18n?.activateButton || 'Activate')}
                     </button>
                 )
@@ -132,7 +140,7 @@ export default function PluginActions({ plugin }) {
                     onClick={() => handleClick("install")}
                 >
                     {pluginInAction[plugin.slug]
-                        ? (marketplaceConfig?.labels?.installing || 'Installing...')
+                        ? formatMessage(uiI18n?.notifications?.installing || 'Installing {0}', pluginName)
                         : (uiI18n?.installButton || plugin.i18n?.installButton || 'Install')}
                 </button>
             )}

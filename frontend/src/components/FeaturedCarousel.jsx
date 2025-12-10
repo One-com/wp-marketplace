@@ -117,7 +117,7 @@ export default function FeaturedCarousel() {
     return (
         <section className="gv-featured-carousel gv-w-full">
             <div className="gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0">
-                <h5 className="gv-title gv-heading-sm gv-recommended-heading">Recommended for you</h5>
+                <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
             </div>
 
             <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>

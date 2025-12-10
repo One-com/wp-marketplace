@@ -5,9 +5,18 @@ const CURRENCY_SYMBOLS = {
     'EUR': '€',
     'USD': '$',
     'GBP': '£',
+     'DKK': 'kr',
+     'NOK': 'kr',
+     'SEK': 'kr',
     // Add more currencies here as needed
     // 'JPY': '¥',
 };
+
+/**
+ * Currencies that display the symbol AFTER the amount (e.g., "79.00 kr")
+ * Most European currencies like EUR, USD, GBP display before, but Nordic currencies display after
+ */
+const CURRENCIES_WITH_POST_SYMBOL = ['DKK', 'SEK', 'NOK'];
 
 /**
  * Gets the currency symbol for a given currency code
@@ -16,6 +25,20 @@ const CURRENCY_SYMBOLS = {
  */
 const getCurrencySymbol = (currencyCode) => {
     return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+};
+
+/**
+ * Formats price with currency symbol in the correct position
+ * @param {string} amount - The formatted amount
+ * @param {string} symbol - The currency symbol
+ * @param {string} currencyCode - The currency code
+ * @returns {string} - Formatted price with symbol in correct position
+ */
+const formatPriceWithSymbol = (amount, symbol, currencyCode) => {
+    if (CURRENCIES_WITH_POST_SYMBOL.includes(currencyCode)) {
+        return `${amount} ${symbol}`;
+    }
+    return `${symbol} ${amount}`;
 };
 
 /**
@@ -45,7 +68,7 @@ export const formatPluginPrice = (plugin, freeLabel = 'Free') => {
             const symbol = getCurrencySymbol(priceToUse.currency);
             // Format amount to 2 decimal places
             const formattedAmount = Number(priceToUse.amount).toFixed(2);
-            return `${symbol} ${formattedAmount}`;
+            return formatPriceWithSymbol(formattedAmount, symbol, priceToUse.currency);
         }
     }
 
@@ -54,7 +77,7 @@ export const formatPluginPrice = (plugin, freeLabel = 'Free') => {
         const symbol = getCurrencySymbol(plugin.priceCurrency);
         // Format amount to 2 decimal places
         const formattedAmount = Number(plugin.priceAmount).toFixed(2);
-        return `${symbol} ${formattedAmount}`;
+        return formatPriceWithSymbol(formattedAmount, symbol, plugin.priceCurrency);
     }
 
     // Return blank for premium products without prices

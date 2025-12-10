@@ -40,14 +40,6 @@ body.one-com_page_onecom-marketplace{
   max-height: 456px;
   border-color: #E2E2E2;
 }
-.gv-activated .gv-features-table.gv-product-table .gv-product.oc-border-none{
-  border-top: none;
-  border-left: none;
-}
-.gv-activated .gv-features-table.gv-product-table .oc-left-border-0 .gv-section-header .gv-cell,
-.gv-activated .gv-features-table.gv-product-table .oc-left-border-0 .gv-table-row .gv-cell{
-  border-left: none;
-}
 .gv-product-banner .gv-left-banner img,
 .gv-product-banner .gv-right-banner img {
   width: 100%;
@@ -119,9 +111,28 @@ body.one-com_page_onecom-marketplace{
   #marketplace-root .gv-activated .marketplace-container .gv-carousel-slide .gv-product-header.gv-area-header .gv-content{
     flex: 0 0 50%;
   }
-{
-  /* flex: 0 0 44%; */
-}
+  #marketplace-root .gv-activated .gv-product-single header.gv-product-header.gv-area-header{
+    flex-direction:column;
+    align-items:unset;
+  }
+  #marketplace-root .gv-activated .gv-layout-product:not(.gv-product-single) .gv-product-header .gv-image{
+    overflow: hidden;
+    min-height: auto;
+  }
+  /* Override framework styles for single product page picture element */
+  #marketplace-root .gv-activated .gv-layout-product.gv-product-single .gv-product-header .gv-image picture{
+    align-items: initial;
+    display: block;
+    height: auto;
+    flex-wrap: initial;
+  }
+  #marketplace-root .gv-activated .gv-layout-product.gv-product-single .gv-product-header .gv-image img{
+    height: auto;
+    max-width: 480px;
+    width: 100%;
+  }
+
+
 }
 
 @media (min-width: 1025px) {
