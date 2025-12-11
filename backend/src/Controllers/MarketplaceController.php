@@ -165,6 +165,13 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_install_plugin', [ $this, 'ajax_install_plugin' ] );
 			add_action( 'wp_ajax_marketplace_activate_plugin', [ $this, 'ajax_activate_plugin' ] );
 			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
+
+			//reset transient for marketplace catalog
+			add_action('deactivated_plugin', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
+			add_action('activated_plugin', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
+			add_action('upgrader_process_complete', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
+			add_action('update_option_WPLANG', [$this, 'reset_marketplace_catalog_transient'], 999, 0);
+			add_action('switch_theme', [$this, 'reset_marketplace_catalog_transient'], 99);
 		}
 
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
@@ -239,11 +246,11 @@ class MarketplaceController {
 			'locale' => get_locale(),
 			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
-		'wpConfig' => [
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'adminUrl' => admin_url(),
-			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
-		],
+			'wpConfig' => [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
 			'assetsBaseUrl' => $base_url,
 			'activePlugins' => $active_plugins,
@@ -277,11 +284,27 @@ class MarketplaceController {
 	}
 
 	public function get_plugins( $request ) {
-		// Lazy-load model only when REST endpoint is called (optimization)
-		$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
+
+		$brand_name = $this->config['brand'];
+		$transient_name = "{$brand_name}_marketplace_catalog";
+		$marketplace_catalog = get_site_transient( $transient_name );
+
+		if ( ! empty( $marketplace_catalog ) && is_array( $marketplace_catalog ) ) {
+			error_log( 'Using cached marketplace catalog' );
+			$plugins = $marketplace_catalog;
+		} else {
+			// Lazy-load model only when the REST endpoint is called (optimization)
+			$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
+		}
 
 		if ( is_wp_error( $plugins ) ) {
 			return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
+		}
+
+		// Cache the catalog for 12 hours if not already cached
+		if ( empty( $marketplace_catalog ) ) {
+			error_log( 'Caching marketplace catalog' );
+			set_site_transient( $transient_name, $plugins, 12 * HOUR_IN_SECONDS );
 		}
 
 		// Attach WP state (installed/activated) for both legacy and new shapes
@@ -346,30 +369,30 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin data.', 'text-domain' ) ] );
 		}
 
- 	require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
- 	$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
- 	$result   = $upgrader->install( $download_url ); //  use URL from React
+		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
+		$result   = $upgrader->install( $download_url ); //  use URL from React
 
- 	if ( is_wp_error( $result ) ) {
- 		wp_send_json_error( [ 'message' => $result->get_error_message() ] );
- 	}
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
 
- 	// Check if the upgrader returned NULL or false (download/installation failed)
- 	if ( $result === null || $result === false ) {
- 		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
- 	}
+		// Check if the upgrader returned NULL or false (download/installation failed)
+		if ( $result === null || $result === false ) {
+			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
+		}
 
- 	// Verify the plugin was actually installed by checking if it exists
- 	if ( ! $this->is_installed( $slug ) ) {
- 		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
- 	}
+		// Verify the plugin was actually installed by checking if it exists
+		if ( ! $this->is_installed( $slug ) ) {
+			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
+		}
 
- 	wp_send_json_success([
- 		'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
- 		'installed' => true,
- 		'activated' => false,
- 	]);
+		wp_send_json_success([
+			'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
+			'installed' => true,
+			'activated' => false,
+		]);
 	}
 
 	/**
@@ -467,7 +490,7 @@ class MarketplaceController {
 			return true;
 		}
 
- 	// Fallback: scan installed plugins for partial matches
+		// Fallback: scan installed plugins for partial matches
 		// This handles cases like:
 		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -540,7 +563,7 @@ class MarketplaceController {
 			}
 		}
 
- 	// Fallback: scan installed plugins for partial matches
+		// Fallback: scan installed plugins for partial matches
 		// This handles cases like:
 		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
 		foreach ( $plugins as $file => $data ) {
@@ -646,5 +669,17 @@ class MarketplaceController {
 			'installed' => true,
 			'activated' => false,
 		]);
+	}
+
+	/**
+	 * Resets the marketplace catalog transient by deleting it from the site transients.
+	 *
+	 * @return void
+	 */
+	public function reset_marketplace_catalog_transient(){
+		$brand_name = $this->config['brand'];
+		$transient_name = "${$brand_name}_marketplace_catalog";
+		error_log('Reset marketplace catalog transient');
+		delete_site_transient( $transient_name );
 	}
 }
