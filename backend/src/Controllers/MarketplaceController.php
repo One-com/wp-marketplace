@@ -237,24 +237,30 @@ class MarketplaceController {
 		$wp_user = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
 		$wp_admin_email = $current_user->user_email ? hash( 'sha256', $current_user->user_email ) : '';
 		$wp_role = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
+		$user_id = $current_user->ID;
 
 		// Get WordPress environment information
 		$wp_version = get_bloginfo( 'version' );
 		$php_version = phpversion();
 		$locale = get_locale();
-		$site_url = get_site_url();
-		$home_url = get_home_url();
 
-		// Parse domain information
-		$parsed_url = parse_url( $home_url );
-		$domain = isset( $parsed_url['host'] ) ? hash( 'sha256', $parsed_url['host'] ) : '';
-		$fqdn = isset( $parsed_url['host'] ) ? hash( 'sha256', $parsed_url['host'] ) : '';
-		$subdomain = isset( $parsed_url['host'] ) ? hash( 'sha256', explode( '.', $parsed_url['host'] )[0] ) : '';
+		// Build global properties for Mixpanel
+		$global_properties = [
+			'application' => 'WP Marketplace',
+			'brand' => $this->config['brand'],
+			'wp_locale' => $locale,
+			'wp_version' => $wp_version,
+			'php_version' => $php_version,
+			'wp_user' => $wp_user, // Hashed
+			'wp_admin_email' => $wp_admin_email, // Hashed
+			'wp_role' => $wp_role,
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			'user_id' => $user_id,
+		];
 
-		// Get environment type (production, staging, development)
-		$env = wp_get_environment_type();
-		if ( empty( $env ) ) {
-			$env = 'production'; // Default to production if not set
+		// Merge custom mixpanel properties from config if provided
+		if ( ! empty( $this->config['mixp_props'] ) && is_array( $this->config['mixp_props'] ) ) {
+			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
 		}
 
 		// Localize JS with config
@@ -290,34 +296,7 @@ class MarketplaceController {
 			),
 			'mixpanel' => [
 				'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
-				'globalProperties' => [
-					'application' => 'WP Marketplace',
-					'brand' => $this->config['brand'],
-					'env' => $env,
-					'locale' => $locale,
-					'wp_locale' => $locale,
-					'wp_version' => $wp_version,
-					'php_version' => $php_version,
-					'wp_user' => $wp_user, // Hashed
-					'wp_admin_email' => $wp_admin_email, // Hashed
-					'wp_role' => $wp_role,
-					'domain' => $domain, // Hashed
-					'fqdn' => $fqdn, // Hashed
-					'subdomain' => $subdomain, // Hashed
-					'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
-					// Properties that need to be filled in manually:
-					'account_owner' => '', // TODO: Set this value based on your logic
-					'addon_types' => [], // TODO: Set this value based on active addons
-					'cluster' => '', // TODO: Set this value based on your infrastructure
-					'customer_country' => '', // TODO: Set this value based on customer location
-					'hosting_package' => '', // TODO: Set this value based on hosting plan
-					'hosting_type' => '', // TODO: Set this value based on hosting type
-					'is_mwp' => false, // TODO: Set this value based on managed WordPress status
-					'is_one_hop' => false, // TODO: Set this value based on one-hop status
-					'package_features' => [], // TODO: Set this value based on package features
-					'user_id' => '', // TODO: Set this value based on customer ID
-					'webroot' => '', // TODO: Set this value based on webroot configuration
-				],
+				'globalProperties' => $global_properties,
 			],
 		] );
 
