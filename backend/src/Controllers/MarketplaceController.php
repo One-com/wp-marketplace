@@ -679,7 +679,10 @@ class MarketplaceController {
 	public function reset_marketplace_catalog_transient(){
 		$brand_name = $this->config['brand'];
 		$transient_name = "${$brand_name}_marketplace_catalog";
-		error_log('Reset marketplace catalog transient');
-		delete_site_transient( $transient_name );
+		$deleted = delete_site_transient( $transient_name );
+
+		if ( $deleted ) {
+			error_log( 'Reset marketplace catalog transient' );
+		}
 	}
 }
