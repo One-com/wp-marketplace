@@ -38,6 +38,13 @@ const initializeMixpanel = () => {
             persistence: 'localStorage',
         });
 
+        // Set distinct_id if provided
+        const distinctId = mixpanelConfig.distinctId;
+        if (distinctId && distinctId !== '') {
+            mixpanel.identify(distinctId);
+            console.log('[MixpanelTracking] User identified with distinct_id:', distinctId);
+        }
+
         isInitialized = true;
         console.log('[MixpanelTracking] Mixpanel initialized successfully');
         return true;
