@@ -89,7 +89,7 @@ export default function SuccessNotice({ plugin }) {
                     className="gv-action gv-button gv-button-neutral"
                     onClick={handleActivate}
                 >
-                  {uiI18n?.activateButton}
+                  {uiI18n?.activatePluginButton}
                 </button>
             )}
             {isActivated && (

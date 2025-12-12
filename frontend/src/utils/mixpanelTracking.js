@@ -138,13 +138,13 @@ export const trackEvent = (eventName, eventProperties = {}) => {
 /**
  * Track page view event
  * @param {Object} options - Page view options
- * @param {string} options.pageType - Type of page (e.g., 'marketplace', 'plugin_detail')
  * @param {string} options.pluginSlug - Plugin slug (for detail pages)
  * @param {string} options.pluginName - Plugin name (for detail pages)
  * @param {string} options.category - Plugin category
+ * @param {string} options.itemName - Custom item_name value (overrides default)
  * @param {boolean} options.contentRenderStatus - Whether content was successfully rendered (default: true)
  */
-export const trackPageView = ({ pageType, pluginSlug, pluginName, category, contentRenderStatus = true } = {}) => {
+export const trackPageView = ({ pluginSlug, pluginName, category, itemName, contentRenderStatus = true } = {}) => {
     try {
         const timestamp = Date.now();
 
@@ -159,13 +159,14 @@ export const trackPageView = ({ pageType, pluginSlug, pluginName, category, cont
             eventProperties.content_render_timestamp = timestamp;
         }
 
-        // Add page-specific properties
-        if (pageType) {
-            eventProperties.page_type = pageType;
+        // Use itemName if provided, otherwise use pluginSlug (for backward compatibility)
+        if (itemName) {
+            eventProperties.item_name = itemName;
+        } else if (pluginSlug) {
+            eventProperties.item_name = pluginSlug;
         }
 
         if (pluginSlug) {
-            eventProperties.item_name = pluginSlug;
             eventProperties.plugin_slug = pluginSlug;
         }
 
@@ -245,7 +246,8 @@ const extractPluginProperties = (plugin) => {
     const properties = {
         plugin_slug: plugin.slug || '',
         plugin_name: plugin.name || '',
-        item_name: plugin.slug || '',
+        // Note: item_name is NOT included here by default
+        // It should be set contextually by the calling function
     };
 
     // Extract category
@@ -287,6 +289,7 @@ export const trackButtonClick = ({ buttonName, buttonAction, plugin = null, cont
         const eventProperties = {
             button_name: buttonName || '',
             button_action: buttonAction || '',
+            item_name: buttonName || '', // item_name should be the button name
             timestamp: Date.now(),
         };
 
@@ -310,8 +313,8 @@ export const trackButtonClick = ({ buttonName, buttonAction, plugin = null, cont
 export const trackMarketplaceVisit = () => {
     try {
         trackPageView({
-            pageType: 'marketplace',
             category: 'marketplace_home',
+            itemName: 'Catalogue page', // Set item_name to 'Catalogue page' for marketplace listing
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking marketplace visit:', error);
@@ -336,10 +339,10 @@ export const trackPluginDetailVisit = (plugin) => {
             : '';
 
         trackPageView({
-            pageType: 'plugin_detail',
             pluginSlug: plugin.slug,
             pluginName: plugin.name,
             category: category,
+            itemName: 'Product page', // Set item_name to 'Product page' for plugin detail page
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking plugin detail visit:', error);
