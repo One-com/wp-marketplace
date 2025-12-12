@@ -314,7 +314,7 @@ export const trackMarketplaceVisit = () => {
     try {
         trackPageView({
             category: 'marketplace_home',
-            itemName: 'Catalogue page', // Set item_name to 'Catalogue page' for marketplace listing
+            itemName: 'Catalog page', // Set item_name to 'Catalog page' for marketplace listing
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking marketplace visit:', error);
