@@ -239,11 +239,42 @@ class MarketplaceController {
 		// Get active theme author to evaluate theme-based rules on frontend
 		$active_theme_author = $this->get_active_theme_author();
 
+		// Get current user information
+		$current_user = wp_get_current_user();
+		$wp_user = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
+		$wp_admin_email = $current_user->user_email ? hash( 'sha256', $current_user->user_email ) : '';
+		$wp_role = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
+		$user_id = $current_user->ID;
+
+		// Get WordPress environment information
+		$wp_version = get_bloginfo( 'version' );
+		$php_version = phpversion();
+		$locale = get_locale();
+
+		// Build global properties for Mixpanel
+		$global_properties = [
+			'application' => 'WP Marketplace',
+			'brand' => $this->config['brand'],
+			'wp_locale' => $locale,
+			'wp_version' => $wp_version,
+			'php_version' => $php_version,
+			'wp_user' => $wp_user, // Hashed
+			'wp_admin_email' => $wp_admin_email, // Hashed
+			'wp_role' => $wp_role,
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			'user_id' => $user_id,
+		];
+
+		// Merge custom mixpanel properties from config if provided
+		if ( ! empty( $this->config['mixp_props'] ) && is_array( $this->config['mixp_props'] ) ) {
+			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
+		}
+
 		// Localize JS with config
 		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', [
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
 			'apiUrl'     => $this->config['api_url'],
-			'locale' => get_locale(),
+			'locale' => $locale,
 			'brand' => $this->config['brand'],
 			'useWPHandlers' => true,
 			'wpConfig' => [
@@ -270,6 +301,10 @@ class MarketplaceController {
 				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
 				'moreDetails' => __('More details', 'onecom-wp'),
 			),
+			'mixpanel' => [
+				'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
+				'globalProperties' => $global_properties,
+			],
 		] );
 
 		echo '<div id="marketplace-root" class="gv-activated"></div>';

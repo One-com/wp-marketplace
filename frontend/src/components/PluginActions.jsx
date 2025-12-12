@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
 
 export default function PluginActions({ plugin }) {
     const {
@@ -20,6 +21,30 @@ export default function PluginActions({ plugin }) {
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/` : "";
     const handleClick = (action) => {
+        // Track the button click action
+        // All actions (install, activate) use "Button Clicked" event
+        if (action === "activate") {
+            trackButtonClick({
+                buttonName: 'Activate',
+                buttonAction: 'plugin_activate',
+                plugin: plugin,
+                context: {
+                    action: action,
+                    result: 'initiated',
+                }
+            });
+        } else if (action === "install") {
+            trackButtonClick({
+                buttonName: 'Install',
+                buttonAction: 'plugin_install',
+                plugin: plugin,
+                context: {
+                    action: action,
+                    result: 'initiated',
+                }
+            });
+        }
+
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
 
@@ -43,6 +68,13 @@ export default function PluginActions({ plugin }) {
     };
 
     const handleSelectClick = () => {
+        // Track the select button click
+        trackButtonClick({
+            buttonName: 'Select',
+            buttonAction: 'subscribe_addon',
+            plugin: plugin,
+        });
+
         // Dispatch custom event for provisioning
         const event = new CustomEvent("onecom-subscribe-addon", {
             detail: { slug: plugin.slug },
@@ -54,6 +86,17 @@ export default function PluginActions({ plugin }) {
     };
 
     const handleManage = () => {
+        // Track the manage button click
+        trackButtonClick({
+            buttonName: 'Manage',
+            buttonAction: 'manage_plugin',
+            context: {
+                plugin_slug: plugin.slug,
+                plugin_name: plugin.name,
+                has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
+            }
+        });
+
         // Check if plugin has a redirectUrl from API response
         if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
             // Get the admin URL from config (provided by PHP)

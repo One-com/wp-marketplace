@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { trackButtonClick } from '../utils/mixpanelTracking';
 
 const MarketplaceContext = createContext(null);
 
@@ -134,6 +135,18 @@ export const MarketplaceProvider = ({
                 // Show success notice after delay
                 setTimeout(() => {
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
+
+                    // Track successful Imagify activation
+                    trackButtonClick({
+                        buttonName: 'Activate',
+                        buttonAction: 'plugin_activate',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'success',
+                            special_case: 'imagify_redirect',
+                        }
+                    });
                 }, 1000);
 
                 // Clear loading overlay after success notice appears
@@ -157,6 +170,8 @@ export const MarketplaceProvider = ({
                 // Schedule reload after showing the success notice and updated state
                 // User can cancel this by clicking "Get Started" button
                 reloadTimeoutRef.current = setTimeout(() => {
+                    // Set flag to skip page view tracking on reload
+                    sessionStorage.setItem('mp_skip_page_view', 'true');
                     window.location.reload();
                 }, 5000);
             }, 100);
@@ -192,11 +207,36 @@ export const MarketplaceProvider = ({
                 // Show success notice for install and activate actions
                 if (action === 'install' && result.data.installed) {
                     setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
+
+                    // Track successful install
+                    trackButtonClick({
+                        buttonName: 'Install',
+                        buttonAction: 'plugin_install',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'success',
+                        }
+                    });
                 } else if (action === 'activate' && result.data.activated) {
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
+
+                    // Track successful activate
+                    trackButtonClick({
+                        buttonName: 'Activate',
+                        buttonAction: 'plugin_activate',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'success',
+                        }
+                    });
+
                     // Schedule reload after activation to refresh plugin state
                     // User can cancel this by clicking "Get Started" button
                     reloadTimeoutRef.current = setTimeout(() => {
+                        // Set flag to skip page view tracking on reload
+                        sessionStorage.setItem('mp_skip_page_view', 'true');
                         window.location.reload();
                     }, 3000);
                 }
@@ -204,14 +244,52 @@ export const MarketplaceProvider = ({
                 // Show error toast for activation and installation errors
                 if (action === 'activate') {
                     setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+
+                    // Track activation error
+                    trackButtonClick({
+                        buttonName: 'Activate',
+                        buttonAction: 'plugin_activate',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'error',
+                            error_message: result.data?.message || 'Activation failed',
+                        }
+                    });
                 } else if (action === 'install') {
                     setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+
+                    // Track installation error
+                    trackButtonClick({
+                        buttonName: 'Install',
+                        buttonAction: 'plugin_install',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'error',
+                            error_message: result.data?.message || 'Installation failed',
+                        }
+                    });
                 } else {
                     alert(result.data?.message || "Failed to perform action");
                 }
             }
         } catch (err) {
             console.error("Plugin action failed", err);
+
+            // Track network/exception errors for install and activate
+            if (action === 'activate' || action === 'install') {
+                trackButtonClick({
+                    buttonName: action === 'activate' ? 'Activate' : 'Install',
+                    buttonAction: action === 'activate' ? 'plugin_activate' : 'plugin_install',
+                    plugin: plugin,
+                    context: {
+                        action: action,
+                        result: 'error',
+                        error_message: err.message || 'Network error',
+                    }
+                });
+            }
         } finally {
             setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
             // Clear loading state
