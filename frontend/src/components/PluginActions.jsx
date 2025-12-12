@@ -21,30 +21,6 @@ export default function PluginActions({ plugin }) {
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/` : "";
     const handleClick = (action) => {
-        // Track the button click action
-        // All actions (install, activate) use "Button Clicked" event
-        if (action === "activate") {
-            trackButtonClick({
-                buttonName: 'Activate',
-                buttonAction: 'plugin_activate',
-                plugin: plugin,
-                context: {
-                    action: action,
-                    result: 'initiated',
-                }
-            });
-        } else if (action === "install") {
-            trackButtonClick({
-                buttonName: 'Install',
-                buttonAction: 'plugin_install',
-                plugin: plugin,
-                context: {
-                    action: action,
-                    result: 'initiated',
-                }
-            });
-        }
-
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
 

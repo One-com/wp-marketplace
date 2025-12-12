@@ -118,7 +118,6 @@ export default function Marketplace() {
                     console.error("API returned error:", json.error);
                     // Track page view with content render failure
                     trackPageView({
-                        pageType: 'marketplace',
                         category: 'marketplace_home',
                         contentRenderStatus: false,
                     });
@@ -132,7 +131,6 @@ export default function Marketplace() {
                     console.error("API returned empty or blank response");
                     // Track page view with content render failure
                     trackPageView({
-                        pageType: 'marketplace',
                         category: 'marketplace_home',
                         contentRenderStatus: false,
                     });
@@ -160,7 +158,6 @@ export default function Marketplace() {
                 console.error("Failed to fetch plugins", e);
                 // Track page view with content render failure
                 trackPageView({
-                    pageType: 'marketplace',
                     category: 'marketplace_home',
                     contentRenderStatus: false,
                 });
