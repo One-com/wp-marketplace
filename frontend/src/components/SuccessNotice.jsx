@@ -1,5 +1,6 @@
 import React from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
+import { trackButtonClick } from "../utils/mixpanelTracking";
 
 export default function SuccessNotice({ plugin }) {
     const {
@@ -27,6 +28,18 @@ export default function SuccessNotice({ plugin }) {
     };
 
     const handleManage = () => {
+        // Track the Get Started button click
+        trackButtonClick({
+            buttonName: 'Get started',
+            buttonAction: 'manage_plugin',
+            plugin: plugin,
+            context: {
+                plugin_slug: plugin.slug,
+                plugin_name: plugin.name,
+                has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
+            }
+        });
+
         // Cancel the scheduled reload since user is navigating manually
         cancelReload();
 
