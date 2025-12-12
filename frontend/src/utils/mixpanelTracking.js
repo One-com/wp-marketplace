@@ -36,7 +36,31 @@ const initializeMixpanel = () => {
             debug: mixpanelConfig.debug || false,
             track_pageview: false, // We'll handle page views manually
             persistence: 'localStorage',
+            // Disable automatic collection of potentially sensitive properties for privacy
+            property_blacklist: [
+                '$initial_referrer',
+                '$initial_referring_domain',
+                '$current_url',
+                '$referrer',
+                '$referring_domain',
+                'mp_lib',
+                '$lib_version',
+                '$browser',
+                '$browser_version',
+                '$device',
+                '$screen_height',
+                '$screen_width',
+                '$os',
+                '$search_engine',
+            ],
         });
+
+        // Set distinct_id if provided
+        const distinctId = mixpanelConfig.distinctId;
+        if (distinctId && distinctId !== '') {
+            mixpanel.identify(distinctId);
+            console.log('[MixpanelTracking] User identified with distinct_id:', distinctId);
+        }
 
         isInitialized = true;
         console.log('[MixpanelTracking] Mixpanel initialized successfully');

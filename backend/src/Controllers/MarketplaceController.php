@@ -270,6 +270,9 @@ class MarketplaceController {
 			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
 		}
 
+		// Get distinct_id from config if provided
+		$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+
 		// Localize JS with config
 		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', [
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
@@ -304,6 +307,7 @@ class MarketplaceController {
 			'mixpanel' => [
 				'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
 				'globalProperties' => $global_properties,
+				'distinctId' => $distinct_id,
 			],
 		] );
 
