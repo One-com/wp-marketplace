@@ -328,22 +328,33 @@ class MarketplaceController {
 		$transient_name = "{$brand_name}_marketplace_catalog";
 		$marketplace_catalog = get_site_transient( $transient_name );
 
-		if ( ! empty( $marketplace_catalog ) && is_array( $marketplace_catalog ) ) {
+		if ( is_array( $marketplace_catalog ) &&
+			! empty( $marketplace_catalog['success'] ) &&
+			isset( $marketplace_catalog['data']['catalog'] ) &&
+			is_array( $marketplace_catalog['data']['catalog'] )
+		){
 			error_log( 'Using cached marketplace catalog' );
 			$plugins = $marketplace_catalog;
 		} else {
 			// Lazy-load model only when the REST endpoint is called (optimization)
 			$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
-		}
 
-		if ( is_wp_error( $plugins ) ) {
-			return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
-		}
+			if ( is_wp_error( $plugins ) ) {
+				return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
+			}
 
-		// Cache the catalog for 12 hours if not already cached
-		if ( empty( $marketplace_catalog ) ) {
-			error_log( 'Caching marketplace catalog' );
-			set_site_transient( $transient_name, $plugins, 12 * HOUR_IN_SECONDS );
+			// Cache the catalog for 12 hours if not already cached
+			if (
+				! empty( $plugins['success'] ) &&
+				isset( $plugins['data']['catalog'] ) &&
+				is_array( $plugins['data']['catalog'] )
+			){
+				error_log( 'Caching marketplace catalog' );
+				set_site_transient( $transient_name, $plugins, 12 * HOUR_IN_SECONDS );
+			} else {
+				error_log( 'Invalid catalog structure' );
+				return new WP_REST_Response( [ 'error' => 'Invalid catalog structure' ], 500 );
+			}
 		}
 
 		// Attach WP state (installed/activated) for both legacy and new shapes
