@@ -17,7 +17,8 @@ export default function ProductDetailRankMath({
         pluginInAction,
         plugins,
         uiI18n,
-        subscriptionStatus
+        subscriptionStatus,
+        isCheckingSubscription
     } = useMarketplace();
     if (!plugin) return null;
 
@@ -474,17 +475,23 @@ export default function ProductDetailRankMath({
                                               <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
                                             </div>
                                             <div className="gv-bottom">
-                                              {!subscriptionStatus["seo-by-rank-math-pro"] && (
-                                              <div className="gv-price-container">
-                                                <div className="gv-price">
-                                                  <span className="gv-price-text">{proPrice}{proPrice && `,-`}</span>
-                                                  {proPrice && <span className="gv-period">/mo</span>}
+                                              {isCheckingSubscription["seo-by-rank-math-pro"] ? (
+                                                <div className="gv-price-container">
+                                                  <div className="gv-skeleton gv-skeleton-text" style={{ width: '120px', height: '32px' }}></div>
                                                 </div>
-                                                {proPrice &&
-                                                <div className="gv-price-info">
-                                                  <div className="gv-info">1 year [{proPrice}]/mo.</div>
-                                                </div>}
-                                              </div>
+                                              ) : (
+                                                !subscriptionStatus["seo-by-rank-math-pro"] && (
+                                                  <div className="gv-price-container">
+                                                    <div className="gv-price">
+                                                      <span className="gv-price-text">{proPrice}{proPrice && `,-`}</span>
+                                                      {proPrice && <span className="gv-period">/mo</span>}
+                                                    </div>
+                                                    {proPrice &&
+                                                    <div className="gv-price-info">
+                                                      <div className="gv-info">1 year [{proPrice}]/mo.</div>
+                                                    </div>}
+                                                  </div>
+                                                )
                                               )}
                                               {useWPHandlers && proPlugin ? (
                                                 <PluginActions

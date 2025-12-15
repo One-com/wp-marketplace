@@ -3,8 +3,8 @@ import { useMarketplace } from '../context/MarketplaceContext';
 
 const ProductBanner = () => {
     const { assetsBaseUrl, uiI18n } = useMarketplace();
-    const leftBannerUrl = `${assetsBaseUrl}assets/images/left-banner.png`;
-    const rightBannerUrl = `${assetsBaseUrl}assets/images/right-banner.png`;
+    const leftBannerUrl = 'https://wpaddon-static.group-cdn.one/images/wp/marketplace/banners/top-header-left-banner.png';
+    const rightBannerUrl = 'https://wpaddon-static.group-cdn.one/images/wp/marketplace/banners/top-header-right-banner.png';
 
     return (
         <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg gv-max-mob-pt-md">

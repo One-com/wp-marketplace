@@ -16,7 +16,10 @@ export default function ProductDetail({
         useWPHandlers,
         pluginInAction,
         uiI18n,
-        subscriptionStatus
+        subscriptionStatus,
+        isCheckingSubscription,
+        setNoticeState,
+        setErrorState
     } = useMarketplace();
     if (!plugin) return null;
 
@@ -24,6 +27,25 @@ export default function ProductDetail({
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [plugin]);
+
+    // Clear banners when component mounts (handles case when user returns via browser back button)
+    useEffect(() => {
+        // Clear any existing banners when ProductDetail mounts
+        setNoticeState({ visible: false, type: null, pluginSlug: null });
+        setErrorState({ visible: false, type: null, pluginSlug: null });
+    }, [plugin.slug, setNoticeState, setErrorState]);
+
+    // Hide banners when user navigates back and returns to the product detail page
+    useEffect(() => {
+        const handlePopState = () => {
+            // Clear notice and error state when navigating via browser back/forward
+            setNoticeState({ visible: false, type: null, pluginSlug: null });
+            setErrorState({ visible: false, type: null, pluginSlug: null });
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [setNoticeState, setErrorState]);
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
@@ -86,6 +108,10 @@ export default function ProductDetail({
                         href="#"
                         onClick={e => {
                             e.preventDefault();
+                            // Disable back navigation when plugin is being activated and reload is pending
+                            if (pluginInAction[plugin.slug]) {
+                                return;
+                            }
                             // First check if history is available and has navigable records
                             if (typeof window !== "undefined" && window.history && window.history.length > 1) {
                                 try {
@@ -104,6 +130,12 @@ export default function ProductDetail({
                         className="gv-flex gv-items-center gv-gap-xs"
                         role="button"
                         aria-label="Go back"
+                        style={{
+                            opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
+                            pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
+                            cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
+                        }}
+                        aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
                     >
                         <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}arrow_back.svg`}
                                         alt="Back to plugins" />
@@ -152,17 +184,23 @@ export default function ProductDetail({
                                             <p>{subTitle}</p>
                                         </div>
                                         <div className="gv-bottom">
-                                            {!subscriptionStatus[plugin.slug] && (
-                                            <div className="gv-price-container">
-                                                <div className="gv-price">
-                                                    <span className="gv-price-text">{price} {!isFree && price && `,-`}</span>
-                                                    {!isFree && price && <span className="gv-period">/mo</span>}
+                                            {isCheckingSubscription[plugin.slug] ? (
+                                                <div className="gv-price-container">
+                                                    <div className="gv-skeleton gv-skeleton-text" style={{ width: '120px', height: '32px' }}></div>
                                                 </div>
-                                              {!isFree && price &&
-                                                <div className="gv-price-info">
-                                                  <div className="gv-info">1 year [{price}]/mo.</div>
-                                                </div>}
-                                            </div>
+                                            ) : (
+                                                !subscriptionStatus[plugin.slug] && (
+                                                    <div className="gv-price-container">
+                                                        <div className="gv-price">
+                                                            <span className="gv-price-text">{price} {!isFree && price && `,-`}</span>
+                                                            {!isFree && price && <span className="gv-period">/mo</span>}
+                                                        </div>
+                                                      {!isFree && price &&
+                                                        <div className="gv-price-info">
+                                                          <div className="gv-info">1 year [{price}]/mo.</div>
+                                                        </div>}
+                                                    </div>
+                                                )
                                             )}
                                             {useWPHandlers ? (
                                                 <PluginActions

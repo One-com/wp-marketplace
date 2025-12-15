@@ -94,6 +94,9 @@ export const MarketplaceProvider = ({
 
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
 
+        // Use ref to track if activation was successful (to prevent finally block from clearing pluginInAction)
+        let activationSuccessful = false;
+
         // Set loading state for overlay using API response keys
         const pluginName = plugin.name || plugin.slug;
         let loadingMessage = '';
@@ -150,10 +153,10 @@ export const MarketplaceProvider = ({
                 }, 1000);
 
                 // Clear loading overlay after success notice appears
+                // Keep pluginInAction true to disable back button until reload
                 setTimeout(() => {
                     setLoadingAction('');
                     setLoadingPlugin('');
-                    setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
                 }, 1100);
 
                 // Update plugin state to activated
@@ -219,6 +222,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'activate' && result.data.activated) {
+                    activationSuccessful = true; // Mark activation as successful to prevent finally block from clearing pluginInAction
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
 
                     // Track successful activate
@@ -239,6 +243,12 @@ export const MarketplaceProvider = ({
                         sessionStorage.setItem('mp_skip_page_view', 'true');
                         window.location.reload();
                     }, 3000);
+
+                    // Don't clear pluginInAction for successful activation - keep back button disabled until reload
+                    // Clear loading state only
+                    setLoadingAction('');
+                    setLoadingPlugin('');
+                    return; // Skip finally block (though finally will still execute, activationSuccessful flag prevents clearing)
                 }
             } else {
                 // Show error toast for activation and installation errors
@@ -291,7 +301,11 @@ export const MarketplaceProvider = ({
                 });
             }
         } finally {
-            setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+            // Only clear pluginInAction if activation was not successful
+            // For successful activations, keep it true until page reload
+            if (!activationSuccessful) {
+                setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+            }
             // Clear loading state
             setLoadingAction('');
             setLoadingPlugin('');
