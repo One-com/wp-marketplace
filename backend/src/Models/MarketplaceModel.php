@@ -27,7 +27,14 @@ class MarketplaceModel {
 			return [];
 		}
 
-		$data = json_decode( wp_remote_retrieve_body( $response ), true );
+		$body = wp_remote_retrieve_body( $response );
+
+		// Handle null or empty body to avoid PHP 8.1+ deprecation warning
+		if ( empty( $body ) ) {
+			return [];
+		}
+
+		$data = json_decode( $body, true );
 		return is_array( $data ) ? $data : [];
 	}
 }
