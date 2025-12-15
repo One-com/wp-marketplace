@@ -167,20 +167,22 @@ export const trackEvent = (eventName, eventProperties = {}) => {
  * @param {string} options.category - Plugin category
  * @param {string} options.itemName - Custom item_name value (overrides default)
  * @param {boolean} options.contentRenderStatus - Whether content was successfully rendered (default: true)
+ * @param {number} options.contentReceivedAt - Timestamp when API content was received
+ * @param {number} options.contentRenderTimestamp - Timestamp when content was rendered to page
  */
-export const trackPageView = ({ pluginSlug, pluginName, category, itemName, contentRenderStatus = true } = {}) => {
+export const trackPageView = ({ pluginSlug, pluginName, category, itemName, contentRenderStatus = true, contentReceivedAt = null, contentRenderTimestamp = null } = {}) => {
     try {
         const timestamp = Date.now();
 
         const eventProperties = {
             page_open: timestamp,
-            content_received_at: timestamp,
+            content_received_at: contentReceivedAt || timestamp,
             content_render_status: contentRenderStatus,
         };
 
         // Only add content_render_timestamp if content was successfully rendered
         if (contentRenderStatus) {
-            eventProperties.content_render_timestamp = timestamp;
+            eventProperties.content_render_timestamp = contentRenderTimestamp || timestamp;
         }
 
         // Use itemName if provided, otherwise use pluginSlug (for backward compatibility)
@@ -333,12 +335,16 @@ export const trackButtonClick = ({ buttonName, buttonAction, plugin = null, cont
 
 /**
  * Track marketplace visit
+ * @param {number} contentReceivedAt - Timestamp when API content was received
+ * @param {number} contentRenderTimestamp - Timestamp when content was rendered to page
  */
-export const trackMarketplaceVisit = () => {
+export const trackMarketplaceVisit = (contentReceivedAt = null, contentRenderTimestamp = null) => {
     try {
         trackPageView({
             category: 'marketplace_home',
-            itemName: 'Catalogue page', // Set item_name to 'Catalogue page' for marketplace listing
+            itemName: 'Catalog Page', // Set item_name to 'Catalog page' for marketplace listing
+            contentReceivedAt: contentReceivedAt,
+            contentRenderTimestamp: contentRenderTimestamp,
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking marketplace visit:', error);
@@ -348,8 +354,10 @@ export const trackMarketplaceVisit = () => {
 /**
  * Track plugin detail page visit
  * @param {Object} plugin - Plugin object
+ * @param {number} contentReceivedAt - Timestamp when API content was received
+ * @param {number} contentRenderTimestamp - Timestamp when content was rendered to page
  */
-export const trackPluginDetailVisit = (plugin) => {
+export const trackPluginDetailVisit = (plugin, contentReceivedAt = null, contentRenderTimestamp = null) => {
     try {
         if (!plugin) {
             console.warn('[MixpanelTracking] Plugin object required for tracking detail visit');
@@ -366,7 +374,9 @@ export const trackPluginDetailVisit = (plugin) => {
             pluginSlug: plugin.slug,
             pluginName: plugin.name,
             category: category,
-            itemName: 'Product page', // Set item_name to 'Product page' for plugin detail page
+            itemName: 'Product Page', // Set item_name to 'Product page' for plugin detail page
+            contentReceivedAt: contentReceivedAt,
+            contentRenderTimestamp: contentRenderTimestamp,
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking plugin detail visit:', error);
