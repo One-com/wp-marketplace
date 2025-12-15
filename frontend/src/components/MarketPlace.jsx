@@ -53,6 +53,13 @@ export default function Marketplace() {
     // Use ref to track last tracked plugin detail to prevent duplicate tracking
     const lastTrackedPluginSlug = useRef(null);
 
+    // Use ref to store timestamps for tracking
+    const contentReceivedTimestamp = useRef(null);
+    const contentRenderTimestamp = useRef(null);
+
+    // Use ref to store is_cached flag from API response
+    const isCachedRef = useRef(false);
+
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -113,13 +120,19 @@ export default function Marketplace() {
                 const res = await fetch(`${apiBaseUrl}`);
                 const json = await res.json();
 
+                // Capture timestamp when API content is received
+                contentReceivedTimestamp.current = Date.now();
+
+                // Extract is_cached flag from API response
+                isCachedRef.current = json.is_cached || false;
+
                 // Check for API error response (success: false)
                 if (json && json.success === false) {
                     console.error("API returned error:", json.error);
                     // Track page view with content render failure
                     trackPageView({
                         category: 'marketplace_home',
-                        contentRenderStatus: false,
+                        isContentRendered: false,
                     });
                     setError(true);
                     setLoading(false);
@@ -132,7 +145,7 @@ export default function Marketplace() {
                     // Track page view with content render failure
                     trackPageView({
                         category: 'marketplace_home',
-                        contentRenderStatus: false,
+                        isContentRendered: false,
                     });
                     setError(true);
                     setLoading(false);
@@ -159,7 +172,7 @@ export default function Marketplace() {
                 // Track page view with content render failure
                 trackPageView({
                     category: 'marketplace_home',
-                    contentRenderStatus: false,
+                    isContentRendered: false,
                 });
                 setError(true);
             } finally {
@@ -183,6 +196,9 @@ export default function Marketplace() {
     // Track marketplace visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
         if (!loading && !error && plugins.length > 0 && !pluginFromQuery && !hasTrackedMarketplaceVisit.current) {
+            // Capture timestamp when content is rendered to the page
+            contentRenderTimestamp.current = Date.now();
+
             // Check if this is a reload caused by plugin activation
             const skipPageView = sessionStorage.getItem('mp_skip_page_view');
             if (skipPageView === 'true') {
@@ -191,7 +207,7 @@ export default function Marketplace() {
                 console.log('[Marketplace] Skipping page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
-                trackMarketplaceVisit();
+                trackMarketplaceVisit(contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
             }
             hasTrackedMarketplaceVisit.current = true;
         }
@@ -200,6 +216,9 @@ export default function Marketplace() {
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
         if (selectedPlugin && pluginFromQuery && lastTrackedPluginSlug.current !== selectedPlugin.slug) {
+            // Capture timestamp when content is rendered to the page
+            contentRenderTimestamp.current = Date.now();
+
             // Check if this is a reload caused by plugin activation
             const skipPageView = sessionStorage.getItem('mp_skip_page_view');
             if (skipPageView === 'true') {
@@ -208,7 +227,7 @@ export default function Marketplace() {
                 console.log('[Marketplace] Skipping plugin detail page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
-                trackPluginDetailVisit(selectedPlugin);
+                trackPluginDetailVisit(selectedPlugin, contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
             }
             lastTrackedPluginSlug.current = selectedPlugin.slug;
         }

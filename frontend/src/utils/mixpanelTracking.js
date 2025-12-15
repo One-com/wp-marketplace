@@ -106,10 +106,14 @@ export const getGlobalProperties = () => {
         const globalProps = mixpanelConfig.globalProperties || {};
 
         // Add hit_type and page/path properties to the global properties from PHP
+        // Extract base path from query params for 'page' property
+        const urlParams = new URLSearchParams(window.location.search);
+        const pageParam = urlParams.get('page') || '';
+
         const enhancedProperties = {
             ...globalProps,
             hit_type: 'event',
-            page: window.location.pathname + window.location.search.replace(/[?&]/g, '_'),
+            page: pageParam || window.location.pathname,
             path: window.location.pathname + window.location.search,
         };
 
@@ -146,7 +150,6 @@ export const trackEvent = (eventName, eventProperties = {}) => {
         // Merge global properties with event-specific properties
         const properties = {
             ...getGlobalProperties(),
-            event_action: eventName,
             ...eventProperties,
         };
 
@@ -166,21 +169,24 @@ export const trackEvent = (eventName, eventProperties = {}) => {
  * @param {string} options.pluginName - Plugin name (for detail pages)
  * @param {string} options.category - Plugin category
  * @param {string} options.itemName - Custom item_name value (overrides default)
- * @param {boolean} options.contentRenderStatus - Whether content was successfully rendered (default: true)
+ * @param {boolean} options.isContentRendered - Whether content was successfully rendered (default: true)
+ * @param {number} options.contentReceivedAt - Timestamp when API content was received
+ * @param {number} options.contentRenderedAt - Timestamp when content was rendered to page
+ * @param {boolean} options.isCached - Whether the response was served from cache (default: false)
  */
-export const trackPageView = ({ pluginSlug, pluginName, category, itemName, contentRenderStatus = true } = {}) => {
+export const trackPageView = ({ pluginSlug, pluginName, category, itemName, isContentRendered = true, contentReceivedAt = null, contentRenderedAt = null, isCached = false } = {}) => {
     try {
         const timestamp = Date.now();
 
         const eventProperties = {
-            page_open: timestamp,
-            content_received_at: timestamp,
-            content_render_status: contentRenderStatus,
+            content_received_at: contentReceivedAt || timestamp,
+            is_content_rendered: isContentRendered,
+            is_cached: isCached,
         };
 
-        // Only add content_render_timestamp if content was successfully rendered
-        if (contentRenderStatus) {
-            eventProperties.content_render_timestamp = timestamp;
+        // Only add content_rendered_at if content was successfully rendered
+        if (isContentRendered) {
+            eventProperties.content_rendered_at = contentRenderedAt || timestamp;
         }
 
         // Use itemName if provided, otherwise use pluginSlug (for backward compatibility)
@@ -333,12 +339,18 @@ export const trackButtonClick = ({ buttonName, buttonAction, plugin = null, cont
 
 /**
  * Track marketplace visit
+ * @param {number} contentReceivedAt - Timestamp when API content was received
+ * @param {number} contentRenderedAt - Timestamp when content was rendered to page
+ * @param {boolean} isCached - Whether the response was served from cache
  */
-export const trackMarketplaceVisit = () => {
+export const trackMarketplaceVisit = (contentReceivedAt = null, contentRenderedAt = null, isCached = false) => {
     try {
         trackPageView({
             category: 'marketplace_home',
-            itemName: 'Catalog page', // Set item_name to 'Catalog page' for marketplace listing
+            itemName: 'Catalog Page', // Set item_name to 'Catalog page' for marketplace listing
+            contentReceivedAt: contentReceivedAt,
+            contentRenderedAt: contentRenderedAt,
+            isCached: isCached,
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking marketplace visit:', error);
@@ -348,8 +360,11 @@ export const trackMarketplaceVisit = () => {
 /**
  * Track plugin detail page visit
  * @param {Object} plugin - Plugin object
+ * @param {number} contentReceivedAt - Timestamp when API content was received
+ * @param {number} contentRenderedAt - Timestamp when content was rendered to page
+ * @param {boolean} isCached - Whether the response was served from cache
  */
-export const trackPluginDetailVisit = (plugin) => {
+export const trackPluginDetailVisit = (plugin, contentReceivedAt = null, contentRenderedAt = null, isCached = false) => {
     try {
         if (!plugin) {
             console.warn('[MixpanelTracking] Plugin object required for tracking detail visit');
@@ -366,7 +381,10 @@ export const trackPluginDetailVisit = (plugin) => {
             pluginSlug: plugin.slug,
             pluginName: plugin.name,
             category: category,
-            itemName: 'Product page', // Set item_name to 'Product page' for plugin detail page
+            itemName: 'Product Page', // Set item_name to 'Product page' for plugin detail page
+            contentReceivedAt: contentReceivedAt,
+            contentRenderedAt: contentRenderedAt,
+            isCached: isCached,
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking plugin detail visit:', error);
