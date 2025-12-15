@@ -253,7 +253,7 @@ class MarketplaceController {
 
 		// Build global properties for Mixpanel
 		$global_properties = [
-			'application' => 'WP Marketplace',
+			'application' => 'wordpress_marketplace',
 			'brand' => $this->config['brand'],
 			'wp_locale' => $locale,
 			'wp_version' => $wp_version,
@@ -327,6 +327,7 @@ class MarketplaceController {
 		$brand_name = $this->config['brand'];
 		$transient_name = "{$brand_name}_marketplace_catalog";
 		$marketplace_catalog = get_site_transient( $transient_name );
+		$is_cached = false;
 
 		if ( is_array( $marketplace_catalog ) &&
 			! empty( $marketplace_catalog['success'] ) &&
@@ -335,6 +336,7 @@ class MarketplaceController {
 		){
 			error_log( 'Using cached marketplace catalog' );
 			$plugins = $marketplace_catalog;
+			$is_cached = true;
 		} else {
 			// Lazy-load model only when the REST endpoint is called (optimization)
 			$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
@@ -355,6 +357,7 @@ class MarketplaceController {
 				error_log( 'Invalid catalog structure' );
 				return new WP_REST_Response( [ 'error' => 'Invalid catalog structure' ], 500 );
 			}
+			$is_cached = false;
 		}
 
 		// Attach WP state (installed/activated) for both legacy and new shapes
@@ -394,11 +397,14 @@ class MarketplaceController {
 				}
 				$plugins['sections'][$si]['items'] = array_map( $add_state, $section['items'] );
 			}
-		} elseif ( ! empty( $plugins['data']['ui_json'] ) && is_array( $plugins['data']['ui_json'] ) ) {
-			$plugins['data']['ui_json'] = array_map( $add_state, $plugins['data']['ui_json'] );
-		}
+ 	} elseif ( ! empty( $plugins['data']['ui_json'] ) && is_array( $plugins['data']['ui_json'] ) ) {
+ 		$plugins['data']['ui_json'] = array_map( $add_state, $plugins['data']['ui_json'] );
+ 	}
 
-		return new WP_REST_Response( $plugins, 200 );
+ 	// Add is_cached flag to response
+ 	$plugins['is_cached'] = $is_cached;
+
+ 	return new WP_REST_Response( $plugins, 200 );
 	}
 
 	/**

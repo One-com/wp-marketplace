@@ -57,6 +57,9 @@ export default function Marketplace() {
     const contentReceivedTimestamp = useRef(null);
     const contentRenderTimestamp = useRef(null);
 
+    // Use ref to store is_cached flag from API response
+    const isCachedRef = useRef(false);
+
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -120,13 +123,16 @@ export default function Marketplace() {
                 // Capture timestamp when API content is received
                 contentReceivedTimestamp.current = Date.now();
 
+                // Extract is_cached flag from API response
+                isCachedRef.current = json.is_cached || false;
+
                 // Check for API error response (success: false)
                 if (json && json.success === false) {
                     console.error("API returned error:", json.error);
                     // Track page view with content render failure
                     trackPageView({
                         category: 'marketplace_home',
-                        contentRenderStatus: false,
+                        isContentRendered: false,
                     });
                     setError(true);
                     setLoading(false);
@@ -139,7 +145,7 @@ export default function Marketplace() {
                     // Track page view with content render failure
                     trackPageView({
                         category: 'marketplace_home',
-                        contentRenderStatus: false,
+                        isContentRendered: false,
                     });
                     setError(true);
                     setLoading(false);
@@ -166,7 +172,7 @@ export default function Marketplace() {
                 // Track page view with content render failure
                 trackPageView({
                     category: 'marketplace_home',
-                    contentRenderStatus: false,
+                    isContentRendered: false,
                 });
                 setError(true);
             } finally {
@@ -201,7 +207,7 @@ export default function Marketplace() {
                 console.log('[Marketplace] Skipping page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
-                trackMarketplaceVisit(contentReceivedTimestamp.current, contentRenderTimestamp.current);
+                trackMarketplaceVisit(contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
             }
             hasTrackedMarketplaceVisit.current = true;
         }
@@ -221,7 +227,7 @@ export default function Marketplace() {
                 console.log('[Marketplace] Skipping plugin detail page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
-                trackPluginDetailVisit(selectedPlugin, contentReceivedTimestamp.current, contentRenderTimestamp.current);
+                trackPluginDetailVisit(selectedPlugin, contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
             }
             lastTrackedPluginSlug.current = selectedPlugin.slug;
         }
