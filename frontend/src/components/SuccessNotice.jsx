@@ -31,11 +31,11 @@ export default function SuccessNotice({ plugin }) {
         // Track the Get Started button click
         trackButtonClick({
             buttonName: 'Get started',
-            buttonAction: 'manage_plugin',
+            buttonAction: 'manage_product',
             plugin: plugin,
             context: {
-                plugin_slug: plugin.slug,
-                plugin_name: plugin.name,
+                product_slug: plugin.slug,
+                product_name: plugin.name,
                 has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
             }
         });

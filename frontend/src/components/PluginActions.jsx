@@ -65,10 +65,10 @@ export default function PluginActions({ plugin }) {
         // Track the manage button click
         trackButtonClick({
             buttonName: 'Manage',
-            buttonAction: 'manage_plugin',
+            buttonAction: 'manage_product',
             context: {
-                plugin_slug: plugin.slug,
-                plugin_name: plugin.name,
+                product_slug: plugin.slug,
+                product_name: plugin.name,
                 has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
             }
         });
