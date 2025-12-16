@@ -26,7 +26,11 @@ export default function Marketplace() {
         setUiI18n,
         handlePluginAction,
         allPluginsActivated,
-        setAllPluginsActivated
+        setAllPluginsActivated,
+        catalogError,
+        setCatalogError,
+        catalogLoading,
+        setCatalogLoading
     } = useMarketplace();
 
     // Get active plugin slugs from WordPress config
@@ -39,8 +43,6 @@ export default function Marketplace() {
         ? window.marketplaceConfig.activeThemeAuthor
         : "";
 
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(false);
     const [downloadingPlugins, setDownloadingPlugins] = useState({});
     const [selectedPlugin, setSelectedPlugin] = useState(null);
 
@@ -134,8 +136,8 @@ export default function Marketplace() {
                         category: 'marketplace_home',
                         isContentRendered: false,
                     });
-                    setError(true);
-                    setLoading(false);
+                    setCatalogError(true);
+                    setCatalogLoading(false);
                     return;
                 }
 
@@ -147,8 +149,8 @@ export default function Marketplace() {
                         category: 'marketplace_home',
                         isContentRendered: false,
                     });
-                    setError(true);
-                    setLoading(false);
+                    setCatalogError(true);
+                    setCatalogLoading(false);
                     return;
                 }
 
@@ -174,9 +176,9 @@ export default function Marketplace() {
                     category: 'marketplace_home',
                     isContentRendered: false,
                 });
-                setError(true);
+                setCatalogError(true);
             } finally {
-                setLoading(false);
+                setCatalogLoading(false);
             }
         }
 
@@ -195,7 +197,7 @@ export default function Marketplace() {
 
     // Track marketplace visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
-        if (!loading && !error && plugins.length > 0 && !pluginFromQuery && !hasTrackedMarketplaceVisit.current) {
+        if (!catalogLoading && !catalogError && plugins.length > 0 && !pluginFromQuery && !hasTrackedMarketplaceVisit.current) {
             // Capture timestamp when content is rendered to the page
             contentRenderTimestamp.current = Date.now();
 
@@ -211,7 +213,7 @@ export default function Marketplace() {
             }
             hasTrackedMarketplaceVisit.current = true;
         }
-    }, [loading, error, plugins.length, pluginFromQuery]);
+    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery]);
 
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
@@ -311,10 +313,62 @@ export default function Marketplace() {
         return isOnecomBrand && isRankMathPlugin;
     };
 
-    if (loading) return <p>Loading plugins...</p>;
+    if (catalogLoading) {
+        // Show skeleton loaders while catalog is loading
+        return (
+            <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg">
+                <section className="category-section">
+                    <div className="gv-skeleton gv-mb-sm" style={{ width: '160px' }}></div>
+                    <div className="gv-skeleton gv-text-sm gv-mb-sm" style={{ width: '400px' }}></div>
+                    <div className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-mb-md gv-desk-lg-grid-cols-3 gv-mt-md">
+                        {/* Generate first 3 skeleton plugin cards */}
+                        {[...Array(3)].map((_, index) => (
+                            <div key={index} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                                <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
+                                  <div className="gv-skeleton" style={{ width: '48px',height:'48px' }}></div>
+                                </div>
+                                <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
+                                    <div className="gv-skeleton gv-text-sm gv-mb-sm"></div>
+                                    <div className="gv-skeleton gv-text-sm gv-mb-sm"></div>
+                                    <div className="gv-skeleton gv-text-sm" style={{ width: '80px' }}></div>
+                                </div>
+                                <div className="gv-span-2 gv-content-center gv-text-right">
+                                    <div className="gv-skeleton" style={{ width: '24px' }}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                        {/* Additional skeleton loaders after 3 cards */}
+                        <div className="gv-skeleton gv-mb-sm" style={{ width: '160px' }}></div>
+                        <div className="gv-skeleton gv-text-sm gv-mb-sm" style={{ width: '400px' }}></div>
+                  <div className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
+
+
+                        {/* Generate remaining 3 skeleton plugin cards */}
+                        {[...Array(3)].map((_, index) => (
+                            <div key={index + 3} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                                <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
+                                  <div className="gv-skeleton" style={{ width: '48px',height:'48px' }}></div>
+                                </div>
+                                <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
+                                    <div className="gv-skeleton gv-text-sm gv-mb-sm"></div>
+                                    <div className="gv-skeleton gv-text-sm gv-mb-sm"></div>
+                                    <div className="gv-skeleton gv-text-sm" style={{ width: '80px' }}></div>
+                                </div>
+                                <div className="gv-span-2 gv-content-center gv-text-right">
+                                    <div className="gv-skeleton" style={{ width: '24px' }}></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            </div>
+        );
+    }
 
     // Show error state if API failed or returned error
-    if (error) {
+    if (catalogError) {
         return <ErrorState />;
     }
 
@@ -385,7 +439,7 @@ export default function Marketplace() {
                             window.location.href = '/wp-admin/plugins.php';
                         }}
                     >
-                        <span>View products</span>
+                        <span>{uiI18n.viewProductsButton}</span>
                         <gv-icon aria-hidden="true" src={`${iconBase}/arrow_right.svg`}></gv-icon>
                     </button>
                 </div>

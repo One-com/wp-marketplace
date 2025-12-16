@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice } from "../utils/priceFormatter";
 
-export default function FeaturedCarousel() {
+export default function FeaturedCarousel({ loading = false }) {
     const { plugins, assetsBaseUrl,uiI18n } = useMarketplace();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slidesPerView, setSlidesPerView] = useState(2);
@@ -92,6 +92,74 @@ export default function FeaturedCarousel() {
             setCurrentIndex(prev => prev + 1);
         }
     };
+
+    // Show skeleton loaders while loading
+    if (loading) {
+        return (
+            <section className="gv-featured-carousel gv-w-full">
+                <div className="gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0">
+                    <div className="gv-skeleton gv-heading-md" style={{ width: '200px' }}></div>
+                </div>
+
+                <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
+                    <div
+                        className="gv-carousel-track"
+                        style={{
+                            display: 'flex',
+                            gap: '1rem'
+                        }}
+                    >
+                        {/* Generate 2 skeleton carousel slides */}
+                        {[...Array(slidesPerView)].map((_, index) => (
+                            <div
+                                key={`skeleton-slide-${index}`}
+                                className="gv-carousel-slide gv-border-alt"
+                                style={{
+                                    minWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
+                                    maxWidth: `calc((100% - ${(slidesPerView - 1)}rem) / ${slidesPerView})`,
+                                    flex: '0 0 auto',
+                                    backgroundColor: '#D9EBF7',
+                                    borderRadius: '6px',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    maxHeight: '456px',
+                                }}
+                            >
+                                <header className="gv-product-header gv-area-header gv-w-full" style={{
+                                    border: 'none',
+                                    background: "#D9EBF7"
+                                }}>
+                                    <div className="gv-content gv-stack-space-sm gv-text-sm gv-flex gv-flex-col gv-items-start">
+                                        {/* Badge skeleton */}
+                                        <div className="gv-skeleton" style={{ width: '80px', marginBottom: '24px' }}></div>
+
+                                        {/* Title skeleton */}
+                                        <div className="gv-skeleton gv-heading-md gv-w-full"></div>
+
+                                        {/* Description skeletons */}
+                                        <div className="gv-skeleton gv-heading-md gv-w-full"></div>
+                                        <div className="gv-skeleton gv-text-sm" style={{ width: '90%' }}></div>
+                                        <div className="gv-skeleton gv-text-sm" style={{ width: '80%' }}></div>
+
+                                        {/* Footer with button and price skeletons */}
+                                        <div className="gv-slide-footer gv-flex gv-align-center gv-flex-wrap gv-items-center" style={{ marginTop: '24px' }}>
+                                            <div className="gv-skeleton" style={{ width: '100px', height: '40px' }}></div>
+                                            <div className="gv-skeleton gv-ml-md" style={{ width: '60px', height: '24px' }}></div>
+                                        </div>
+                                    </div>
+                                    <div className="gv-image gv-max-mob-pl-md">
+                                        <div className="gv-card-image" style={{ width: '100%', height: '100%',marginTop:"74px" }}>
+                                            <div className="gv-skeleton gv-radius-0 gv-h-full"></div>
+                                        </div>
+                                    </div>
+                                </header>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     // If no featured plugins, don't render anything
     if (!featuredPlugins || featuredPlugins.length === 0) {
