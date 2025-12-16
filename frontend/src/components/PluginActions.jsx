@@ -25,6 +25,17 @@ export default function PluginActions({ plugin }) {
         const isNotInstalled = !plugin.installed;
 
         if (isOnecomBrand && isSpecialPlugin && isNotInstalled && action === "install") {
+            // Track install event with result: initiated for special plugins
+            trackButtonClick({
+                buttonName: 'Install',
+                buttonAction: 'product_install',
+                plugin: plugin,
+                context: {
+                    action: action,
+                    result: 'initiated',
+                }
+            });
+
             // Dispatch custom event instead of calling handlePluginAction
             const event = new CustomEvent("onecom-plugin-provision", {
                 detail: {

@@ -21,6 +21,8 @@ export const MarketplaceProvider = ({
     const [noticeState, setNoticeState] = useState({ visible: false, type: null, pluginSlug: null });
     const [errorState, setErrorState] = useState({ visible: false, type: null, pluginSlug: null });
     const [allPluginsActivated, setAllPluginsActivated] = useState(false);
+    const [catalogError, setCatalogError] = useState(false);
+    const [catalogLoading, setCatalogLoading] = useState(true);
 
     // Use ref to track which subscriptions have been checked to avoid recreation of fetchSubscriptionStatus
     const checkedSubscriptionsRef = useRef({});
@@ -337,7 +339,11 @@ export const MarketplaceProvider = ({
         errorState,
         setErrorState,
         allPluginsActivated,
-        setAllPluginsActivated
+        setAllPluginsActivated,
+        catalogError,
+        setCatalogError,
+        catalogLoading,
+        setCatalogLoading
     };
 
     return (
