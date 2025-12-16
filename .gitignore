@@ -27,6 +27,7 @@ frontend/standalone/
 
 # Testing
 coverage/
+.phpunit.result.cache
 *.log
 
 # Environment

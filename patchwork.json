@@ -1,0 +1,4 @@
+{
+  "redefinable-internals": ["error_log", "file_exists", "is_dir"]
+}
+
