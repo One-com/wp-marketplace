@@ -142,7 +142,7 @@ export const MarketplaceProvider = ({
                     // Track successful Imagify activation
                     trackButtonClick({
                         buttonName: 'Activate',
-                        buttonAction: 'plugin_activate',
+                        buttonAction: 'product_activate',
                         plugin: plugin,
                         context: {
                             action: action,
@@ -214,7 +214,7 @@ export const MarketplaceProvider = ({
                     // Track successful install
                     trackButtonClick({
                         buttonName: 'Install',
-                        buttonAction: 'plugin_install',
+                        buttonAction: 'product_install',
                         plugin: plugin,
                         context: {
                             action: action,
@@ -228,7 +228,7 @@ export const MarketplaceProvider = ({
                     // Track successful activate
                     trackButtonClick({
                         buttonName: 'Activate',
-                        buttonAction: 'plugin_activate',
+                        buttonAction: 'product_activate',
                         plugin: plugin,
                         context: {
                             action: action,
@@ -258,7 +258,7 @@ export const MarketplaceProvider = ({
                     // Track activation error
                     trackButtonClick({
                         buttonName: 'Activate',
-                        buttonAction: 'plugin_activate',
+                        buttonAction: 'product_activate',
                         plugin: plugin,
                         context: {
                             action: action,
@@ -272,7 +272,7 @@ export const MarketplaceProvider = ({
                     // Track installation error
                     trackButtonClick({
                         buttonName: 'Install',
-                        buttonAction: 'plugin_install',
+                        buttonAction: 'product_install',
                         plugin: plugin,
                         context: {
                             action: action,
@@ -291,7 +291,7 @@ export const MarketplaceProvider = ({
             if (action === 'activate' || action === 'install') {
                 trackButtonClick({
                     buttonName: action === 'activate' ? 'Activate' : 'Install',
-                    buttonAction: action === 'activate' ? 'plugin_activate' : 'plugin_install',
+                    buttonAction: action === 'activate' ? 'product_activate' : 'product_install',
                     plugin: plugin,
                     context: {
                         action: action,

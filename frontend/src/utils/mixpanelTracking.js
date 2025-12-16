@@ -197,11 +197,11 @@ export const trackPageView = ({ pluginSlug, pluginName, category, itemName, isCo
         }
 
         if (pluginSlug) {
-            eventProperties.plugin_slug = pluginSlug;
+            eventProperties.product_slug = pluginSlug;
         }
 
         if (pluginName) {
-            eventProperties.plugin_name = pluginName;
+            eventProperties.product_name = pluginName;
         }
 
         if (category) {
@@ -232,8 +232,8 @@ export const trackPluginAction = ({ action, plugin, result = 'initiated' } = {})
 
         const eventProperties = {
             action: action,
-            plugin_slug: plugin.slug || '',
-            plugin_name: plugin.name || '',
+            product_slug: plugin.slug || '',
+            product_name: plugin.name || '',
             item_name: plugin.slug || '',
             result: result,
             timestamp: Date.now(),
@@ -274,8 +274,8 @@ const extractPluginProperties = (plugin) => {
     if (!plugin) return {};
 
     const properties = {
-        plugin_slug: plugin.slug || '',
-        plugin_name: plugin.name || '',
+        product_slug: plugin.slug || '',
+        product_name: plugin.name || '',
         // Note: item_name is NOT included here by default
         // It should be set contextually by the calling function
     };
