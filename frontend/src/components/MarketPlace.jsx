@@ -430,7 +430,7 @@ export default function Marketplace() {
             <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
                 <div className="gv-text-center">
                     <h5 className="gv-header-md gv-mb-sm">{uiI18n?.notifications?.allPluginsOwned}</h5>
-                    <p className="gv-text-md gv-mb-lg">You can view and manage them in the My products page.</p>
+                    <p className="gv-text-md gv-mb-lg">{uiI18n?.text?.managePlugins}</p>
                     <button
                         type="button"
                         className="gv-button gv-button-primary  buttons-min-width"
@@ -453,7 +453,6 @@ export default function Marketplace() {
                 <section key={catKey} className="category-section">
                     <p className="gv-text-bold gv-text-lg gv-mb-xs">{info.title || catKey}</p>
                     {info.description && <p className="gv-text-sm">{info.description}</p>}
-                    {!info.description && <p className="gv-text-sm">A range of versatile plugins to enhance your WordPress experience and add new functionality with ease.</p>}
                     <div className="product-grid gv-grid gv-gap-lg  gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
                         {list.map((plugin) => {
                             const freeLabel = uiI18n?.labels?.free || 'Free';
