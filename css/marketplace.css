@@ -195,3 +195,9 @@ body.one-com_page_onecom-marketplace{
     flex: 0 0 44%;
   }
 }
+
+@media (min-width: 1025px ) and (max-width: 1280px) {
+  #marketplace-root .gv-activated .marketplace-container .gv-product-header.gv-product-banner .gv-content{
+    margin-left: 48px;
+  }
+}

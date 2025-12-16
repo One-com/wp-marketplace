@@ -375,7 +375,7 @@ export default function Marketplace() {
         return (
             <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
                 <div className="gv-text-center">
-                    <h5 className="gv-header-md gv-mb-sm">You've got all our plugins!</h5>
+                    <h5 className="gv-header-md gv-mb-sm">{uiI18n?.notifications?.allPluginsOwned}</h5>
                     <p className="gv-text-md gv-mb-lg">You can view and manage them in the My products page.</p>
                     <button
                         type="button"
