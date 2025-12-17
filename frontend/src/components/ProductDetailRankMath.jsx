@@ -408,6 +408,7 @@ export default function ProductDetailRankMath({
                     </a>
                 <SuccessNotice plugin={freePlugin} />
                 <ErrorToast plugin={freePlugin} />
+                <ErrorToast plugin={proPlugin} />
                 </nav>
 
 

@@ -314,7 +314,20 @@ export default function Marketplace() {
     };
 
     if (catalogLoading) {
-        // Show skeleton loaders while catalog is loading
+        // If there's a plugin parameter in the URL, show ProductDetail skeleton instead
+        if (pluginFromQuery) {
+            const DetailComponent = ProductDetail;
+            return (
+                <DetailComponent
+                    plugin={null}
+                    onClose={() => {}}
+                    usePortal={false}
+                    loading={true}
+                />
+            );
+        }
+
+        // Show catalog skeleton loaders while catalog is loading
         return (
             <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg">
                 <section className="category-section">
@@ -392,6 +405,7 @@ export default function Marketplace() {
                     }
                 }}
                 usePortal={false}
+                loading={catalogLoading}
             />
         );
     }
@@ -507,6 +521,7 @@ export default function Marketplace() {
                     <DetailComponent
                         plugin={selectedPlugin}
                         onClose={() => setSelectedPlugin(null)}
+                        loading={catalogLoading}
                     />
                 );
             })()}
