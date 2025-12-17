@@ -167,11 +167,8 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
 
 			//reset transient for marketplace catalog
-			add_action('deactivated_plugin', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
-			add_action('activated_plugin', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
-			add_action('upgrader_process_complete', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
-			add_action('update_option_WPLANG', [$this, 'reset_marketplace_catalog_transient'], 999, 0);
-			add_action('switch_theme', [$this, 'reset_marketplace_catalog_transient'], 99);
+			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
+			add_action('update_option_WPLANG', [$this, 'reset_transient_on_locale_change'], 999, 0);
 		}
 
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
@@ -728,17 +725,42 @@ class MarketplaceController {
 	}
 
 	/**
-	 * Resets the marketplace catalog transient by deleting it from the site transients.
+	 * Resets the transient cache on core update.
+	 * @param $upgrader
+	 * @param $hook_extra
+	 * @return void
+	 */
+	public function reset_transient_on_core_update($upgrader, $hook_extra): void
+	{
+		if (
+			empty( $hook_extra['action'] ) || 'update' !== $hook_extra['action'] ||
+			empty( $hook_extra['type'] )   || 'core' !== $hook_extra['type']
+		) {
+			return;
+		}
+
+		$brand_name = $this->config['brand'];
+		$transient_name = "{$brand_name}_marketplace_catalog";
+
+		$deleted = delete_site_transient( $transient_name );
+
+		if ( $deleted ) {
+			error_log( 'Reset marketplace catalog transient on core update' );
+		}
+	}
+
+	/**
+	 * Resets the marketplace catalog transient by deleting it from the site transients on locale change.
 	 *
 	 * @return void
 	 */
-	public function reset_marketplace_catalog_transient(){
+	public function reset_transient_on_locale_change(){
 		$brand_name = $this->config['brand'];
 		$transient_name = "{$brand_name}_marketplace_catalog";
 		$deleted = delete_site_transient( $transient_name );
 
 		if ( $deleted ) {
-			error_log( 'Reset marketplace catalog transient' );
+			error_log( 'Reset marketplace catalog transient on locale change' );
 		}
 	}
 }
