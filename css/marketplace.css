@@ -68,6 +68,10 @@ body.one-com_page_onecom-marketplace{
 #marketplace-root.gv-activated .gv-features-table.gv-product-table.gv-recommended-2 .gv-cell:nth-child(2):before{
   width:auto;
 }
+#marketplace-root .gv-activated .gv-features-table.gv-product-table .gv-section .gv-table-row:last-child .gv-cell
+{
+  border-bottom-width: 1px !important;
+}
 
 /* Responsive styles for Product Banner */
 @media (max-width: 1024px) {
