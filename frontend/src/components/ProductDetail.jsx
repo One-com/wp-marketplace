@@ -9,7 +9,8 @@ import { formatPluginPrice } from "../utils/priceFormatter";
 export default function ProductDetail({
     plugin,
     onClose,
-    usePortal = true
+    usePortal = true,
+    loading = false
 }) {
     const {
         assetsBaseUrl,
@@ -21,6 +22,113 @@ export default function ProductDetail({
         setNoticeState,
         setErrorState
     } = useMarketplace();
+
+    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
+    const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+
+    // Show skeleton loaders while loading (even if plugin is null)
+    if (loading) {
+        const skeletonContent = (
+            <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+                <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
+                    {/* Breadcrumbs skeleton */}
+                    <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
+                        <div className="gv-flex gv-items-center gv-gap-xs">
+                            <div className="gv-skeleton" style={{ width: '60px' }}></div>
+                        </div>
+                    </nav>
+
+                    {/* Header skeleton */}
+                    <header className="gv-product-header gv-area-header">
+                        <div className="gv-content gv-stack-space-sm gv-text-sm">
+                            <div className="gv-skeleton gv-heading-lg gv-mb-sm" style={{ marginBottom:'24px' }}></div>
+                            <div className="gv-skeleton"></div>
+                            <div className="gv-skeleton"></div>
+                            <div className="gv-skeleton" style={{ width: '80%' }}></div>
+                        </div>
+                        <div className="gv-image">
+                            <div className="gv-card-image gv-h-full" style={{ marginTop:'75px' }}>
+                                <div className="gv-skeleton gv-radius-0 gv-h-full" style={{ minHeight: '300px' }}></div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Pricing / Action Section skeleton */}
+                    <section className="gv-product-table gv-features-table gv-products-1 gv-area-table">
+                        <div className="gv-table-container">
+                            <div className="gv-table" role="table">
+                                <div className="gv-table-header" role="rowgroup">
+                                    <div className="gv-table-row" role="row">
+                                        <div className="gv-product gv-p-0 oc-border-none" role="columnheader">
+                                            <div className="gv-content">
+                                                <div className="gv-skeleton gv-heading-md gv-mb-sm"></div>
+                                                <div className="gv-skeleton" style={{ width: '70%' }}></div>
+                                            </div>
+                                            <div className="gv-bottom">
+                                                <div className="gv-price-container">
+                                                    <div className="gv-skeleton" style={{ width: '120px', height: '32px' }}></div>
+                                                </div>
+                                                <div className="gv-skeleton gv-heading-md gv-mt-md"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Key features skeleton */}
+                                <div className="gv-section oc-left-border-0" role="rowgroup">
+                                    <div className="gv-section-header gv-table-row" role="row">
+                                        <div className="gv-cell" role="cell">
+                                            <div className="gv-skeleton gv-heading-md" style={{ width: '150px' }}></div>
+                                        </div>
+                                    </div>
+                                    {[...Array(3)].map((_, i) => (
+                                        <div className="gv-table-row" role="row" key={i}>
+                                            <div className="gv-cell" role="cell">
+                                                <div className="gv-skeleton gv-text-sm gv-w-full"></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Benefits skeleton */}
+                    <div className="gv-area-details gv-grid gv-gap-fluid">
+                        <section className="gv-stack-space-md">
+                            <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '180px' }}></div>
+                            <ul className="gv-list-items gv-list-check gv-mode-condensed">
+                                {[...Array(3)].map((_, i) => (
+                                    <li key={i}>
+                                        <div className="gv-skeleton gv-text-sm"></div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    </div>
+
+                    {/* Core Features skeleton */}
+                    <div className="gv-area-content gv-grid gv-gap-fluid">
+                        <section className="gv-text-sm gv-stack-space-md">
+                            <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '250px' }}></div>
+                            <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                                {[...Array(3)].map((_, i) => (
+                                    <div className="gv-item gv-stack-space-sm" key={i}>
+                                        <div className="gv-skeleton gv-heading-md gv-mb-sm"></div>
+                                        <div className="gv-skeleton gv-text-sm gv-mb-xs"></div>
+                                        <div className="gv-skeleton gv-text-sm"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+                </article>
+            </div>
+        );
+        return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
+    }
+
+    // If not loading and plugin is null, return null
     if (!plugin) return null;
 
     // Scroll to top when component mounts or plugin changes
@@ -47,10 +155,8 @@ export default function ProductDetail({
         return () => window.removeEventListener('popstate', handlePopState);
     }, [setNoticeState, setErrorState]);
 
-    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
-    const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
     const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
     // Extract data with fallbacks
@@ -86,10 +192,10 @@ export default function ProductDetail({
     if (plugin.i18n && typeof plugin.i18n === 'object') {
         let i = 1;
         while (plugin.i18n[`coreFeatureTitle${i}`] || plugin.i18n[`coreFeatureContent${i}`]) {
-            const title = plugin.i18n[`coreFeatureTitle${i}`];
+            const featureTitle = plugin.i18n[`coreFeatureTitle${i}`];
             const content = plugin.i18n[`coreFeatureContent${i}`];
-            if (title && title.trim() !== '' && content && content.trim() !== '') {
-                coreFeaturesFromI18n.push({ name: title, desc: content });
+            if (featureTitle && featureTitle.trim() !== '' && content && content.trim() !== '') {
+                coreFeaturesFromI18n.push({ name: featureTitle, desc: content });
             }
             i++;
         }
