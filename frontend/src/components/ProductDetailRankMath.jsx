@@ -9,7 +9,8 @@ import { formatPluginPrice } from "../utils/priceFormatter";
 export default function ProductDetailRankMath({
     plugin,
     onClose,
-    usePortal = true
+    usePortal = true,
+    loading = false
 }) {
     const {
         assetsBaseUrl,
@@ -20,6 +21,93 @@ export default function ProductDetailRankMath({
         subscriptionStatus,
         isCheckingSubscription
     } = useMarketplace();
+
+    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
+    const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+
+    // Show skeleton loaders while loading (even if plugin is null)
+    if (loading) {
+        const skeletonContent = (
+            <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+                <article className="gv-w-max-container gv-mx-auto">
+                  <nav className="gv-breadcrumbs gv-area-nav gv-mb-fluid">
+                    <a
+                      href="#"
+                      onClick={e => {
+                        e.preventDefault();
+                        // First check if history is available and has navigable records
+                        if (typeof window !== "undefined" && window.history && window.history.length > 1) {
+                          try {
+                            window.history.back();
+                          } catch (error) {
+                            // If history.back() fails, fallback to onClose
+                            if (onClose) {
+                              onClose();
+                            }
+                          }
+                        } else if (onClose) {
+                          // Fallback to onClose if history is not available or empty
+                          onClose();
+                        }
+                      }}
+                    >
+                      <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
+                      <span>Back</span>
+                    </a>
+                  </nav>
+
+                    {/* Header skeleton - single skeleton loader */}
+                    <header className="gv-area-header">
+                        <div className="gv-image">
+                            <div className="gv-card-image gv-h-full">
+                                <div className="gv-skeleton gv-radius-0 gv-h-full" style={{ minHeight: '300px' }}></div>
+                            </div>
+                        </div>
+                    </header>
+
+                  <header className="gv-area-header gv-mt-fluid gv-mb-fluid">
+                    <div className="gv-image">
+                      <div className="gv-card-image gv-h-full">
+                        <div className="gv-skeleton gv-radius-0 gv-h-full" style={{ minHeight: '300px' }}></div>
+                      </div>
+                    </div>
+                  </header>
+                    {/* Benefits skeleton - keep structure, add skeletons */}
+                    <div className="gv-area-details gv-grid gv-gap-fluid gv-mb-fluid">
+                        <section className="gv-stack-space-md">
+                            <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '160px' }}></div>
+                            <ul className="">
+                                {[...Array(3)].map((_, i) => (
+                                    <li key={i}>
+                                        <div className="gv-skeleton gv-text-sm"></div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    </div>
+
+                    {/* Core Features skeleton - keep structure, add skeletons */}
+                    <div className="gv-area-content gv-grid gv-gap-fluid">
+                        <section className="gv-text-sm gv-stack-space-md">
+                            <div className="gv-skeleton gv-heading-md" style={{ width: '160px', marginBottom:'28px' }}></div>
+                            <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                                {[...Array(3)].map((_, i) => (
+                                    <div className="gv-item gv-stack-space-sm" key={i}>
+                                        <div className="gv-skeleton gv-heading-md gv-mb-sm" style={{width:'160px'}}></div>
+                                        <div className="gv-skeleton gv-text-sm gv-mb-xs"></div>
+                                        <div className="gv-skeleton gv-text-sm"></div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    </div>
+                </article>
+            </div>
+        );
+        return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
+    }
+
+    // If not loading and plugin is null, return null
     if (!plugin) return null;
 
     // Refs for slider elements
@@ -319,10 +407,8 @@ export default function ProductDetailRankMath({
     const proPlugin = plugins.find(p => p.slug === "seo-by-rank-math-pro") || null;
 
     // Use the clicked plugin for header/main content, but always use freePlugin for first column
-    const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
-    const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
     const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)

@@ -10,7 +10,7 @@ import mixpanel from 'mixpanel-browser';
 // Track initialization status
 let isInitialized = false;
 
-// Initialize Mixpanel if token is provided
+// Initialize Mixpanel if token is provided and data consent is given
 const initializeMixpanel = () => {
     try {
         if (typeof window === 'undefined') {
@@ -23,6 +23,14 @@ const initializeMixpanel = () => {
         }
 
         const config = window.marketplaceConfig || {};
+
+        // Check if data consent is given
+        const dataConsentStatus = config.data_consent_status;
+        if (!dataConsentStatus) {
+            console.log('[MixpanelTracking] Data consent not given. Mixpanel tracking disabled.');
+            return false;
+        }
+
         const mixpanelConfig = config.mixpanel || {};
         const token = mixpanelConfig.token;
 
@@ -143,7 +151,8 @@ export const getGlobalProperties = () => {
 export const trackEvent = (eventName, eventProperties = {}) => {
     try {
         if (!isMixpanelAvailable()) {
-            console.warn('[MixpanelTracking] Mixpanel not available, skipping event:', eventName);
+            // Silently skip tracking if Mixpanel is not available
+            // This is expected when data consent is not given or token is missing
             return;
         }
 

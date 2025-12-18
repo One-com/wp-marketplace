@@ -270,46 +270,57 @@ class MarketplaceController {
 			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
 		}
 
-		// Get distinct_id from config if provided
-		$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+ 	// Get distinct_id from config if provided
+ 	$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
 
-		// Localize JS with config
-		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', [
-			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
-			'apiUrl'     => $this->config['api_url'],
-			'locale' => $locale,
-			'brand' => $this->config['brand'],
-			'useWPHandlers' => true,
-			'wpConfig' => [
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'adminUrl' => admin_url(),
-				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
-			],
-			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
-			'assetsBaseUrl' => $base_url,
-			'activePlugins' => $active_plugins,
-			'activeThemeAuthor' => $active_theme_author,
-			'labels'=>array(
-				'install' => __('Install', 'onecom-wp'),
-				'installing' => __('Installing', 'onecom-wp'),
-				'activate' => __('Activate', 'onecom-wp'),
-				'deactivate' => __('Deactivate', 'onecom-wp'),
-				'activating' => __('Activating', 'onecom-wp'),
-				'deactivating' => __('Deactivating', 'onecom-wp'),
-				'download' => __('Download', 'onecom-wp'),
-				'downloading' => __('Downloading...', 'onecom-wp'),
-				'learnMore' => __('Learn more', 'onecom-wp'),
-				'all' => __('All', 'onecom-wp'),
-				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
-				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
-				'moreDetails' => __('More details', 'onecom-wp'),
-			),
-			'mixpanel' => [
-				'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
-				'globalProperties' => $global_properties,
-				'distinctId' => $distinct_id,
-			],
-		] );
+ 	// Get data consent status from config
+ 	$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
+
+ 	// Build base localized config
+ 	$localized_config = [
+ 		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+ 		'apiUrl'     => $this->config['api_url'],
+ 		'locale' => $locale,
+ 		'brand' => $this->config['brand'],
+ 		'useWPHandlers' => true,
+ 		'wpConfig' => [
+ 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+ 			'adminUrl' => admin_url(),
+ 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+ 		],
+ 		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
+ 		'assetsBaseUrl' => $base_url,
+ 		'activePlugins' => $active_plugins,
+ 		'activeThemeAuthor' => $active_theme_author,
+ 		'data_consent_status' => $data_consent_status,
+ 		'labels'=>array(
+ 			'install' => __('Install', 'onecom-wp'),
+ 			'installing' => __('Installing', 'onecom-wp'),
+ 			'activate' => __('Activate', 'onecom-wp'),
+ 			'deactivate' => __('Deactivate', 'onecom-wp'),
+ 			'activating' => __('Activating', 'onecom-wp'),
+ 			'deactivating' => __('Deactivating', 'onecom-wp'),
+ 			'download' => __('Download', 'onecom-wp'),
+ 			'downloading' => __('Downloading...', 'onecom-wp'),
+ 			'learnMore' => __('Learn more', 'onecom-wp'),
+ 			'all' => __('All', 'onecom-wp'),
+ 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
+ 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
+ 			'moreDetails' => __('More details', 'onecom-wp'),
+ 		),
+ 	];
+
+ 	// Only add mixpanel config if data consent is given
+ 	if ( $data_consent_status ) {
+ 		$localized_config['mixpanel'] = [
+ 			'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
+ 			'globalProperties' => $global_properties,
+ 			'distinctId' => $distinct_id,
+ 		];
+ 	}
+
+ 	// Localize JS with config
+ 	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
 
 		echo '<div id="marketplace-root" class="gv-activated"></div>';
 	}

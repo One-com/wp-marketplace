@@ -314,9 +314,13 @@ export default function Marketplace() {
     };
 
     if (catalogLoading) {
-        // If there's a plugin parameter in the URL, show ProductDetail skeleton instead
+        // If there's a plugin parameter in the URL, show appropriate skeleton based on plugin type
         if (pluginFromQuery) {
-            const DetailComponent = ProductDetail;
+            // Determine if we should use RankMath detail component based on slug
+            const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+            const isOnecomBrand = brand === "onecom";
+            const isRankMathPlugin = pluginFromQuery === "seo-by-rank-math-pro" || pluginFromQuery === "seo-by-rank-math";
+            const DetailComponent = (isOnecomBrand && isRankMathPlugin) ? ProductDetailRankMath : ProductDetail;
             return (
                 <DetailComponent
                     plugin={null}
