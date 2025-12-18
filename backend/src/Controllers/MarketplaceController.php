@@ -342,14 +342,14 @@ class MarketplaceController {
 				return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
 			}
 
-			// Cache the catalog for 12 hours if not already cached
+			// Cache the catalog for 15 minutes if not already cached
 			if (
 				! empty( $plugins['success'] ) &&
 				isset( $plugins['data']['catalog'] ) &&
 				is_array( $plugins['data']['catalog'] )
 			){
 				error_log( 'Caching marketplace catalog' );
-				set_site_transient( $transient_name, $plugins, 12 * HOUR_IN_SECONDS );
+				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 			} else {
 				error_log( 'Invalid catalog structure' );
 				return new WP_REST_Response( [ 'error' => 'Invalid catalog structure' ], 500 );
