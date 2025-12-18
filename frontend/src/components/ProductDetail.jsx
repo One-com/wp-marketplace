@@ -164,7 +164,11 @@ export default function ProductDetail({
     const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || 'No description available.';
     const subTitle = plugin.i18n?.subtitle;
     const isFree = plugin.licenseType === "free";
-    const price = formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free');
+    const freeTrialText = plugin.i18n?.freeTrialText || '';
+    const hasFreeTrialText = freeTrialText && freeTrialText.trim() !== '';
+    const price = hasFreeTrialText
+        ? (uiI18n?.headings?.freeTrial || 'Free trial*')
+        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free');
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -298,13 +302,19 @@ export default function ProductDetail({
                                                 !subscriptionStatus[plugin.slug] && (
                                                     <div className="gv-price-container">
                                                         <div className="gv-price">
-                                                            <span className="gv-price-text">{price} {!isFree && price && `,-`}</span>
-                                                            {!isFree && price && <span className="gv-period">/mo</span>}
+                                                            <span className="gv-price-text">{price} {!isFree && !hasFreeTrialText && price && `,-`}</span>
+                                                            {!isFree && !hasFreeTrialText && price && <span className="gv-period">/mo</span>}
                                                         </div>
-                                                      {!isFree && price &&
+                                                      {hasFreeTrialText ? (
+                                                        <div className="gv-price-info">
+                                                          <div className="gv-info">{freeTrialText}</div>
+                                                        </div>
+                                                      ) : (
+                                                        !isFree && price &&
                                                         <div className="gv-price-info">
                                                           <div className="gv-info">1 year [{price}]/mo.</div>
-                                                        </div>}
+                                                        </div>
+                                                      )}
                                                     </div>
                                                 )
                                             )}

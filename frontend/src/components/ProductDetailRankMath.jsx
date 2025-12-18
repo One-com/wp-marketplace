@@ -30,7 +30,7 @@ export default function ProductDetailRankMath({
         const skeletonContent = (
             <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
                 <article className="gv-w-max-container gv-mx-auto">
-                  <nav className="gv-breadcrumbs gv-area-nav gv-mb-fluid">
+                  <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
                     <a
                       href="#"
                       onClick={e => {
