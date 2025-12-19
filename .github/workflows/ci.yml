@@ -189,7 +189,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd frontend && npm ci && cd ..
+          (cd frontend && npm ci)
           composer install --prefer-dist --no-progress
 
       - name: Build frontend
@@ -254,7 +254,7 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          cd frontend && npm ci && cd ..
+          (cd frontend && npm ci)
           composer install --no-dev --prefer-dist --optimize-autoloader
           cd frontend && npm run build && npm run build:standalone && cd ..
 
