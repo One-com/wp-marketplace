@@ -308,16 +308,13 @@ class MarketplaceController {
  			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
  			'moreDetails' => __('More details', 'onecom-wp'),
  		),
- 	];
-
- 	// Only add mixpanel config if data consent is given
- 	if ( $data_consent_status ) {
- 		$localized_config['mixpanel'] = [
- 			'token' => '4cdc36e9083c158244c3e26d280540f6', // TODO: Add your Mixpanel project token here
+ 		// Always send mixpanel config so it can be used when consent is granted dynamically
+ 		'mixpanel' => [
+ 			'token' => '4cdc36e9083c158244c3e26d280540f6',
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
- 		];
- 	}
+ 		],
+ 	];
 
  	// Localize JS with config
  	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );

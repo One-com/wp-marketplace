@@ -65,9 +65,12 @@ const initializeMixpanel = () => {
 
         // Set distinct_id if provided
         const distinctId = mixpanelConfig.distinctId;
+        console.log('[MixpanelTracking] distinctId from config:', distinctId, 'Type:', typeof distinctId);
         if (distinctId && distinctId !== '') {
             mixpanel.identify(distinctId);
             console.log('[MixpanelTracking] User identified with distinct_id:', distinctId);
+        } else {
+            console.warn('[MixpanelTracking] No valid distinctId provided. Mixpanel will use auto-generated device ID.');
         }
 
         isInitialized = true;
@@ -79,15 +82,8 @@ const initializeMixpanel = () => {
     }
 };
 
-// Initialize on module load
-if (typeof window !== 'undefined') {
-    // Wait for DOM to be ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initializeMixpanel);
-    } else {
-        initializeMixpanel();
-    }
-}
+// Export initializeMixpanel for manual initialization from React components
+export { initializeMixpanel };
 
 // Check if Mixpanel is available
 const isMixpanelAvailable = () => {
@@ -95,6 +91,54 @@ const isMixpanelAvailable = () => {
         return isInitialized && typeof mixpanel !== 'undefined';
     } catch (error) {
         console.warn('[MixpanelTracking] Error checking Mixpanel availability:', error);
+        return false;
+    }
+};
+
+/**
+ * Disable Mixpanel tracking (when consent is revoked)
+ * Resets the SDK and clears the initialization flag
+ */
+export const disableMixpanel = () => {
+    try {
+        if (isInitialized && typeof mixpanel !== 'undefined') {
+            // Reset Mixpanel instance to stop tracking
+            mixpanel.reset();
+            isInitialized = false;
+            console.log('[MixpanelTracking] Mixpanel tracking disabled');
+        }
+    } catch (error) {
+        console.error('[MixpanelTracking] Error disabling Mixpanel:', error);
+    }
+};
+
+/**
+ * Enable Mixpanel tracking (when consent is granted)
+ * Reinitializes Mixpanel with current config from window.marketplaceConfig
+ */
+export const enableMixpanel = () => {
+    try {
+        if (typeof window === 'undefined') {
+            return false;
+        }
+
+        const config = window.marketplaceConfig || {};
+        const mixpanelConfig = config.mixpanel || {};
+        const token = mixpanelConfig.token;
+
+        // Only initialize if token is provided
+        if (!token || token === '') {
+            console.warn('[MixpanelTracking] No Mixpanel token provided. Cannot enable tracking.');
+            return false;
+        }
+
+        // Reset flag to allow re-initialization
+        isInitialized = false;
+
+        // Initialize Mixpanel
+        return initializeMixpanel();
+    } catch (error) {
+        console.error('[MixpanelTracking] Error enabling Mixpanel:', error);
         return false;
     }
 };
