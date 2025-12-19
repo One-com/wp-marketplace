@@ -9,5 +9,10 @@
   },
   "require": {
     "php": ">=7.4"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
   }
 }
