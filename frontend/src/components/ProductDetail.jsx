@@ -24,6 +24,30 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     '';
   const iconBase = assetBase ? `${assetBase}assets/icons/` : '';
 
+  // Scroll to top when component mounts or plugin changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [plugin]);
+
+  // Clear banners when component mounts (handles case when user returns via browser back button)
+  useEffect(() => {
+    // Clear any existing banners when ProductDetail mounts
+    setNoticeState({ visible: false, type: null, pluginSlug: null });
+    setErrorState({ visible: false, type: null, pluginSlug: null });
+  }, [plugin?.slug, setNoticeState, setErrorState]);
+
+  // Hide banners when user navigates back and returns to the product detail page
+  useEffect(() => {
+    const handlePopState = () => {
+      // Clear notice and error state when navigating via browser back/forward
+      setNoticeState({ visible: false, type: null, pluginSlug: null });
+      setErrorState({ visible: false, type: null, pluginSlug: null });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setNoticeState, setErrorState]);
+
   // Show skeleton loaders while loading (even if plugin is null)
   if (loading) {
     const skeletonContent = (
@@ -137,30 +161,6 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
 
   // If not loading and plugin is null, return null
   if (!plugin) return null;
-
-  // Scroll to top when component mounts or plugin changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [plugin]);
-
-  // Clear banners when component mounts (handles case when user returns via browser back button)
-  useEffect(() => {
-    // Clear any existing banners when ProductDetail mounts
-    setNoticeState({ visible: false, type: null, pluginSlug: null });
-    setErrorState({ visible: false, type: null, pluginSlug: null });
-  }, [plugin.slug, setNoticeState, setErrorState]);
-
-  // Hide banners when user navigates back and returns to the product detail page
-  useEffect(() => {
-    const handlePopState = () => {
-      // Clear notice and error state when navigating via browser back/forward
-      setNoticeState({ visible: false, type: null, pluginSlug: null });
-      setErrorState({ visible: false, type: null, pluginSlug: null });
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [setNoticeState, setErrorState]);
 
   const imageURL =
     (typeof window.onecomWpVars !== 'undefined' && window.onecomWpVars?.imageURL) || assetBase;

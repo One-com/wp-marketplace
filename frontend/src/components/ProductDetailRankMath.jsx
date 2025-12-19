@@ -28,6 +28,249 @@ export default function ProductDetailRankMath({
     '';
   const iconBase = assetBase ? `${assetBase}assets/icons/` : '';
 
+  // Refs for slider elements
+  const tableSliderRef = useRef(null);
+  const sliderNavRef = useRef(null);
+  const tableRef = useRef(null);
+  const tableHeaderRef = useRef(null);
+  const paginationRef = useRef(null);
+  const dotsRef = useRef([]);
+
+  // State for active slide
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  // Scroll to top when component mounts or plugin changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [plugin]);
+
+  // Slider functionality
+  useEffect(() => {
+    const tableSlider = tableSliderRef.current;
+    const sliderNav = sliderNavRef.current;
+    const table = tableRef.current;
+    const tableHeader = tableHeaderRef.current;
+    const pagination = paginationRef.current;
+
+    if (!tableSlider || !sliderNav || !table || !tableHeader || !pagination) return;
+
+    const prevButton = sliderNav.querySelector('.gv-previous');
+    const nextButton = sliderNav.querySelector('.gv-next');
+
+    // State tracking flags to prevent continuous class toggling
+    let navIsAtBottom = false;
+    let paginationState = 'top'; // 'top', 'overlay', or 'bottom'
+    let isPaginationScrolledPast = false;
+    let isTableBottomVisible = false;
+    let isUpdatingClasses = false; // Flag to prevent observer callbacks during class updates
+
+    // Throttle timer for scroll events
+    let scrollThrottleTimer = null;
+    let isScrollThrottled = false;
+
+    // Update active dot and button states based on scroll position
+    const updateSliderState = () => {
+      const scrollLeft = tableSlider.scrollLeft;
+      const slideWidth = tableSlider.offsetWidth;
+      const currentSlide = Math.round(scrollLeft / slideWidth);
+
+      setActiveSlide(currentSlide);
+
+      // Update button disabled states
+      if (prevButton) {
+        if (currentSlide === 0) {
+          prevButton.classList.add('gv-disabled');
+        } else {
+          prevButton.classList.remove('gv-disabled');
+        }
+      }
+
+      if (nextButton) {
+        const maxSlide = Math.round(tableSlider.scrollWidth / slideWidth) - 1;
+        if (currentSlide >= maxSlide) {
+          nextButton.classList.add('gv-disabled');
+        } else {
+          nextButton.classList.remove('gv-disabled');
+        }
+      }
+    };
+
+    // Calculate and set dynamic positioning for sticky navigation (only when needed)
+    const calculateNavPosition = () => {
+      const tablePaddingTop = parseFloat(getComputedStyle(table).paddingTop) || 0;
+      const headerHeight = tableHeader.offsetHeight;
+      const halfHeaderHeight = headerHeight / 2;
+
+      // [X] = half of table header height + padding-top of table
+      const translateY = halfHeaderHeight + tablePaddingTop;
+
+      // [Y] = half viewport height - [X]
+      const topValue = window.innerHeight / 2 - translateY;
+
+      // [Z] = half of table header height (excluding padding)
+      const bottomValue = 2 * halfHeaderHeight;
+
+      sliderNav.style.transform = `translateY(${translateY}px)`;
+      sliderNav.style.top = `${topValue}px`;
+      sliderNav.style.bottom = `${bottomValue}px`;
+
+      return { bottomValue, halfHeaderHeight };
+    };
+
+    // Check nav boundary and update class only when state changes
+    const checkNavBoundary = (bottomValue) => {
+      const tableRect = table.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Calculate the threshold where sticky bottom constraint activates
+      const stickyBottomThreshold = viewportHeight - bottomValue;
+
+      // Only update class when boundary is crossed (state changes)
+      const shouldBeAtBottom = tableRect.bottom <= stickyBottomThreshold;
+
+      if (shouldBeAtBottom !== navIsAtBottom) {
+        navIsAtBottom = shouldBeAtBottom;
+
+        if (navIsAtBottom) {
+          sliderNav.classList.add('gv-state-bottom');
+        } else {
+          sliderNav.classList.remove('gv-state-bottom');
+        }
+      }
+    };
+
+    // Update pagination state based on intersection observer flags
+    const updatePaginationStateFromObservers = () => {
+      // If already updating classes, ignore this call to prevent infinite loop
+      if (isUpdatingClasses) {
+        return;
+      }
+
+      const tableRect = table.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Determine correct state based on current scroll position and observer flags
+      let newState = 'top';
+
+      if (isPaginationScrolledPast) {
+        newState = 'bottom';
+      } else if (isTableBottomVisible) {
+        // If table bottom is visible, check if we should still be overlaying
+        const paginationHeight = pagination.offsetHeight;
+        const remainingTableHeight = tableRect.bottom - viewportHeight;
+
+        if (remainingTableHeight > paginationHeight) {
+          newState = 'overlay';
+        } else {
+          newState = 'bottom';
+        }
+      } else {
+        // Normal case: check if pagination has entered the viewport
+        const paginationRect = pagination.getBoundingClientRect();
+        if (paginationRect.top <= viewportHeight) {
+          newState = 'overlay';
+        }
+      }
+
+      // Only apply changes if state actually changed
+      if (newState !== paginationState) {
+        isUpdatingClasses = true;
+        paginationState = newState;
+
+        // Remove all states
+        tableSlider.classList.remove('gv-pagination-overlay', 'gv-pagination-bottom');
+
+        // Apply new state
+        if (paginationState === 'overlay') {
+          tableSlider.classList.add('gv-pagination-overlay');
+        } else if (paginationState === 'bottom') {
+          tableSlider.classList.add('gv-pagination-bottom');
+        }
+
+        // Reset flag after DOM update
+        setTimeout(() => {
+          isUpdatingClasses = false;
+        }, 0);
+      }
+    };
+
+    // Intersection Observer for the real pagination at the bottom of the table
+    const paginationObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isPaginationScrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+          updatePaginationStateFromObservers();
+        });
+      },
+      { threshold: 0 }
+    );
+    paginationObserver.observe(pagination);
+
+    // Intersection Observer for the bottom of the table to handle transitions
+    const tableBottomSentinel = document.createElement('div');
+    tableBottomSentinel.className = 'gv-table-bottom-sentinel';
+    tableBottomSentinel.style.height = '1px';
+    tableBottomSentinel.style.marginTop = '-1px';
+    table.appendChild(tableBottomSentinel);
+
+    const tableBottomObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isTableBottomVisible =
+            entry.isIntersecting || entry.boundingClientRect.top < window.innerHeight;
+          updatePaginationStateFromObservers();
+        });
+      },
+      { threshold: 0 }
+    );
+    tableBottomObserver.observe(tableBottomSentinel);
+
+    // Recalculate everything on scroll
+    const { bottomValue } = calculateNavPosition();
+
+    tableSlider.addEventListener('scroll', updateSliderState);
+
+    const handleScroll = () => {
+      if (isScrollThrottled) return;
+
+      isScrollThrottled = true;
+      scrollThrottleTimer = setTimeout(() => {
+        isScrollThrottled = false;
+        checkNavBoundary(bottomValue);
+        updatePaginationStateFromObservers();
+      }, 10);
+    };
+
+    // Resize handler - recalculate positions and check boundaries
+    const handleResize = () => {
+      const { bottomValue: newBottomValue } = calculateNavPosition();
+      checkNavBoundary(newBottomValue);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+
+    // Initial updates
+    updateSliderState();
+    checkNavBoundary(bottomValue);
+    updatePaginationStateFromObservers();
+
+    // Cleanup
+    return () => {
+      if (scrollThrottleTimer) {
+        clearTimeout(scrollThrottleTimer);
+      }
+      tableSlider.removeEventListener('scroll', updateSliderState);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      paginationObserver.disconnect();
+      tableBottomObserver.disconnect();
+      if (tableBottomSentinel && tableBottomSentinel.parentNode) {
+        tableBottomSentinel.parentNode.removeChild(tableBottomSentinel);
+      }
+    };
+  }, [plugin]);
+
   // Show skeleton loaders while loading (even if plugin is null)
   if (loading) {
     const skeletonContent = (
@@ -124,22 +367,6 @@ export default function ProductDetailRankMath({
 
   // If not loading and plugin is null, return null
   if (!plugin) return null;
-
-  // Refs for slider elements
-  const tableSliderRef = useRef(null);
-  const sliderNavRef = useRef(null);
-  const tableRef = useRef(null);
-  const tableHeaderRef = useRef(null);
-  const paginationRef = useRef(null);
-  const dotsRef = useRef([]);
-
-  // State for active slide
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  // Scroll to top when component mounts or plugin changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [plugin]);
 
   // Navigation button click handlers
   const handlePrevClick = () => {
