@@ -156,6 +156,20 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 ---
 
+## Development
+
+### Frontend Setup
+
+To work on the React frontend, navigate to the `frontend` directory and follow the instructions in [frontend/README.md](frontend/README.md).
+
+```bash
+cd frontend
+# Follow instructions to set up .npmrc for private registry access
+npm install
+```
+
+---
+
 ## Configuration Options
 
 - `parent_menu_slug`: WordPress menu slug under which the module submenu will be added. Default: options-general.php
