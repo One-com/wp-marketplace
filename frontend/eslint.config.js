@@ -67,7 +67,7 @@ module.exports = [
       semi: 'error',
       'semi-spacing': 'error',
       'arrow-spacing': 'error',
-      'no-confusing-arrow': 'error',
+      'no-confusing-arrow': ['error', {allowParens: true}],
       'no-duplicate-imports': 'error',
       'no-var': 'error',
       'object-shorthand': 'off',
