@@ -56,7 +56,9 @@
   "author": "One.com",
   "license": "GPL-2.0-or-later",
   "dependencies": {
+    "@eslint/js": "^9.39.2",
     "@group.one/gravity": "^5.22.1",
+    "globals": "^16.5.0",
     "mixpanel-browser": "^2.72.0",
     "react-i18next": "^15.7.3"
   }
