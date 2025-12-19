@@ -10,7 +10,7 @@ import { formatPluginPrice } from '../utils/priceFormatter';
 import {
   trackMarketplaceVisit,
   trackPluginDetailVisit,
-  trackPageView,
+  trackPageView
 } from '../utils/mixpanelTracking';
 
 export default function Marketplace() {
@@ -34,7 +34,7 @@ export default function Marketplace() {
     catalogError,
     setCatalogError,
     catalogLoading,
-    setCatalogLoading,
+    setCatalogLoading
   } = useMarketplace();
 
   // Get active plugin slugs from WordPress config
@@ -92,7 +92,7 @@ export default function Marketplace() {
   // After plugins load, select plugin from query if present
   useEffect(() => {
     if (pluginFromQuery && plugins.length) {
-      const match = plugins.find(p => p.slug === pluginFromQuery);
+      const match = plugins.find((p) => p.slug === pluginFromQuery);
       if (match) setSelectedPlugin(match);
     } else if (!pluginFromQuery) {
       // Clear selectedPlugin when no plugin parameter in URL
@@ -109,7 +109,7 @@ export default function Marketplace() {
         setSelectedPlugin(null);
       } else if (plugins.length) {
         // URL has plugin parameter, update selection
-        const match = plugins.find(p => p.slug === currentPluginParam);
+        const match = plugins.find((p) => p.slug === currentPluginParam);
         if (match) setSelectedPlugin(match);
       }
     };
@@ -144,7 +144,7 @@ export default function Marketplace() {
           // Track page view with content render failure
           trackPageView({
             category: 'marketplace_home',
-            isContentRendered: false,
+            isContentRendered: false
           });
           setCatalogError(true);
           setCatalogLoading(false);
@@ -162,7 +162,7 @@ export default function Marketplace() {
           // Track page view with content render failure
           trackPageView({
             category: 'marketplace_home',
-            isContentRendered: false,
+            isContentRendered: false
           });
           setCatalogError(true);
           setCatalogLoading(false);
@@ -176,11 +176,11 @@ export default function Marketplace() {
         // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
         if (isOnecomBrand) {
           const specialPlugins = normalizedPlugins.filter(
-            p => p.slug === 'wp-rocket' || p.slug === 'seo-by-rank-math-pro'
+            (p) => p.slug === 'wp-rocket' || p.slug === 'seo-by-rank-math-pro'
           );
 
           // Fetch subscription status for each special plugin
-          specialPlugins.forEach(plugin => {
+          specialPlugins.forEach((plugin) => {
             fetchSubscriptionStatus(plugin.slug);
           });
         }
@@ -189,7 +189,7 @@ export default function Marketplace() {
         // Track page view with content render failure
         trackPageView({
           category: 'marketplace_home',
-          isContentRendered: false,
+          isContentRendered: false
         });
         setCatalogError(true);
       } finally {
@@ -204,7 +204,7 @@ export default function Marketplace() {
   useEffect(() => {
     if (plugins.length > 0) {
       // Filter out activated plugins
-      const nonActivatedPlugins = plugins.filter(p => p.activated !== true);
+      const nonActivatedPlugins = plugins.filter((p) => p.activated !== true);
       const allActivated = nonActivatedPlugins.length === 0;
       setAllPluginsActivated(allActivated);
     }
@@ -279,12 +279,12 @@ export default function Marketplace() {
     e.stopPropagation();
 
     // Set downloading state
-    setDownloadingPlugins(prev => ({ ...prev, [plugin.slug]: true }));
+    setDownloadingPlugins((prev) => ({ ...prev, [plugin.slug]: true }));
 
     // Reset after a short delay (download is triggered immediately)
     // The browser handles the actual download, so we simulate completion
     setTimeout(() => {
-      setDownloadingPlugins(prev => ({ ...prev, [plugin.slug]: false }));
+      setDownloadingPlugins((prev) => ({ ...prev, [plugin.slug]: false }));
     }, 2000);
   };
 
@@ -302,7 +302,7 @@ export default function Marketplace() {
   }, [selectedPlugin]);
 
   // Helper function to check if a plugin should be visible based on its rules
-  const shouldShowPlugin = plugin => {
+  const shouldShowPlugin = (plugin) => {
     // If plugin has no rules, show it by default
     if (!plugin.rules) {
       return true;
@@ -316,7 +316,7 @@ export default function Marketplace() {
       }
 
       // Plugin should be visible if ANY of the required plugins is active
-      const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
+      const hasRequiredPlugin = plugin.rules.mustHavePlugins.some((requiredSlug) =>
         activePlugins.includes(requiredSlug)
       );
 
@@ -344,7 +344,7 @@ export default function Marketplace() {
   };
 
   // Helper function to determine if we should use ProductDetailRankMath
-  const shouldUseRankMathDetail = plugin => {
+  const shouldUseRankMathDetail = (plugin) => {
     if (!plugin) return false;
     const brand = typeof window !== 'undefined' && window.marketplaceConfig?.brand;
     const isOnecomBrand = brand === 'onecom';
@@ -461,7 +461,7 @@ export default function Marketplace() {
   // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
   // Also filter out activated plugins, seo-by-rank-math, and plugins that don't pass rules check
   const bySlug = new Map();
-  plugins.forEach(p => {
+  plugins.forEach((p) => {
     if (
       !bySlug.has(p.slug) &&
       p.activated !== true &&
@@ -472,7 +472,7 @@ export default function Marketplace() {
     }
   });
 
-  Array.from(bySlug.values()).forEach(p => {
+  Array.from(bySlug.values()).forEach((p) => {
     // Handle new category object structure: { id, slug, title, description }
     const categoryObj =
       Array.isArray(p.categories) && p.categories.length
@@ -523,7 +523,7 @@ export default function Marketplace() {
           <p className="gv-text-bold gv-text-lg gv-mb-xs">{info.title || catKey}</p>
           {info.description && <p className="gv-text-sm">{info.description}</p>}
           <div className="product-grid gv-grid gv-gap-lg  gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
-            {list.map(plugin => {
+            {list.map((plugin) => {
               const freeLabel = uiI18n?.labels?.free || 'Free';
               const price = formatPluginPrice(plugin, freeLabel);
               return (
@@ -557,7 +557,7 @@ export default function Marketplace() {
                       className="gv-reset-button"
                       style={{ display: 'inline-block' }}
                       aria-label={`View details for ${plugin.name}`}
-                      onClick={e => {
+                      onClick={(e) => {
                         e.preventDefault();
                         setSelectedPlugin(plugin);
                         const url = new URL(window.location.href);

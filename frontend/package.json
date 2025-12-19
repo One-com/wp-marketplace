@@ -20,7 +20,8 @@
     "build:standalone": "vite build",
     "copy": "node copy-build.js",
     "lint": "eslint 'src/**/*.{js,jsx}'",
-    "format:check": "prettier --check 'src/**/*.{js,jsx,css,scss}'",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --log-level=error --write 'src/**/*.{js,jsx,css,scss}'",
     "minify-css": "cleancss -o ../assets/min-css/marketplace.min.css ../css/marketplace.css"
   },
   "peerDependencies": {

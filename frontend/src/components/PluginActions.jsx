@@ -10,7 +10,7 @@ export default function PluginActions({ plugin }) {
     isCheckingSubscription,
     isOnecomBrand,
     handlePluginAction,
-    uiI18n,
+    uiI18n
   } = useMarketplace();
 
   const isSpecialPlugin = plugin.slug === 'wp-rocket' || plugin.slug === 'seo-by-rank-math-pro';
@@ -23,7 +23,7 @@ export default function PluginActions({ plugin }) {
     (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
     '';
   const iconBase = assetBase ? `${assetBase}assets/` : '';
-  const handleClick = action => {
+  const handleClick = (action) => {
     // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
     const isNotInstalled = !plugin.installed;
 
@@ -35,18 +35,18 @@ export default function PluginActions({ plugin }) {
         plugin: plugin,
         context: {
           action: action,
-          result: 'initiated',
-        },
+          result: 'initiated'
+        }
       });
 
       // Dispatch custom event instead of calling handlePluginAction
       const event = new CustomEvent('onecom-plugin-provision', {
         detail: {
-          slug: plugin.slug,
+          slug: plugin.slug
         },
         bubbles: true,
         cancelable: true,
-        composed: true,
+        composed: true
       });
       // Dispatch on document so listeners using document.addEventListener receive it
       document.dispatchEvent(event);
@@ -62,7 +62,7 @@ export default function PluginActions({ plugin }) {
     trackButtonClick({
       buttonName: 'Select',
       buttonAction: 'subscribe_addon',
-      plugin: plugin,
+      plugin: plugin
     });
 
     // Dispatch custom event for provisioning
@@ -70,7 +70,7 @@ export default function PluginActions({ plugin }) {
       detail: { slug: plugin.slug },
       bubbles: true,
       cancelable: true,
-      composed: true,
+      composed: true
     });
     document.dispatchEvent(event);
   };
@@ -83,8 +83,8 @@ export default function PluginActions({ plugin }) {
       context: {
         product_slug: plugin.slug,
         product_name: plugin.name,
-        has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
-      },
+        has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== '')
+      }
     });
 
     // Check if plugin has a redirectUrl from API response

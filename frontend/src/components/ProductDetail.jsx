@@ -15,7 +15,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     subscriptionStatus,
     isCheckingSubscription,
     setNoticeState,
-    setErrorState,
+    setErrorState
   } = useMarketplace();
 
   const assetBase =
@@ -233,7 +233,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
         <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
           <a
             href="#"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
               // Disable back navigation when plugin is being activated and reload is pending
               if (pluginInAction[plugin.slug]) {
@@ -260,7 +260,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
             style={{
               opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
               pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
-              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer',
+              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
             }}
             aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
           >

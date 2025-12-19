@@ -66,7 +66,7 @@ const MarketplaceApp = ({
   useWPHandlers,
   wpConfig,
   enableDefaultStyles,
-  assetsBaseUrl,
+  assetsBaseUrl
 }) => {
   return (
     <MarketplaceProvider

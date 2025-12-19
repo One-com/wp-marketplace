@@ -7,7 +7,7 @@ const CURRENCY_SYMBOLS = {
   GBP: '£',
   DKK: 'kr',
   NOK: 'kr',
-  SEK: 'kr',
+  SEK: 'kr'
   // Add more currencies here as needed
   // 'JPY': '¥',
 };
@@ -23,7 +23,7 @@ const CURRENCIES_WITH_POST_SYMBOL = ['DKK', 'SEK', 'NOK'];
  * @param {string} currencyCode - The currency code (e.g., 'EUR', 'USD')
  * @returns {string} - The currency symbol or the code itself as fallback
  */
-const getCurrencySymbol = currencyCode => {
+const getCurrencySymbol = (currencyCode) => {
   return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
 };
 
@@ -57,7 +57,7 @@ export const formatPluginPrice = (plugin, freeLabel = 'Free') => {
   // Handle new API format with prices array
   if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
     // Find the first active price, or use first price if isActive is not present
-    let priceToUse = plugin.prices.find(price => price.isActive === true);
+    let priceToUse = plugin.prices.find((price) => price.isActive === true);
 
     // If no price with isActive:true found, use first price (for formats without isActive)
     if (!priceToUse) {

@@ -9,7 +9,7 @@ export const MarketplaceProvider = ({
   useWPHandlers,
   wpConfig,
   enableDefaultStyles,
-  assetsBaseUrl,
+  assetsBaseUrl
 }) => {
   const [pluginInAction, setPluginInAction] = useState({});
   const [subscriptionStatus, setSubscriptionStatus] = useState({});
@@ -35,7 +35,7 @@ export const MarketplaceProvider = ({
 
   // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
   const fetchSubscriptionStatus = useCallback(
-    async pluginSlug => {
+    async (pluginSlug) => {
       if (!isOnecomBrand) return;
 
       const isSpecialPlugin = pluginSlug === 'wp-rocket' || pluginSlug === 'seo-by-rank-math-pro';
@@ -48,7 +48,7 @@ export const MarketplaceProvider = ({
 
       // Mark as being checked
       checkedSubscriptionsRef.current[pluginSlug] = true;
-      setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: true }));
+      setIsCheckingSubscription((prev) => ({ ...prev, [pluginSlug]: true }));
 
       try {
         const ajaxUrl =
@@ -56,7 +56,7 @@ export const MarketplaceProvider = ({
           window.marketplaceConfig?.wpConfig?.ajaxUrl;
         if (!ajaxUrl) {
           console.warn('ajaxUrl not available in marketplaceConfig');
-          setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: false }));
+          setIsCheckingSubscription((prev) => ({ ...prev, [pluginSlug]: false }));
           return;
         }
 
@@ -69,21 +69,21 @@ export const MarketplaceProvider = ({
 
         const res = await fetch(ajaxUrl, {
           method: 'POST',
-          body: formData,
+          body: formData
         });
 
         const json = await res.json();
         console.log(`[MarketplaceContext] Subscription status response for ${pluginSlug}:`, json);
 
-        setSubscriptionStatus(prev => ({ ...prev, [pluginSlug]: json.is_purchased }));
+        setSubscriptionStatus((prev) => ({ ...prev, [pluginSlug]: json.is_purchased }));
       } catch (e) {
         console.error(
           `[MarketplaceContext] Failed to fetch subscription status for ${pluginSlug}`,
           e
         );
-        setSubscriptionStatus(prev => ({ ...prev, [pluginSlug]: false }));
+        setSubscriptionStatus((prev) => ({ ...prev, [pluginSlug]: false }));
       } finally {
-        setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: false }));
+        setIsCheckingSubscription((prev) => ({ ...prev, [pluginSlug]: false }));
       }
     },
     [isOnecomBrand]
@@ -103,7 +103,7 @@ export const MarketplaceProvider = ({
       // Check if this is Imagify plugin activation (handles 302 redirect case)
       const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
 
-      setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
+      setPluginInAction((prev) => ({ ...prev, [plugin.slug]: true }));
 
       // Use ref to track if activation was successful (to prevent finally block from clearing pluginInAction)
       let activationSuccessful = false;
@@ -145,7 +145,7 @@ export const MarketplaceProvider = ({
         // Allow React to render loading overlay, then execute Imagify flow
         setTimeout(() => {
           // Initiate the activation request (don't wait for response due to 302 redirect)
-          fetch(url, { method: 'POST' }).catch(err => {
+          fetch(url, { method: 'POST' }).catch((err) => {
             console.log('Imagify activation request initiated, reload will proceed');
           });
 
@@ -161,8 +161,8 @@ export const MarketplaceProvider = ({
               context: {
                 action: action,
                 result: 'success',
-                special_case: 'imagify_redirect',
-              },
+                special_case: 'imagify_redirect'
+              }
             });
           }, 1000);
 
@@ -175,8 +175,8 @@ export const MarketplaceProvider = ({
 
           // Update plugin state to activated
           setTimeout(() => {
-            setPlugins(prev =>
-              prev.map(p =>
+            setPlugins((prev) =>
+              prev.map((p) =>
                 p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p
               )
             );
@@ -211,8 +211,8 @@ export const MarketplaceProvider = ({
         const result = await res.json();
 
         if (result.success) {
-          setPlugins(prev =>
-            prev.map(p =>
+          setPlugins((prev) =>
+            prev.map((p) =>
               p.slug === plugin.slug
                 ? { ...p, installed: result.data.installed, activated: result.data.activated }
                 : p
@@ -230,8 +230,8 @@ export const MarketplaceProvider = ({
               plugin: plugin,
               context: {
                 action: action,
-                result: 'success',
-              },
+                result: 'success'
+              }
             });
           } else if (action === 'activate' && result.data.activated) {
             activationSuccessful = true; // Mark activation as successful to prevent finally block from clearing pluginInAction
@@ -244,8 +244,8 @@ export const MarketplaceProvider = ({
               plugin: plugin,
               context: {
                 action: action,
-                result: 'success',
-              },
+                result: 'success'
+              }
             });
 
             // Schedule reload after activation to refresh plugin state
@@ -275,8 +275,8 @@ export const MarketplaceProvider = ({
               context: {
                 action: action,
                 result: 'error',
-                error_message: result.data?.message || 'Activation failed',
-              },
+                error_message: result.data?.message || 'Activation failed'
+              }
             });
           } else if (action === 'install') {
             setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug });
@@ -289,8 +289,8 @@ export const MarketplaceProvider = ({
               context: {
                 action: action,
                 result: 'error',
-                error_message: result.data?.message || 'Installation failed',
-              },
+                error_message: result.data?.message || 'Installation failed'
+              }
             });
           } else {
             alert(result.data?.message || 'Failed to perform action');
@@ -308,15 +308,15 @@ export const MarketplaceProvider = ({
             context: {
               action: action,
               result: 'error',
-              error_message: err.message || 'Network error',
-            },
+              error_message: err.message || 'Network error'
+            }
           });
         }
       } finally {
         // Only clear pluginInAction if activation was not successful
         // For successful activations, keep it true until page reload
         if (!activationSuccessful) {
-          setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+          setPluginInAction((prev) => ({ ...prev, [plugin.slug]: false }));
         }
         // Clear loading state
         setLoadingAction('');
@@ -355,7 +355,7 @@ export const MarketplaceProvider = ({
     catalogError,
     setCatalogError,
     catalogLoading,
-    setCatalogLoading,
+    setCatalogLoading
   };
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;

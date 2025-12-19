@@ -33,8 +33,8 @@ export default function SuccessNotice({ plugin }) {
       context: {
         product_slug: plugin.slug,
         product_name: plugin.name,
-        has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
-      },
+        has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== '')
+      }
     });
 
     // Cancel the scheduled reload since user is navigating manually

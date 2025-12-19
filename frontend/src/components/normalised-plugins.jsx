@@ -19,7 +19,7 @@ export function normalizePlugins(rawResponse) {
   if (items.length === 0) return { plugins: [], uiI18n, locale };
 
   // Map to normalized structure
-  const normalized = items.map(plugin => {
+  const normalized = items.map((plugin) => {
     // Prefer description coming from i18n.description, then fallback to description field
     const descriptionFromTextKeys = plugin?.i18n?.description;
     const description =
@@ -59,13 +59,13 @@ export function normalizePlugins(rawResponse) {
       priceCurrency,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
-      i18n: plugin?.i18n || {},
+      i18n: plugin?.i18n || {}
     };
   });
 
   // Deduplicate by slug (first occurrence wins)
   const seen = new Set();
-  const plugins = normalized.filter(p => {
+  const plugins = normalized.filter((p) => {
     const key = p.slug || p.name || JSON.stringify(p);
     if (seen.has(key)) return false;
     seen.add(key);

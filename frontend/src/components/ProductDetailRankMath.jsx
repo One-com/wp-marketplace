@@ -10,7 +10,7 @@ export default function ProductDetailRankMath({
   plugin,
   onClose,
   usePortal = true,
-  loading = false,
+  loading = false
 }) {
   const {
     assetsBaseUrl,
@@ -19,7 +19,7 @@ export default function ProductDetailRankMath({
     plugins,
     uiI18n,
     subscriptionStatus,
-    isCheckingSubscription,
+    isCheckingSubscription
   } = useMarketplace();
 
   const assetBase =
@@ -36,7 +36,7 @@ export default function ProductDetailRankMath({
           <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
             <a
               href="#"
-              onClick={e => {
+              onClick={(e) => {
                 e.preventDefault();
                 // First check if history is available and has navigable records
                 if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
@@ -149,7 +149,7 @@ export default function ProductDetailRankMath({
     const slideWidth = tableSlider.offsetWidth;
     tableSlider.scrollTo({
       left: tableSlider.scrollLeft - slideWidth,
-      behavior: 'smooth',
+      behavior: 'smooth'
     });
   };
 
@@ -160,19 +160,19 @@ export default function ProductDetailRankMath({
     const slideWidth = tableSlider.offsetWidth;
     tableSlider.scrollTo({
       left: tableSlider.scrollLeft + slideWidth,
-      behavior: 'smooth',
+      behavior: 'smooth'
     });
   };
 
   // Dot click handler
-  const handleDotClick = slideIndex => {
+  const handleDotClick = (slideIndex) => {
     const tableSlider = tableSliderRef.current;
     if (!tableSlider) return;
 
     const slideWidth = tableSlider.offsetWidth;
     tableSlider.scrollTo({
       left: slideWidth * slideIndex,
-      behavior: 'smooth',
+      behavior: 'smooth'
     });
   };
 
@@ -250,7 +250,7 @@ export default function ProductDetailRankMath({
     };
 
     // Check nav boundary and update class only when state changes
-    const checkNavBoundary = bottomValue => {
+    const checkNavBoundary = (bottomValue) => {
       const tableRect = table.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
@@ -324,8 +324,8 @@ export default function ProductDetailRankMath({
     // Set up Intersection Observer for pagination element
     // Observes when pagination scrolls past the top of viewport
     const paginationObserver = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           // When pagination is NOT intersecting and is above viewport, it's scrolled past
           if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
             isPaginationScrolledPast = true;
@@ -337,7 +337,7 @@ export default function ProductDetailRankMath({
       },
       {
         threshold: [0, 1],
-        rootMargin: '0px',
+        rootMargin: '0px'
       }
     );
 
@@ -354,15 +354,15 @@ export default function ProductDetailRankMath({
     table.appendChild(tableBottomSentinel);
 
     const tableBottomObserver = new IntersectionObserver(
-      entries => {
-        entries.forEach(entry => {
+      (entries) => {
+        entries.forEach((entry) => {
           isTableBottomVisible = entry.isIntersecting;
           updatePaginationStateFromObservers();
         });
       },
       {
         threshold: [0],
-        rootMargin: '-100px 0px 0px 0px',
+        rootMargin: '-100px 0px 0px 0px'
       }
     );
 
@@ -418,8 +418,8 @@ export default function ProductDetailRankMath({
   }, []);
 
   // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
-  const freePlugin = plugins.find(p => p.slug === 'seo-by-rank-math') || null;
-  const proPlugin = plugins.find(p => p.slug === 'seo-by-rank-math-pro') || null;
+  const freePlugin = plugins.find((p) => p.slug === 'seo-by-rank-math') || null;
+  const proPlugin = plugins.find((p) => p.slug === 'seo-by-rank-math-pro') || null;
 
   // Use the clicked plugin for header/main content, but always use freePlugin for first column
   const imageURL =
@@ -491,7 +491,7 @@ export default function ProductDetailRankMath({
         <nav className="gv-breadcrumbs gv-area-nav">
           <a
             href="#"
-            onClick={e => {
+            onClick={(e) => {
               e.preventDefault();
               // First check if history is available and has navigable records
               if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
@@ -660,7 +660,7 @@ export default function ProductDetailRankMath({
             </div>
             <div className="gv-slider-pagination gv-state-top" ref={paginationRef}>
               <div className="gv-dots" role="tablist">
-                {[0, 1].map(slideIndex => (
+                {[0, 1].map((slideIndex) => (
                   <span
                     key={slideIndex}
                     className={`gv-dot ${activeSlide === slideIndex ? 'gv-active' : ''}`}
