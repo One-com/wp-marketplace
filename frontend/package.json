@@ -22,6 +22,7 @@
     "lint": "eslint 'src/**/*.{js,jsx}'",
     "lint:fix": "eslint . --fix",
     "format": "prettier --log-level=error --write 'src/**/*.{js,jsx,css,scss}'",
+    "format:check": "prettier --check 'src/**/*.{js,jsx,css,scss}'",
     "minify-css": "cleancss -o ../assets/min-css/marketplace.min.css ../css/marketplace.css"
   },
   "peerDependencies": {
