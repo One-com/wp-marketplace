@@ -16,19 +16,14 @@ import {
 export default function Marketplace() {
   const {
     apiBaseUrl,
-    useWPHandlers,
-    wpConfig,
-    enableDefaultStyles,
-    assetsBaseUrl,
-    pluginInAction,
-    setPluginInAction,
     fetchSubscriptionStatus,
     isOnecomBrand,
+    assetsBaseUrl,
+    setPluginInAction,
     plugins,
     setPlugins,
     uiI18n,
     setUiI18n,
-    handlePluginAction,
     allPluginsActivated,
     setAllPluginsActivated,
     catalogError,
@@ -49,7 +44,7 @@ export default function Marketplace() {
       ? window.marketplaceConfig.activeThemeAuthor
       : '';
 
-  const [downloadingPlugins, setDownloadingPlugins] = useState({});
+  // const [downloadingPlugins, setDownloadingPlugins] = useState({});
   const [selectedPlugin, setSelectedPlugin] = useState(null);
 
   // Use ref to track if plugins have already been fetched
@@ -118,7 +113,7 @@ export default function Marketplace() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [plugins]);
 
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   useEffect(() => {
     // Only fetch once
@@ -198,7 +193,15 @@ export default function Marketplace() {
     }
 
     fetchPlugins();
-  }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
+  }, [
+    apiBaseUrl,
+    isOnecomBrand,
+    fetchSubscriptionStatus,
+    setPlugins,
+    setCatalogError,
+    setCatalogLoading,
+    setUiI18n
+  ]);
 
   // Update allPluginsActivated in context whenever plugins change
   useEffect(() => {
@@ -275,31 +278,31 @@ export default function Marketplace() {
     }
   }, [selectedPlugin, pluginFromQuery]);
 
-  const handleDownloadClick = (e, plugin) => {
-    e.stopPropagation();
+  // const handleDownloadClick = (e, plugin) => {
+  //   e.stopPropagation();
+  //
+  //   // Set downloading state
+  //   setDownloadingPlugins((prev) => ({ ...prev, [plugin.slug]: true }));
+  //
+  //   // Reset after a short delay (download is triggered immediately)
+  //   // The browser handles the actual download, so we simulate completion
+  //   setTimeout(() => {
+  //     setDownloadingPlugins((prev) => ({ ...prev, [plugin.slug]: false }));
+  //   }, 2000);
+  // };
 
-    // Set downloading state
-    setDownloadingPlugins((prev) => ({ ...prev, [plugin.slug]: true }));
-
-    // Reset after a short delay (download is triggered immediately)
-    // The browser handles the actual download, so we simulate completion
-    setTimeout(() => {
-      setDownloadingPlugins((prev) => ({ ...prev, [plugin.slug]: false }));
-    }, 2000);
-  };
-
-  const openDetail = (plugin, e) => {
-    // Debug to confirm click
-    console.log('Opening detail for plugin:', plugin.slug);
-    setSelectedPlugin(plugin);
-  };
+  // const openDetail = (plugin, _e) => {
+  //   // Debug to confirm click
+  //   // console.log('Opening detail for plugin:', plugin.slug);
+  //   setSelectedPlugin(plugin);
+  // };
 
   // Debug: log whenever selectedPlugin changes
-  useEffect(() => {
-    if (selectedPlugin) {
-      console.log('Selected plugin state now:', selectedPlugin.slug);
-    }
-  }, [selectedPlugin]);
+  // useEffect(() => {
+  //   if (selectedPlugin) {
+  //     console.log('Selected plugin state now:', selectedPlugin.slug);
+  //   }
+  // }, [selectedPlugin]);
 
   // Helper function to check if a plugin should be visible based on its rules
   const shouldShowPlugin = (plugin) => {
@@ -490,7 +493,7 @@ export default function Marketplace() {
   });
 
   const categories = Array.from(categoryMap.entries()).filter(
-    ([catKey, { plugins: list }]) => list.length > 0
+    ([_catKey, { plugins: list }]) => list.length > 0
   );
 
   // If all plugins are activated, show the "You've got all our plugins!" message

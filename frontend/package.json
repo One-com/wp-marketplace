@@ -60,6 +60,7 @@
     "@group.one/gravity": "^5.22.1",
     "globals": "^16.5.0",
     "mixpanel-browser": "^2.72.0",
+    "prop-types": "^15.8.1",
     "react-i18next": "^15.7.3"
   }
 }

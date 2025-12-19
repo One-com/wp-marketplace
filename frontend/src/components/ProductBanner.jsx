@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useMarketplace } from '../context/MarketplaceContext';
 
 const ProductBanner = ({ loading = false }) => {
-  const { assetsBaseUrl, uiI18n } = useMarketplace();
+  const { uiI18n } = useMarketplace();
   const leftBannerUrl =
     'https://wpaddon-static.group-cdn.one/images/wp/marketplace/banners/top-header-left-banner.png';
   const rightBannerUrl =
@@ -53,13 +54,17 @@ const ProductBanner = ({ loading = false }) => {
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={rightBannerUrl} />
-              <img src={rightBannerUrl} alt="Product image" />
+              <img src={rightBannerUrl} alt="Product" />
             </picture>
           </div>
         )}
       </div>
     </header>
   );
+};
+
+ProductBanner.propTypes = {
+  loading: PropTypes.bool
 };
 
 export default ProductBanner;

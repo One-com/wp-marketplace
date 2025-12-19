@@ -8,7 +8,6 @@ export default function ErrorState() {
     assetsBaseUrl ||
     (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
     '';
-  const iconBase = assetBase ? `${assetBase}assets/icons/` : '';
 
   const handleRefresh = () => {
     window.location.reload();
@@ -17,7 +16,7 @@ export default function ErrorState() {
   return (
     <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
       <div className="gv-text-center">
-        <h5 className="gv-header-md gv-mb-sm">Couldn't load the page</h5>
+        <h5 className="gv-header-md gv-mb-sm">Couldn&apos;t load the page</h5>
         <p className="gv-text-md gv-mb-lg">
           Please refresh the page and contact our support if the issue persists.
         </p>

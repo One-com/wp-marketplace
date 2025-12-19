@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Marketplace from './components/MarketPlace';
 import ProductBanner from './components/ProductBanner';
 import FeaturedCarousel from './components/FeaturedCarousel';
@@ -79,6 +80,14 @@ const MarketplaceApp = ({
       <MarketplaceContent />
     </MarketplaceProvider>
   );
+};
+
+MarketplaceApp.propTypes = {
+  apiBaseUrl: PropTypes.string.isRequired,
+  useWPHandlers: PropTypes.bool,
+  wpConfig: PropTypes.object,
+  enableDefaultStyles: PropTypes.bool,
+  assetsBaseUrl: PropTypes.string
 };
 
 export default MarketplaceApp;

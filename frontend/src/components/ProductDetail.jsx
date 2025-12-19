@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
 import PluginActions from './PluginActions';
 import SuccessNotice from './SuccessNotice';
@@ -231,8 +232,8 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     <div className={usePortal ? 'gv-surface-dim' : 'gv-surface-dim'}>
       <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
         <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
-          <a
-            href="#"
+          <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               // Disable back navigation when plugin is being activated and reload is pending
@@ -254,15 +255,19 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
                 onClose();
               }
             }}
-            className="gv-flex gv-items-center gv-gap-xs"
-            role="button"
+            className="gv-flex gv-items-center gv-gap-xs gv-button-reset"
             aria-label="Go back"
             style={{
               opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
               pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
-              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
+              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer',
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              font: 'inherit',
+              color: 'inherit'
             }}
-            aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
+            disabled={!!pluginInAction[plugin.slug]}
           >
             <img
               style={{ minWidth: '24px' }}
@@ -271,7 +276,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
               alt="Back to plugins"
             />
             <span>Back</span>
-          </a>
+          </button>
           <SuccessNotice plugin={plugin} />
           <ErrorToast plugin={plugin} />
         </nav>
@@ -289,11 +294,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={`${mainImage} 1x, ${mainImage} 2x`} />
-              <img
-                src={mainImage}
-                srcSet={`${mainImage} 1x, ${mainImage} 2x`}
-                alt={`${title} image`}
-              />
+              <img src={mainImage} srcSet={`${mainImage} 1x, ${mainImage} 2x`} alt={title} />
             </picture>
           </div>
         </header>
@@ -425,3 +426,10 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
 
   return usePortal ? createPortal(content, document.body) : content;
 }
+
+ProductDetail.propTypes = {
+  plugin: PropTypes.object,
+  onClose: PropTypes.func,
+  usePortal: PropTypes.bool,
+  loading: PropTypes.bool
+};

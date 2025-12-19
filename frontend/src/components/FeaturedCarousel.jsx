@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { formatPluginPrice } from '../utils/priceFormatter';
 
@@ -249,7 +250,7 @@ export default function FeaturedCarousel({ loading = false }) {
                       description: null
                     }
                 : { slug: 'Others', title: 'Others', description: null };
-            const categoryName = categoryObj.title || categoryObj.slug || 'Others';
+            // const categoryName = categoryObj.title || categoryObj.slug || 'Others';
 
             return (
               <div
@@ -314,7 +315,7 @@ export default function FeaturedCarousel({ loading = false }) {
                       <img
                         src={mainImage}
                         srcSet={`${mainImage} 1x, ${mainImage} 2x`}
-                        alt={`${title} image`}
+                        alt={title}
                       />
                     </picture>
                   </div>
@@ -392,3 +393,7 @@ export default function FeaturedCarousel({ loading = false }) {
     </section>
   );
 }
+
+FeaturedCarousel.propTypes = {
+  loading: PropTypes.bool
+};

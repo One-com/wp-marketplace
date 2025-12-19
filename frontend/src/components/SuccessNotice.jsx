@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { trackButtonClick } from '../utils/mixpanelTracking';
 
@@ -137,3 +138,11 @@ export default function SuccessNotice({ plugin }) {
     </div>
   );
 }
+
+SuccessNotice.propTypes = {
+  plugin: PropTypes.shape({
+    slug: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    redirectUrl: PropTypes.string
+  })
+};

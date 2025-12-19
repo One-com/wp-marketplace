@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
 import PluginActions from './PluginActions';
 import SuccessNotice from './SuccessNotice';
@@ -34,7 +35,7 @@ export default function ProductDetailRankMath({
   const tableRef = useRef(null);
   const tableHeaderRef = useRef(null);
   const paginationRef = useRef(null);
-  const dotsRef = useRef([]);
+  // const dotsRef = useRef([]);
 
   // State for active slide
   const [activeSlide, setActiveSlide] = useState(0);
@@ -52,366 +53,9 @@ export default function ProductDetailRankMath({
     const tableHeader = tableHeaderRef.current;
     const pagination = paginationRef.current;
 
-    if (!tableSlider || !sliderNav || !table || !tableHeader || !pagination) return;
-
-    const prevButton = sliderNav.querySelector('.gv-previous');
-    const nextButton = sliderNav.querySelector('.gv-next');
-
-    // State tracking flags to prevent continuous class toggling
-    let navIsAtBottom = false;
-    let paginationState = 'top'; // 'top', 'overlay', or 'bottom'
-    let isPaginationScrolledPast = false;
-    let isTableBottomVisible = false;
-    let isUpdatingClasses = false; // Flag to prevent observer callbacks during class updates
-
-    // Throttle timer for scroll events
-    let scrollThrottleTimer = null;
-    let isScrollThrottled = false;
-
-    // Update active dot and button states based on scroll position
-    const updateSliderState = () => {
-      const scrollLeft = tableSlider.scrollLeft;
-      const slideWidth = tableSlider.offsetWidth;
-      const currentSlide = Math.round(scrollLeft / slideWidth);
-
-      setActiveSlide(currentSlide);
-
-      // Update button disabled states
-      if (prevButton) {
-        if (currentSlide === 0) {
-          prevButton.classList.add('gv-disabled');
-        } else {
-          prevButton.classList.remove('gv-disabled');
-        }
-      }
-
-      if (nextButton) {
-        const maxSlide = Math.round(tableSlider.scrollWidth / slideWidth) - 1;
-        if (currentSlide >= maxSlide) {
-          nextButton.classList.add('gv-disabled');
-        } else {
-          nextButton.classList.remove('gv-disabled');
-        }
-      }
-    };
-
-    // Calculate and set dynamic positioning for sticky navigation (only when needed)
-    const calculateNavPosition = () => {
-      const tablePaddingTop = parseFloat(getComputedStyle(table).paddingTop) || 0;
-      const headerHeight = tableHeader.offsetHeight;
-      const halfHeaderHeight = headerHeight / 2;
-
-      // [X] = half of table header height + padding-top of table
-      const translateY = halfHeaderHeight + tablePaddingTop;
-
-      // [Y] = half viewport height - [X]
-      const topValue = window.innerHeight / 2 - translateY;
-
-      // [Z] = half of table header height (excluding padding)
-      const bottomValue = 2 * halfHeaderHeight;
-
-      sliderNav.style.transform = `translateY(${translateY}px)`;
-      sliderNav.style.top = `${topValue}px`;
-      sliderNav.style.bottom = `${bottomValue}px`;
-
-      return { bottomValue, halfHeaderHeight };
-    };
-
-    // Check nav boundary and update class only when state changes
-    const checkNavBoundary = (bottomValue) => {
-      const tableRect = table.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-
-      // Calculate the threshold where sticky bottom constraint activates
-      const stickyBottomThreshold = viewportHeight - bottomValue;
-
-      // Only update class when boundary is crossed (state changes)
-      const shouldBeAtBottom = tableRect.bottom <= stickyBottomThreshold;
-
-      if (shouldBeAtBottom !== navIsAtBottom) {
-        navIsAtBottom = shouldBeAtBottom;
-
-        if (navIsAtBottom) {
-          sliderNav.classList.add('gv-state-bottom');
-        } else {
-          sliderNav.classList.remove('gv-state-bottom');
-        }
-      }
-    };
-
-    // Update pagination state based on intersection observer flags
-    const updatePaginationStateFromObservers = () => {
-      // If already updating classes, ignore this call to prevent infinite loop
-      if (isUpdatingClasses) {
-        return;
-      }
-
-      const tableRect = table.getBoundingClientRect();
-      const viewportHeight = window.innerHeight;
-
-      // Determine correct state based on current scroll position and observer flags
-      let newState = 'top';
-
-      if (isPaginationScrolledPast) {
-        newState = 'bottom';
-      } else if (isTableBottomVisible) {
-        // If table bottom is visible, check if we should still be overlaying
-        const paginationHeight = pagination.offsetHeight;
-        const remainingTableHeight = tableRect.bottom - viewportHeight;
-
-        if (remainingTableHeight > paginationHeight) {
-          newState = 'overlay';
-        } else {
-          newState = 'bottom';
-        }
-      } else {
-        // Normal case: check if pagination has entered the viewport
-        const paginationRect = pagination.getBoundingClientRect();
-        if (paginationRect.top <= viewportHeight) {
-          newState = 'overlay';
-        }
-      }
-
-      // Only apply changes if state actually changed
-      if (newState !== paginationState) {
-        isUpdatingClasses = true;
-        paginationState = newState;
-
-        // Remove all states
-        tableSlider.classList.remove('gv-pagination-overlay', 'gv-pagination-bottom');
-
-        // Apply new state
-        if (paginationState === 'overlay') {
-          tableSlider.classList.add('gv-pagination-overlay');
-        } else if (paginationState === 'bottom') {
-          tableSlider.classList.add('gv-pagination-bottom');
-        }
-
-        // Reset flag after DOM update
-        setTimeout(() => {
-          isUpdatingClasses = false;
-        }, 0);
-      }
-    };
-
-    // Intersection Observer for the real pagination at the bottom of the table
-    const paginationObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          isPaginationScrolledPast = !entry.isIntersecting && entry.boundingClientRect.top < 0;
-          updatePaginationStateFromObservers();
-        });
-      },
-      { threshold: 0 }
-    );
-    paginationObserver.observe(pagination);
-
-    // Intersection Observer for the bottom of the table to handle transitions
-    const tableBottomSentinel = document.createElement('div');
-    tableBottomSentinel.className = 'gv-table-bottom-sentinel';
-    tableBottomSentinel.style.height = '1px';
-    tableBottomSentinel.style.marginTop = '-1px';
-    table.appendChild(tableBottomSentinel);
-
-    const tableBottomObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          isTableBottomVisible =
-            entry.isIntersecting || entry.boundingClientRect.top < window.innerHeight;
-          updatePaginationStateFromObservers();
-        });
-      },
-      { threshold: 0 }
-    );
-    tableBottomObserver.observe(tableBottomSentinel);
-
-    // Recalculate everything on scroll
-    const { bottomValue } = calculateNavPosition();
-
-    tableSlider.addEventListener('scroll', updateSliderState);
-
-    const handleScroll = () => {
-      if (isScrollThrottled) return;
-
-      isScrollThrottled = true;
-      scrollThrottleTimer = setTimeout(() => {
-        isScrollThrottled = false;
-        checkNavBoundary(bottomValue);
-        updatePaginationStateFromObservers();
-      }, 10);
-    };
-
-    // Resize handler - recalculate positions and check boundaries
-    const handleResize = () => {
-      const { bottomValue: newBottomValue } = calculateNavPosition();
-      checkNavBoundary(newBottomValue);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleResize);
-
-    // Initial updates
-    updateSliderState();
-    checkNavBoundary(bottomValue);
-    updatePaginationStateFromObservers();
-
-    // Cleanup
-    return () => {
-      if (scrollThrottleTimer) {
-        clearTimeout(scrollThrottleTimer);
-      }
-      tableSlider.removeEventListener('scroll', updateSliderState);
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
-      paginationObserver.disconnect();
-      tableBottomObserver.disconnect();
-      if (tableBottomSentinel && tableBottomSentinel.parentNode) {
-        tableBottomSentinel.parentNode.removeChild(tableBottomSentinel);
-      }
-    };
-  }, [plugin]);
-
-  // Show skeleton loaders while loading (even if plugin is null)
-  if (loading) {
-    const skeletonContent = (
-      <div className={usePortal ? 'gv-surface-dim' : 'gv-surface-dim'}>
-        <article className="gv-w-max-container gv-mx-auto">
-          <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                // First check if history is available and has navigable records
-                if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
-                  try {
-                    window.history.back();
-                  } catch (error) {
-                    // If history.back() fails, fallback to onClose
-                    if (onClose) {
-                      onClose();
-                    }
-                  }
-                } else if (onClose) {
-                  // Fallback to onClose if history is not available or empty
-                  onClose();
-                }
-              }}
-            >
-              <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-              <span>Back</span>
-            </a>
-          </nav>
-
-          {/* Header skeleton - single skeleton loader */}
-          <header className="gv-area-header">
-            <div className="gv-image">
-              <div className="gv-card-image gv-h-full">
-                <div
-                  className="gv-skeleton gv-radius-0 gv-h-full"
-                  style={{ minHeight: '300px' }}
-                ></div>
-              </div>
-            </div>
-          </header>
-
-          <header className="gv-area-header gv-mt-fluid gv-mb-fluid">
-            <div className="gv-image">
-              <div className="gv-card-image gv-h-full">
-                <div
-                  className="gv-skeleton gv-radius-0 gv-h-full"
-                  style={{ minHeight: '300px' }}
-                ></div>
-              </div>
-            </div>
-          </header>
-          {/* Benefits skeleton - keep structure, add skeletons */}
-          <div className="gv-area-details gv-grid gv-gap-fluid gv-mb-fluid">
-            <section className="gv-stack-space-md">
-              <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '160px' }}></div>
-              <ul className="">
-                {[...Array(3)].map((_, i) => (
-                  <li key={i}>
-                    <div className="gv-skeleton gv-text-sm"></div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          {/* Core Features skeleton - keep structure, add skeletons */}
-          <div className="gv-area-content gv-grid gv-gap-fluid">
-            <section className="gv-text-sm gv-stack-space-md">
-              <div
-                className="gv-skeleton gv-heading-md"
-                style={{ width: '160px', marginBottom: '28px' }}
-              ></div>
-              <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
-                {[...Array(3)].map((_, i) => (
-                  <div className="gv-item gv-stack-space-sm" key={i}>
-                    <div
-                      className="gv-skeleton gv-heading-md gv-mb-sm"
-                      style={{ width: '160px' }}
-                    ></div>
-                    <div className="gv-skeleton gv-text-sm gv-mb-xs"></div>
-                    <div className="gv-skeleton gv-text-sm"></div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        </article>
-      </div>
-    );
-    return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
-  }
-
-  // If not loading and plugin is null, return null
-  if (!plugin) return null;
-
-  // Navigation button click handlers
-  const handlePrevClick = () => {
-    const tableSlider = tableSliderRef.current;
-    if (!tableSlider) return;
-
-    const slideWidth = tableSlider.offsetWidth;
-    tableSlider.scrollTo({
-      left: tableSlider.scrollLeft - slideWidth,
-      behavior: 'smooth'
-    });
-  };
-
-  const handleNextClick = () => {
-    const tableSlider = tableSliderRef.current;
-    if (!tableSlider) return;
-
-    const slideWidth = tableSlider.offsetWidth;
-    tableSlider.scrollTo({
-      left: tableSlider.scrollLeft + slideWidth,
-      behavior: 'smooth'
-    });
-  };
-
-  // Dot click handler
-  const handleDotClick = (slideIndex) => {
-    const tableSlider = tableSliderRef.current;
-    if (!tableSlider) return;
-
-    const slideWidth = tableSlider.offsetWidth;
-    tableSlider.scrollTo({
-      left: slideWidth * slideIndex,
-      behavior: 'smooth'
-    });
-  };
-
-  // Slider functionality
-  useEffect(() => {
-    const tableSlider = tableSliderRef.current;
-    const sliderNav = sliderNavRef.current;
-    const table = tableRef.current;
-    const tableHeader = tableHeaderRef.current;
-    const pagination = paginationRef.current;
-
-    if (!tableSlider || !sliderNav || !table || !tableHeader || !pagination) return;
+    if (!plugin || loading || !tableSlider || !sliderNav || !table || !tableHeader || !pagination) {
+      return () => {};
+    }
 
     const prevButton = sliderNav.querySelector('.gv-previous');
     const nextButton = sliderNav.querySelector('.gv-next');
@@ -633,7 +277,9 @@ export default function ProductDetailRankMath({
       if (scrollThrottleTimer) {
         clearTimeout(scrollThrottleTimer);
       }
-      tableSlider.removeEventListener('scroll', updateSliderState);
+      if (tableSlider) {
+        tableSlider.removeEventListener('scroll', updateSliderState);
+      }
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('resize', handleResize);
       paginationObserver.disconnect();
@@ -642,16 +288,404 @@ export default function ProductDetailRankMath({
         tableBottomSentinel.parentNode.removeChild(tableBottomSentinel);
       }
     };
-  }, []);
+  }, [plugin, loading]);
+
+  // Show skeleton loaders while loading (even if plugin is null)
+  if (loading) {
+    const skeletonContent = (
+      <div className={usePortal ? 'gv-surface-dim' : 'gv-surface-dim'}>
+        <article className="gv-w-max-container gv-mx-auto">
+          <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                // First check if history is available and has navigable records
+                if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
+                  try {
+                    window.history.back();
+                  } catch (error) {
+                    // If history.back() fails, fallback to onClose
+                    if (onClose) {
+                      onClose();
+                    }
+                  }
+                } else if (onClose) {
+                  // Fallback to onClose if history is not available or empty
+                  onClose();
+                }
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                font: 'inherit',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: 'inherit'
+              }}
+            >
+              <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
+              <span>Back</span>
+            </button>
+          </nav>
+
+          {/* Header skeleton - single skeleton loader */}
+          <header className="gv-area-header">
+            <div className="gv-image">
+              <div className="gv-card-image gv-h-full">
+                <div
+                  className="gv-skeleton gv-radius-0 gv-h-full"
+                  style={{ minHeight: '300px' }}
+                ></div>
+              </div>
+            </div>
+          </header>
+
+          <header className="gv-area-header gv-mt-fluid gv-mb-fluid">
+            <div className="gv-image">
+              <div className="gv-card-image gv-h-full">
+                <div
+                  className="gv-skeleton gv-radius-0 gv-h-full"
+                  style={{ minHeight: '300px' }}
+                ></div>
+              </div>
+            </div>
+          </header>
+          {/* Benefits skeleton - keep structure, add skeletons */}
+          <div className="gv-area-details gv-grid gv-gap-fluid gv-mb-fluid">
+            <section className="gv-stack-space-md">
+              <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '160px' }}></div>
+              <ul className="">
+                {[...Array(3)].map((_, i) => (
+                  <li key={i}>
+                    <div className="gv-skeleton gv-text-sm"></div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+
+          {/* Core Features skeleton - keep structure, add skeletons */}
+          <div className="gv-area-content gv-grid gv-gap-fluid">
+            <section className="gv-text-sm gv-stack-space-md">
+              <div
+                className="gv-skeleton gv-heading-md"
+                style={{ width: '160px', marginBottom: '28px' }}
+              ></div>
+              <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                {[...Array(3)].map((_, i) => (
+                  <div className="gv-item gv-stack-space-sm" key={i}>
+                    <div
+                      className="gv-skeleton gv-heading-md gv-mb-sm"
+                      style={{ width: '160px' }}
+                    ></div>
+                    <div className="gv-skeleton gv-text-sm gv-mb-xs"></div>
+                    <div className="gv-skeleton gv-text-sm"></div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </article>
+      </div>
+    );
+    return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
+  }
+
+  // If not loading and plugin is null, return null
+  if (!plugin) return null;
+
+  // Navigation button click handlers
+  const handlePrevClick = () => {
+    const tableSlider = tableSliderRef.current;
+    if (!tableSlider) return;
+
+    const slideWidth = tableSlider.offsetWidth;
+    tableSlider.scrollTo({
+      left: tableSlider.scrollLeft - slideWidth,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleNextClick = () => {
+    const tableSlider = tableSliderRef.current;
+    if (!tableSlider) return;
+
+    const slideWidth = tableSlider.offsetWidth;
+    tableSlider.scrollTo({
+      left: tableSlider.scrollLeft + slideWidth,
+      behavior: 'smooth'
+    });
+  };
+
+  // Dot click handler
+  const handleDotClick = (slideIndex) => {
+    const tableSlider = tableSliderRef.current;
+    if (!tableSlider) return;
+
+    const slideWidth = tableSlider.offsetWidth;
+    tableSlider.scrollTo({
+      left: slideWidth * slideIndex,
+      behavior: 'smooth'
+    });
+  };
+
+  // Slider functionality
+  useEffect(() => {
+    const tableSlider = tableSliderRef.current;
+    const sliderNav = sliderNavRef.current;
+    const table = tableRef.current;
+    const tableHeader = tableHeaderRef.current;
+    const pagination = paginationRef.current;
+
+    if (!plugin || loading || !tableSlider || !sliderNav || !table || !tableHeader || !pagination) {
+      return () => {};
+    }
+
+    const prevButton = sliderNav.querySelector('.gv-previous');
+    const nextButton = sliderNav.querySelector('.gv-next');
+
+    // State tracking flags to prevent continuous class toggling
+    let navIsAtBottom = false;
+    let paginationState = 'top'; // 'top', 'overlay', or 'bottom'
+    let isPaginationScrolledPast = false;
+    let isTableBottomVisible = false;
+    let isUpdatingClasses = false; // Flag to prevent observer callbacks during class updates
+
+    // Throttle timer for scroll events
+    let scrollThrottleTimer = null;
+    let isScrollThrottled = false;
+
+    // Update active dot and button states based on scroll position
+    const updateSliderState = () => {
+      const scrollLeft = tableSlider.scrollLeft;
+      const slideWidth = tableSlider.offsetWidth;
+      const currentSlide = Math.round(scrollLeft / slideWidth);
+
+      setActiveSlide(currentSlide);
+
+      // Update button disabled states
+      if (prevButton) {
+        if (currentSlide === 0) {
+          prevButton.classList.add('gv-disabled');
+        } else {
+          prevButton.classList.remove('gv-disabled');
+        }
+      }
+
+      if (nextButton) {
+        const maxSlide = Math.round(tableSlider.scrollWidth / slideWidth) - 1;
+        if (currentSlide >= maxSlide) {
+          nextButton.classList.add('gv-disabled');
+        } else {
+          nextButton.classList.remove('gv-disabled');
+        }
+      }
+    };
+
+    // Calculate and set dynamic positioning for sticky navigation (only when needed)
+    const calculateNavPosition = () => {
+      const tablePaddingTop = parseFloat(getComputedStyle(table).paddingTop) || 0;
+      const headerHeight = tableHeader.offsetHeight;
+      const halfHeaderHeight = headerHeight / 2;
+
+      // [X] = half of table header height + padding-top of table
+      const translateY = halfHeaderHeight + tablePaddingTop;
+
+      // [Y] = half viewport height - [X]
+      const topValue = window.innerHeight / 2 - translateY;
+
+      // [Z] = half of table header height (excluding padding)
+      const bottomValue = 2 * halfHeaderHeight;
+
+      sliderNav.style.transform = `translateY(${translateY}px)`;
+      sliderNav.style.top = `${topValue}px`;
+      sliderNav.style.bottom = `${bottomValue}px`;
+
+      return { bottomValue, halfHeaderHeight };
+    };
+
+    // Check nav boundary and update class only when state changes
+    const checkNavBoundary = (bottomValue) => {
+      const tableRect = table.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+
+      // Calculate the threshold where sticky bottom constraint activates
+      const stickyBottomThreshold = viewportHeight - bottomValue;
+
+      // Only update class when boundary is crossed (state changes)
+      const shouldBeAtBottom = tableRect.bottom <= stickyBottomThreshold;
+
+      if (shouldBeAtBottom !== navIsAtBottom) {
+        navIsAtBottom = shouldBeAtBottom;
+
+        if (navIsAtBottom) {
+          sliderNav.classList.add('gv-state-bottom');
+        } else {
+          sliderNav.classList.remove('gv-state-bottom');
+        }
+      }
+    };
+
+    // Update pagination state based on intersection observer flags
+    const updatePaginationStateFromObservers = () => {
+      // If already updating classes, ignore this call to prevent infinite loop
+      if (isUpdatingClasses) {
+        return;
+      }
+
+      // Determine the new state based on observer flags
+      let newState;
+      if (!isPaginationScrolledPast) {
+        newState = 'top';
+      } else if (isPaginationScrolledPast && !isTableBottomVisible) {
+        newState = 'overlay';
+      } else {
+        newState = 'bottom';
+      }
+
+      // Only update classes when state actually changes
+      if (newState !== paginationState) {
+        // Set flag to prevent observer callbacks during class updates
+        isUpdatingClasses = true;
+        paginationState = newState;
+
+        if (paginationState === 'top') {
+          pagination.classList.add('gv-state-top');
+          pagination.classList.remove('gv-state-overlay');
+        } else if (paginationState === 'overlay') {
+          pagination.classList.remove('gv-state-top');
+          pagination.classList.add('gv-state-overlay');
+        } else {
+          pagination.classList.remove('gv-state-top');
+          pagination.classList.remove('gv-state-overlay');
+        }
+
+        // Use requestAnimationFrame to clear flag after browser completes layout update
+        requestAnimationFrame(() => {
+          // Add a small delay to ensure layout is fully complete
+          setTimeout(() => {
+            isUpdatingClasses = false;
+          }, 50);
+        });
+      }
+    };
+
+    // Initial calculation of nav position
+    const { bottomValue } = calculateNavPosition();
+
+    // Scroll event listener for slider
+    tableSlider.addEventListener('scroll', updateSliderState);
+
+    // Set up Intersection Observer for pagination element
+    // Observes when pagination scrolls past the top of viewport
+    const paginationObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // When pagination is NOT intersecting and is above viewport, it's scrolled past
+          if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+            isPaginationScrolledPast = true;
+          } else if (entry.isIntersecting || entry.boundingClientRect.top >= 0) {
+            isPaginationScrolledPast = false;
+          }
+          updatePaginationStateFromObservers();
+        });
+      },
+      {
+        threshold: [0, 1],
+        rootMargin: '0px'
+      }
+    );
+
+    // Set up Intersection Observer for table bottom
+    // Create a sentinel element at the bottom of the table to observe
+    const tableBottomSentinel = document.createElement('div');
+    tableBottomSentinel.style.position = 'absolute';
+    tableBottomSentinel.style.bottom = '0';
+    tableBottomSentinel.style.left = '0';
+    tableBottomSentinel.style.width = '1px';
+    tableBottomSentinel.style.height = '1px';
+    tableBottomSentinel.style.pointerEvents = 'none';
+    table.style.position = 'relative';
+    table.appendChild(tableBottomSentinel);
+
+    const tableBottomObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          isTableBottomVisible = entry.isIntersecting;
+          updatePaginationStateFromObservers();
+        });
+      },
+      {
+        threshold: [0],
+        rootMargin: '-100px 0px 0px 0px'
+      }
+    );
+
+    // Start observing
+    paginationObserver.observe(pagination);
+    tableBottomObserver.observe(tableBottomSentinel);
+
+    // Throttled scroll handler - only executes nav boundary check when not already throttled
+    const handleScroll = () => {
+      if (isScrollThrottled) return;
+
+      isScrollThrottled = true;
+
+      // Use requestAnimationFrame for smooth updates
+      requestAnimationFrame(() => {
+        checkNavBoundary(bottomValue);
+      });
+
+      // Throttle for 100ms to reduce continuous execution
+      scrollThrottleTimer = setTimeout(() => {
+        isScrollThrottled = false;
+      }, 100);
+    };
+
+    // Resize handler - recalculate positions and check boundaries
+    const handleResize = () => {
+      const { bottomValue: newBottomValue } = calculateNavPosition();
+      checkNavBoundary(newBottomValue);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+
+    // Initial updates
+    updateSliderState();
+    checkNavBoundary(bottomValue);
+    updatePaginationStateFromObservers();
+
+    // Cleanup
+    return () => {
+      if (scrollThrottleTimer) {
+        clearTimeout(scrollThrottleTimer);
+      }
+      if (tableSlider) {
+        tableSlider.removeEventListener('scroll', updateSliderState);
+      }
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      paginationObserver.disconnect();
+      tableBottomObserver.disconnect();
+      if (tableBottomSentinel && tableBottomSentinel.parentNode) {
+        tableBottomSentinel.parentNode.removeChild(tableBottomSentinel);
+      }
+    };
+  }, [plugin, loading]);
 
   // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
   const freePlugin = plugins.find((p) => p.slug === 'seo-by-rank-math') || null;
   const proPlugin = plugins.find((p) => p.slug === 'seo-by-rank-math-pro') || null;
 
   // Use the clicked plugin for header/main content, but always use freePlugin for first column
-  const imageURL =
-    (typeof window.onecomWpVars !== 'undefined' && window.onecomWpVars?.imageURL) || assetBase;
-  const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
+  // const imageURL =
+  //   (typeof window.onecomWpVars !== 'undefined' && window.onecomWpVars?.imageURL) || assetBase;
+  // const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
   const mainImage =
     plugin.bannerUrl ||
     plugin.image ||
@@ -716,8 +750,8 @@ export default function ProductDetailRankMath({
     <div className="gv-surface-dim">
       <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid gv-p-0">
         <nav className="gv-breadcrumbs gv-area-nav">
-          <a
-            href="#"
+          <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               // First check if history is available and has navigable records
@@ -735,10 +769,21 @@ export default function ProductDetailRankMath({
                 onClose();
               }
             }}
+            style={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
+              font: 'inherit',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'inherit'
+            }}
           >
             <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
             <span>Back</span>
-          </a>
+          </button>
           <SuccessNotice plugin={freePlugin} />
           <ErrorToast plugin={freePlugin} />
           <ErrorToast plugin={proPlugin} />
@@ -752,11 +797,7 @@ export default function ProductDetailRankMath({
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={`${mainImage} 2x, ${mainImage} 1x`} />
-              <img
-                src={mainImage}
-                srcSet={`${mainImage} 2x, ${mainImage} 1x`}
-                alt="Product image"
-              />
+              <img src={mainImage} srcSet={`${mainImage} 2x, ${mainImage} 1x`} alt="Product" />
             </picture>
           </div>
         </header>
@@ -888,15 +929,21 @@ export default function ProductDetailRankMath({
             <div className="gv-slider-pagination gv-state-top" ref={paginationRef}>
               <div className="gv-dots" role="tablist">
                 {[0, 1].map((slideIndex) => (
-                  <span
+                  <button
+                    type="button"
                     key={slideIndex}
                     className={`gv-dot ${activeSlide === slideIndex ? 'gv-active' : ''}`}
                     role="tab"
                     aria-selected={activeSlide === slideIndex ? 'true' : 'false'}
                     aria-label={`Go to slide ${slideIndex + 1}`}
                     onClick={() => handleDotClick(slideIndex)}
-                    style={{ cursor: 'pointer' }}
-                  ></span>
+                    style={{
+                      cursor: 'pointer',
+                      border: 'none',
+                      padding: 0,
+                      background: 'none'
+                    }}
+                  ></button>
                 ))}
               </div>
             </div>
@@ -943,3 +990,10 @@ export default function ProductDetailRankMath({
 
   return usePortal ? createPortal(content, document.body) : content;
 }
+
+ProductDetailRankMath.propTypes = {
+  plugin: PropTypes.object,
+  onClose: PropTypes.func,
+  usePortal: PropTypes.bool,
+  loading: PropTypes.bool
+};

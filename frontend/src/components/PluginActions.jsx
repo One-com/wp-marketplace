@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { useMarketplace } from '../context/MarketplaceContext';
 import { trackPluginAction, trackButtonClick } from '../utils/mixpanelTracking';
 
@@ -182,3 +183,17 @@ export default function PluginActions({ plugin }) {
     </div>
   );
 }
+
+PluginActions.propTypes = {
+  plugin: PropTypes.shape({
+    slug: PropTypes.string.isRequired,
+    name: PropTypes.string,
+    installed: PropTypes.bool,
+    activated: PropTypes.bool,
+    redirectUrl: PropTypes.string,
+    i18n: PropTypes.shape({
+      activateButton: PropTypes.string,
+      installButton: PropTypes.string
+    })
+  }).isRequired
+};

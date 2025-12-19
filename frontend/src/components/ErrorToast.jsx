@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import { useMarketplace } from '../context/MarketplaceContext';
 
 export default function ErrorToast({ plugin }) {
@@ -56,3 +57,10 @@ export default function ErrorToast({ plugin }) {
     </div>
   );
 }
+
+ErrorToast.propTypes = {
+  plugin: PropTypes.shape({
+    slug: PropTypes.string.isRequired,
+    name: PropTypes.string
+  })
+};

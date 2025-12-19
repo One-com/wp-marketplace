@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { trackButtonClick } from '../utils/mixpanelTracking';
 
 const MarketplaceContext = createContext(null);
@@ -260,7 +261,7 @@ export const MarketplaceProvider = ({
             // Clear loading state only
             setLoadingAction('');
             setLoadingPlugin('');
-            return; // Skip finally block (though finally will still execute, activationSuccessful flag prevents clearing)
+            // Skip finally block (though finally will still execute, activationSuccessful flag prevents clearing)
           }
         } else {
           // Show error toast for activation and installation errors
@@ -359,6 +360,18 @@ export const MarketplaceProvider = ({
   };
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;
+};
+
+MarketplaceProvider.propTypes = {
+  children: PropTypes.node.isRequired,
+  apiBaseUrl: PropTypes.string.isRequired,
+  useWPHandlers: PropTypes.bool,
+  wpConfig: PropTypes.shape({
+    ajaxUrl: PropTypes.string,
+    nonce: PropTypes.string
+  }),
+  enableDefaultStyles: PropTypes.bool,
+  assetsBaseUrl: PropTypes.string
 };
 
 export const useMarketplace = () => {
