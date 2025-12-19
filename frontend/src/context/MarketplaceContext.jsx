@@ -178,7 +178,7 @@ export const MarketplaceProvider = ({
           setTimeout(() => {
             setPlugins((prev) =>
               prev.map((p) =>
-                p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p
+                (p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p)
               )
             );
           }, 1200);
@@ -214,9 +214,9 @@ export const MarketplaceProvider = ({
         if (result.success) {
           setPlugins((prev) =>
             prev.map((p) =>
-              p.slug === plugin.slug
+              (p.slug === plugin.slug
                 ? { ...p, installed: result.data.installed, activated: result.data.activated }
-                : p
+                : p)
             )
           );
 
