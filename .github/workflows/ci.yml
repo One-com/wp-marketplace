@@ -73,6 +73,9 @@ jobs:
         run: |
           echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
           echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -125,6 +128,9 @@ jobs:
         run: |
           echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
           echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -175,6 +181,9 @@ jobs:
         run: |
           echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
           echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -237,6 +246,9 @@ jobs:
         run: |
           echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
           echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
