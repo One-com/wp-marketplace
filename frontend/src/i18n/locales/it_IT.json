@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Contattaci oggi stesso",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Condizioni",
-  "migratorMail_footer_footer-link-3_title": "Informativa sulla privacy",
-  "migratorMail_footer_visitSite_title": "Visita il sito",
-  "migratorMail_hi": "Salve,",
-  "migratorMail_typeFail_bodyIntro": "Qualcosa non ha funzionato con la migrazione del tuo sito da {oldsite} a {newsite}.",
-  "migratorMail_typeFail_button_title": "Ritenta la migrazione",
-  "migratorMail_typeFail_errorText": "Errore: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Errore: Errore interno ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Migrazione non riuscita: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Hai bisogno di assistenza per migrare il tuo sito verso one.com? Siamo qui per aiutarti.",
-  "migratorMail_typeFail_subject": "Migrazione non riuscita",
-  "migratorMail_typeFail_title": "Migrazione WordPress non riuscita",
-  "migratorMail_typeSuccess_bodyIntro": "La migrazione del tuo sito da {oldsite} a {newsite} è ora completata.",
-  "migratorMail_typeSuccess_brokenPlugins": "Inoltre, dopo la migrazione, i seguenti plugin hanno causato errori e sono stati disattivati sul sito migrato: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Visita il tuo sito",
-  "migratorMail_typeSuccess_excludedDirs": "Nota: per garantire un processo di migrazione ottimizzato, le seguenti directory sono state escluse dalla migrazione: {directories}. Se necessario, puoi spostare manualmente questi dati sul tuo spazio web.",
-  "migratorMail_typeSuccess_finishTime": "Migrazione finita: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Hai delle domande? Siamo qui per aiutarti.",
-  "migratorMail_typeSuccess_startTime": "Migrazione iniziata: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migrazione riuscita",
-  "migratorMail_typeSuccess_title": "Migrazione WordPress completata"
+  "ui.button.refreshPage": "Aggiorna pagina",
+  "ui.notifications.couldNotLoad": "Impossibile caricare la pagina",
+  "ui.notifications.refreshPage": "Aggiorna la pagina e contatta il nostro supporto se il problema persiste."
 }

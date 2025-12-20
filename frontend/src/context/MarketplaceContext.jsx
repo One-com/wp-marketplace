@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { trackButtonClick } from '../utils/mixpanelTracking';
+import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
 
 const MarketplaceContext = createContext(null);
 
@@ -24,6 +24,14 @@ export const MarketplaceProvider = ({
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
 
+    // State for tracking consent status
+    const [consentStatus, setConsentStatus] = useState(() => {
+        const initialConsent = typeof window !== "undefined" && window.marketplaceConfig?.data_consent_status;
+        console.log('[MarketplaceContext] Initializing with consent status from config:', initialConsent, 'Type:', typeof initialConsent);
+        // Convert to boolean: handle true, 'true', '1', 1 as true
+        return initialConsent === true || initialConsent === 'true' || initialConsent === '1' || initialConsent === 1;
+    });
+
     // Use ref to track which subscriptions have been checked to avoid recreation of fetchSubscriptionStatus
     const checkedSubscriptionsRef = useRef({});
 
@@ -32,6 +40,77 @@ export const MarketplaceProvider = ({
 
     const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
     const isOnecomBrand = brand === "onecom";
+
+    // Initialize Mixpanel on mount and monitor consent changes
+    // Uses useEffect to ensure Mixpanel only initializes when consent is given
+    useEffect(() => {
+        // Initialize Mixpanel on component mount based on initial consent status
+        if (consentStatus === true) {
+            console.log('[MarketplaceContext] Initial consent is true - initializing Mixpanel');
+            initializeMixpanel();
+        } else {
+            console.log('[MarketplaceContext] Initial consent is false - Mixpanel will not initialize');
+        }
+
+        // Set up listener for consent changes from plugin
+        const handleConsentChange = (e) => {
+            const newConsentStatus = e.detail?.data_consent_status !== undefined ? e.detail.data_consent_status : false;
+            console.log('[MarketplaceContext] Consent change detected via onConsentStatusChanged event:', newConsentStatus);
+
+            // Update state
+            setConsentStatus(newConsentStatus);
+
+            // Handle Mixpanel based on new consent status
+            if (newConsentStatus === true) {
+                // Consent granted - enable Mixpanel
+                console.log('[MarketplaceContext] Consent granted - enabling Mixpanel tracking');
+
+                // Update window.marketplaceConfig consent status
+                // Note: mixpanel config (token, globalProperties, distinctId) is always sent by PHP
+                // regardless of consent status, so we can use it directly
+                if (typeof window !== "undefined" && window.marketplaceConfig) {
+                    window.marketplaceConfig.data_consent_status = true;
+                }
+
+                // Enable Mixpanel - it will read the config from window.marketplaceConfig
+                enableMixpanel();
+            } else {
+                // Consent revoked - disable Mixpanel
+                console.log('[MarketplaceContext] Consent revoked - disabling Mixpanel tracking');
+
+                // Update window.marketplaceConfig
+                if (typeof window !== "undefined" && window.marketplaceConfig) {
+                    window.marketplaceConfig.data_consent_status = false;
+                    // Keep mixpanel config available for when consent is granted again
+                }
+
+                disableMixpanel();
+            }
+        };
+
+        // Listen for custom consent change event from plugin (same page)
+        window.addEventListener('onConsentStatusChanged', handleConsentChange);
+
+        // Listen for localStorage changes (cross-page communication)
+        const handleStorageChange = (e) => {
+            // Only handle changes to our consent key
+            if (e.key === 'onecom_data_consent_status') {
+                const newConsentStatus = e.newValue === '1';
+                console.log('[MarketplaceContext] Consent change detected via storage event (cross-page):', newConsentStatus);
+
+                // Trigger the same handler with the new consent status
+                handleConsentChange({ detail: { data_consent_status: newConsentStatus } });
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        // Cleanup on unmount
+        return () => {
+            window.removeEventListener('onConsentStatusChanged', handleConsentChange);
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []); // Empty dependency array - only run on mount/unmount
 
     // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
     const fetchSubscriptionStatus = useCallback(async (pluginSlug) => {

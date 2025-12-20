@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Contactez-nous aujourd'hui",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Conditions",
-  "migratorMail_footer_footer-link-3_title": "Politique de confidentialité",
-  "migratorMail_footer_visitSite_title": "Visiter le site",
-  "migratorMail_hi": "Bonjour,",
-  "migratorMail_typeFail_bodyIntro": "Un incident s'est produit durant la migration de votre site de {oldsite} vers {newsite}.",
-  "migratorMail_typeFail_button_title": "Recommencer la migration",
-  "migratorMail_typeFail_errorText": "Erreur: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Erreur : Erreur interne ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Échec de la migration: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Vous avez besoin d'aide pour effectuer la migration de votre site vers one.com? Nous sommes là pour vous aider.",
-  "migratorMail_typeFail_subject": "Échec de la migration",
-  "migratorMail_typeFail_title": "Échec de la migration WordPress",
-  "migratorMail_typeSuccess_bodyIntro": "La migration de votre site de {oldsite} vers {newsite} est à présent terminée.",
-  "migratorMail_typeSuccess_brokenPlugins": "En outre, après la migration, le(s) plugin(s) suivant(s) a (ont) provoqué des erreurs et a (ont) été désactivé(s) sur le site migré : {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Accéder à votre site",
-  "migratorMail_typeSuccess_excludedDirs": "Remarque : Pour garantir un processus de migration fluide, les répertoires suivants ont été exclus de la migration : {directories}. Vous pouvez déplacer manuellement ces données vers votre espace web si nécessaire.",
-  "migratorMail_typeSuccess_finishTime": "Fin de la migration: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Une question? Nous sommes là pour vous aider.",
-  "migratorMail_typeSuccess_startTime": "Début de la migration: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migration effectuée avec succès",
-  "migratorMail_typeSuccess_title": "Migration WordPress terminée"
+  "ui.button.refreshPage": "Actualiser la page",
+  "ui.notifications.couldNotLoad": "Impossible de charger la page",
+  "ui.notifications.refreshPage": "Veuillez rafraîchir la page et contact notre support si le problème persiste."
 }

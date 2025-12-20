@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Contacte-nos hoje",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Termos",
-  "migratorMail_footer_footer-link-3_title": "Política de Privacidade",
-  "migratorMail_footer_visitSite_title": "Visitar o sítio",
-  "migratorMail_hi": "Olá,",
-  "migratorMail_typeFail_bodyIntro": "Ocorreu um erro ao migrar o seu website de {oldsite} para {newsite}.",
-  "migratorMail_typeFail_button_title": "Voltar a tentar a migração",
-  "migratorMail_typeFail_errorText": "Erro: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Erro: Erro interno ({fail_reason})",
-  "migratorMail_typeFail_failTime": "A migração falhou: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Precisa de ajuda para migrar o seu website para a one.com? Estamos aqui para ajudar.",
-  "migratorMail_typeFail_subject": "Falha na migração",
-  "migratorMail_typeFail_title": "Falha na migração para o WordPress",
-  "migratorMail_typeSuccess_bodyIntro": "A migração do seu website de {oldsite} para {newsite} foi concluída.",
-  "migratorMail_typeSuccess_brokenPlugins": "Além disso, após a migração, verificou-se que o(s) seguinte(s) plugin(s) causava(m) erros e foi(ram) desativado(s) no site migrado: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Aceda ao seu website",
-  "migratorMail_typeSuccess_excludedDirs": "Queira ter em atenção: para garantir um processo de migração suave, os seguintes diretórios foram removidos da migração: {directories}. Pode mover manualmente esses dados para o seu espaço web, se necessário.",
-  "migratorMail_typeSuccess_finishTime": "Fim da migração: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Tem dúvidas? Estamos aqui para ajudar.",
-  "migratorMail_typeSuccess_startTime": "A migração começou: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migração bem-sucedida",
-  "migratorMail_typeSuccess_title": "Migração para WordPress concluída"
+  "ui.button.refreshPage": "Atualizar página",
+  "ui.notifications.couldNotLoad": "Não foi possível carregar a página",
+  "ui.notifications.refreshPage": "Atualize a página e contacte a nossa equipa de suporte se o problema persistir."
 }

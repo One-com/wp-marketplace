@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Kontakta oss idag",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Villkor",
-  "migratorMail_footer_footer-link-3_title": "Sekretesspolicy",
-  "migratorMail_footer_visitSite_title": "Besök webbplatsen",
-  "migratorMail_hi": "Hej!",
-  "migratorMail_typeFail_bodyIntro": "Någonting gick fel när din hemsida skulle migreras från {oldsite} till {newsite}.",
-  "migratorMail_typeFail_button_title": "Starta om migrering",
-  "migratorMail_typeFail_errorText": "Fel: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Fel: Internt fel ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Migrering misslyckades: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Behöver du hjälp med att migrera din hemsida till one.com? Vi hjälper dig gärna.",
-  "migratorMail_typeFail_subject": "Migrering misslyckades",
-  "migratorMail_typeFail_title": "WordPress-migreringen misslyckades",
-  "migratorMail_typeSuccess_bodyIntro": "Migreringen av din hemsida från {oldsite} till {newsite} är nu slutförd.",
-  "migratorMail_typeSuccess_brokenPlugins": "Efter migreringen visade det sig dessutom att följande plugin orsakade fel och har avaktiverats på den migrerade webbplatsen: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Gå till din hemsida",
-  "migratorMail_typeSuccess_excludedDirs": "Observera: För att säkerställa en smidig migreringsprocess uteslöts följande kataloger från migreringen: {directories}. Du kan manuellt flytta dessa data till ditt webbutrymme om det behövs.",
-  "migratorMail_typeSuccess_finishTime": "Migrering slutfördes: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Har du några frågor? Vi hjälper dig gärna.",
-  "migratorMail_typeSuccess_startTime": "Migrering startades: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migrering lyckades",
-  "migratorMail_typeSuccess_title": "WordPress-migrering är slutförd"
+  "ui.button.refreshPage": "Uppdatera sidan",
+  "ui.notifications.couldNotLoad": "Det gick inte att ladda sidan",
+  "ui.notifications.refreshPage": "Uppdatera sidan och kontakta vår support om problemet kvarstår."
 }

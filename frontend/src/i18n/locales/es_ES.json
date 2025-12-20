@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Póngase en contacto con nosotros hoy mismo",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Términos",
-  "migratorMail_footer_footer-link-3_title": "Política de privacidad",
-  "migratorMail_footer_visitSite_title": "Visitar el sitio",
-  "migratorMail_hi": "Hola:",
-  "migratorMail_typeFail_bodyIntro": "Se ha producido un error al migrar su sitio de {oldsite} a {newsite}.",
-  "migratorMail_typeFail_button_title": "Reintentar migración",
-  "migratorMail_typeFail_errorText": "Error: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Error: Error interno ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Error en la migración: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "¿Necesita ayuda para migrar su sitio a one.com? Estamos aquí para ayudarle.",
-  "migratorMail_typeFail_subject": "Error en la migración",
-  "migratorMail_typeFail_title": "Error en la migración de WordPress",
-  "migratorMail_typeSuccess_bodyIntro": "La migración de su sitio de {oldsite} a {newsite} se ha completado.",
-  "migratorMail_typeSuccess_brokenPlugins": "Además, tras la migración, se descubrió que los siguientes plugins causaban errores y se desactivaron en el sitio migrado: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Ir a su sitio",
-  "migratorMail_typeSuccess_excludedDirs": "Nota: para garantizar un proceso de migración sin problemas, se han excluido de la migración los siguientes directorios: {directories}. Puedes mover manualmente estos datos a tu espacio web en caso de que sea necesario.",
-  "migratorMail_typeSuccess_finishTime": "Fin de la migración: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "¿Tiene alguna pregunta? Estamos aquí para ayudarle.",
-  "migratorMail_typeSuccess_startTime": "Inicio de la migración: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migración realizada con éxito",
-  "migratorMail_typeSuccess_title": "Migración de WordPress completada"
+  "ui.button.refreshPage": "Actualizar página",
+  "ui.notifications.couldNotLoad": "No se puede cargar la página",
+  "ui.notifications.refreshPage": "Actualice la página y póngase en contacto con nuestro servicio de asistencia si el problema persiste."
 }

@@ -16,4 +16,4 @@ phraseapp:
       - file: ./i18n/locales/<locale_name>.json
         params:
           file_format: simple_json
-          tags: wp-migration-service
+          tags: wp-marketplace-frontend

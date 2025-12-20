@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Kontakt oss i dag",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Betingelser",
-  "migratorMail_footer_footer-link-3_title": "Personvernerklæring",
-  "migratorMail_footer_visitSite_title": "Besøk nettstedet",
-  "migratorMail_hi": "Hei,",
-  "migratorMail_typeFail_bodyIntro": "Noe gikk galt med migreringen av siden din fra {oldsite} til {newsite}.",
-  "migratorMail_typeFail_button_title": "Prøv migrering på nytt",
-  "migratorMail_typeFail_errorText": "Feil: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Feil: Intern feil ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Migrering mislyktes: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Trenger du hjelp med å migrere siden din til one.com? Vi er her for å hjelpe deg.",
-  "migratorMail_typeFail_subject": "Migreringen mislyktes",
-  "migratorMail_typeFail_title": "WordPress-migreringen mislyktes",
-  "migratorMail_typeSuccess_bodyIntro": "Migreringen av siden din fra {oldsite} til {newsite} er fullført.",
-  "migratorMail_typeSuccess_brokenPlugins": "I tillegg ble det oppdaget feil i følgende plugin(er) etter migreringen, og disse er deaktivert på det migrerte nettstedet: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Gå til siden din",
-  "migratorMail_typeSuccess_excludedDirs": "Vennligst merk: For å sikre en smidig migreringsprosess ble følgende kataloger utelatt fra migreringen: {directories}. Du kan manuelt flytte disse dataene til webhotellet ditt om nødvendig.",
-  "migratorMail_typeSuccess_finishTime": "Migrering ferdig: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Har du spørsmål? Vi er her for å hjelpe deg.",
-  "migratorMail_typeSuccess_startTime": "Migrering startet: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migreringen var vellykket",
-  "migratorMail_typeSuccess_title": "WordPress-migreringen er fullført"
+  "ui.button.refreshPage": "Oppdater side",
+  "ui.notifications.couldNotLoad": "Kunne ikke laste inn siden",
+  "ui.notifications.refreshPage": "Oppdater siden og kontakt vår support hvis problemet vedvarer."
 }

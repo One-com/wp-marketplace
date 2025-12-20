@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Kontakt os i dag",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Vilkår",
-  "migratorMail_footer_footer-link-3_title": "Privatlivspolitik",
-  "migratorMail_footer_visitSite_title": "Besøg siden",
-  "migratorMail_hi": "Hej",
-  "migratorMail_typeFail_bodyIntro": "Noget gik galt med flytningen af din hjemmeside fra {oldsite} til {newsite}.",
-  "migratorMail_typeFail_button_title": "Prøv igen",
-  "migratorMail_typeFail_errorText": "Fejl: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Fejl: Intern fejl ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Migrering mislykkedes {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Behøver du hjælp til at migrere din hjemmeside til one.com? Vi er her for at hjælpe.",
-  "migratorMail_typeFail_subject": "Migrering mislykkedes",
-  "migratorMail_typeFail_title": "WordPress-migrering mislykkedes",
-  "migratorMail_typeSuccess_bodyIntro": "Migreringen af din hjemmeside fra {oldsite} til {newsite} er nu fuldendt.",
-  "migratorMail_typeSuccess_brokenPlugins": "Efter migreringen viste det sig desuden, at følgende plugin(s) forårsagede fejl og er blevet deaktiveret på det migrerede websted: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Gå til din hjemmeside",
-  "migratorMail_typeSuccess_excludedDirs": "Bemærk: For at sikre en problemfri migreringsproces blev følgende mapper udelukket fra migreringen: {directories}. Du kan manuelt flytte disse data til din hjemmeside, hvis det er nødvendigt.",
-  "migratorMail_typeSuccess_finishTime": "Migrering afsluttet {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Har du spørgsmål? Vi er her for at hjælpe.",
-  "migratorMail_typeSuccess_startTime": "Migrering startet {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migrering lykkedes",
-  "migratorMail_typeSuccess_title": "WordPress-migration fuldendt"
+  "ui.button.refreshPage": "Genindlæs side",
+  "ui.notifications.couldNotLoad": "Kunne ikke indlæse siden",
+  "ui.notifications.refreshPage": "Opdater venligst siden og kontakt vores support, hvis problemet fortsætter."
 }
