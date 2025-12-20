@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Contact us today",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Terms",
-  "migratorMail_footer_footer-link-3_title": "Privacy policy",
-  "migratorMail_footer_visitSite_title": "Visit site",
-  "migratorMail_hi": "Hi,",
-  "migratorMail_typeFail_bodyIntro": "Something went wrong with the migration of your site from {oldsite} to {newsite}.",
-  "migratorMail_typeFail_button_title": "Retry migration",
-  "migratorMail_typeFail_errorText": "Error: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Error: Internal error ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Migration failed: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Need help migrating your site to one.com? We're here to help.",
-  "migratorMail_typeFail_subject": "Migration failed",
-  "migratorMail_typeFail_title": "WordPress migration failed",
-  "migratorMail_typeSuccess_bodyIntro": "The migration of your site from {oldsite} to {newsite} is now completed.",
-  "migratorMail_typeSuccess_brokenPlugins": "Additionally, post-migration, the following plugin(s) were found to cause errors and have been deactivated on the migrated site: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Go to your site",
-  "migratorMail_typeSuccess_excludedDirs": "Please note: To ensure a smooth migration process, the following directories were excluded from the migration: {directories}. You can manually move this data to your webspace if needed.",
-  "migratorMail_typeSuccess_finishTime": "Migration finished: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Have a question? We're here to help.",
-  "migratorMail_typeSuccess_startTime": "Migration started: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migration successful",
-  "migratorMail_typeSuccess_title": "WordPress migration completed"
+  "ui.button.refreshPage": "Refresh page",
+  "ui.notifications.couldNotLoad": "Couldn’t load the page",
+  "ui.notifications.refreshPage": "Please refresh the page and contact our support if the issue persists."
 }

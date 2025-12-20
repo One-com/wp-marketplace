@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Neem vandaag nog contact met ons op",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Algemene voorwaarden",
-  "migratorMail_footer_footer-link-3_title": "Privacybeleid",
-  "migratorMail_footer_visitSite_title": "Website bezoeken",
-  "migratorMail_hi": "Hallo,",
-  "migratorMail_typeFail_bodyIntro": "Er is iets mis gegaan tijdens de migratie van uw site van {oldsite} naar {newsite}.",
-  "migratorMail_typeFail_button_title": "Migratie opnieuw proberen",
-  "migratorMail_typeFail_errorText": "Fout: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Fout: Interne fout ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Migratie niet gelukt: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Hebt u hulp nodig bij het migreren van uw site naar one.com? We helpen u graag.",
-  "migratorMail_typeFail_subject": "Migratie niet gelukt",
-  "migratorMail_typeFail_title": "WordPress migratie niet gelukt",
-  "migratorMail_typeSuccess_bodyIntro": "De migratie van uw site van {oldsite} naar {newsite} is nu voltooid.",
-  "migratorMail_typeSuccess_brokenPlugins": "Daarnaast is na de migratie gebleken dat de volgende plugin(s) fouten veroorzaken en zijn gedeactiveerd op de gemigreerde site: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Naar uw site gaan",
-  "migratorMail_typeSuccess_excludedDirs": "Let op: Om een soepele migratie te garanderen, zijn de volgende mappen uitgesloten van de migratie: {directories}. Indien nodig kun je deze gegevens handmatig naar je webruimte verplaatsen.",
-  "migratorMail_typeSuccess_finishTime": "Migratie voltooid: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Hebt u een vraag? We helpen u graag.",
-  "migratorMail_typeSuccess_startTime": "Migratie gestart: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Migratie is geslaagd",
-  "migratorMail_typeSuccess_title": "WordPress migratie voltooid"
+  "ui.button.refreshPage": "Pagina verversen",
+  "ui.notifications.couldNotLoad": "Kon de pagina niet laden",
+  "ui.notifications.refreshPage": "Ververs de pagina en neem contact op met onze (Engelstalige) support als het probleem zich blijft voordoen."
 }

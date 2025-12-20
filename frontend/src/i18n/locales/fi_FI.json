@@ -1,25 +1,5 @@
 {
-  "migratorMail_footer_contactButton_title": "Ota meihin yhteyttä",
-  "migratorMail_footer_footer-link-1_title": "one.com",
-  "migratorMail_footer_footer-link-2_title": "Palvelun käyttöehdot",
-  "migratorMail_footer_footer-link-3_title": "Tietosuojakäytäntö",
-  "migratorMail_footer_visitSite_title": "Vieraile sivustolla",
-  "migratorMail_hi": "Hei,",
-  "migratorMail_typeFail_bodyIntro": "Jokin meni pieleen sivustosi siirrossa kohteesta {oldsite} kohteeseen {newsite}.",
-  "migratorMail_typeFail_button_title": "Yritä siirtoa uudelleen",
-  "migratorMail_typeFail_errorText": "Virhe: {fail_reason}",
-  "migratorMail_typeFail_errorTextInternal": "Virhe: Sisäinen virhe ({fail_reason})",
-  "migratorMail_typeFail_failTime": "Siirto epäonnistui: {dateandtime}",
-  "migratorMail_typeFail_footer_title": "Tarvitsetko apua sivustosi siirtämisessä one.comille? Autamme mielellämme.",
-  "migratorMail_typeFail_subject": "Siirto epäonnistui",
-  "migratorMail_typeFail_title": "WordPress-siirto epäonnistui",
-  "migratorMail_typeSuccess_bodyIntro": "Sivustosi siirto kohteesta {oldsite} kohteeseen {newsite} on nyt valmis.",
-  "migratorMail_typeSuccess_brokenPlugins": "Lisäksi siirron jälkeen havaittiin, että seuraavat lisäosat aiheuttavat virheitä, ja ne on poistettu käytöstä siirretyllä sivustolla: {plugins}.",
-  "migratorMail_typeSuccess_button_title": "Siirry sivustollesi",
-  "migratorMail_typeSuccess_excludedDirs": "Huomaa: Sujuvan siirtoprosessin varmistamiseksi seuraavat hakemistot jätettiin siirron ulkopuolelle: {directories}. Voit tarvittaessa siirtää nämä tiedot manuaalisesti verkkolevytilaasi.",
-  "migratorMail_typeSuccess_finishTime": "Siirto valmistui: {dateandtime}",
-  "migratorMail_typeSuccess_footer_title": "Onko sinulla kysyttävää? Autamme mielellämme.",
-  "migratorMail_typeSuccess_startTime": "Siirto aloitettu: {dateandtime}",
-  "migratorMail_typeSuccess_subject": "Siirto onnistui",
-  "migratorMail_typeSuccess_title": "WordPress-siirto onnistui"
+  "ui.button.refreshPage": "Päivitä sivu",
+  "ui.notifications.couldNotLoad": "Sivua ei voitu ladata",
+  "ui.notifications.refreshPage": "Päivitä sivu ja ota yhteyttä asiakaspalveluumme, jos ongelma jatkuu."
 }
