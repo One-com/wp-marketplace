@@ -1,7 +1,4 @@
-# Copy this file to .npmrc and add your npm token
-# Get your token from: npm login && npm token create --read-only
-
-//registry.npmjs.org/:_authToken=YOUR_NPM_TOKEN_HERE
-
-# If using a scoped package from a different registry:
-# @group.one:registry=https://registry.npmjs.org/
+# Copy this file to .npmrc and add your GitLab personal access token
+# Registry configuration for private @group.one packages
+@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/
+//gitlab.group.one/api/v4/packages/npm/:_authToken=YOUR_GITLAB_TOKEN_HERE
