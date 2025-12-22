@@ -1,16 +1,21 @@
 <?php
-namespace Groupone\Marketplace;
-use Groupone\Marketplace\Controllers\MarketplaceController;
-
 /**
- * Market Place Embeddable Module
+ * Marketplace main file
+ *
+ * @package Groupone\Marketplace
  */
 
+namespace Groupone\Marketplace;
+
+use Groupone\Marketplace\Controllers\MarketplaceController;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+/**
+ * Marketplace Class
+ */
 final class Marketplace {
 	/**
 	 * Boots the Marketplace with given config.
@@ -19,9 +24,9 @@ final class Marketplace {
 	 */
 	public static function run( array $config = [] ) {
 		try {
-			MarketplaceController::boot($config);
-		} catch (\Exception $e) {
-			error_log($e->getMessage());
+			MarketplaceController::boot( $config );
+		} catch ( \Exception $e ) {
+			error_log( $e->getMessage() );
 		}
 	}
 }
