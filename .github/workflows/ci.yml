@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3']
+        php-version: ['8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout code
@@ -45,8 +45,7 @@ jobs:
 
       - name: Install PHPCS and WordPress Coding Standards
         run: |
-          composer require --dev squizlabs/php_codesniffer wp-coding-standards/wpcs --no-interaction
-          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs
+          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra
 
       - name: Run PHPCS
         run: vendor/bin/phpcs
@@ -72,7 +71,11 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
+          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -123,7 +126,11 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
+          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -172,13 +179,17 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
+          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies
         run: |
-          cd frontend && npm ci && cd ..
+          (cd frontend && npm ci)
           composer install --prefer-dist --no-progress
 
       - name: Build frontend
@@ -201,6 +212,7 @@ jobs:
           test -f readme.md || exit 1
 
           echo "✅ Package structure validation passed"
+
 
   release:
     name: Create Release
@@ -232,13 +244,17 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
+          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
+          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Install dependencies and build
         run: |
-          cd frontend && npm ci && cd ..
+          (cd frontend && npm ci)
           composer install --no-dev --prefer-dist --optimize-autoloader
           cd frontend && npm run build && npm run build:standalone && cd ..
 
