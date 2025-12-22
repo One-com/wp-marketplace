@@ -4,7 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getFullPrice } from "../utils/priceFormatter";
 
 export default function ProductDetailRankMath({
     plugin,
@@ -419,7 +419,13 @@ export default function ProductDetailRankMath({
     // Extract data for pro version (second column - always rank-math-pro)
     const proTitle = proPlugin?.name || 'Rank Math Pro';
     const proDescription = proPlugin?.i18n?.subtitle || proPlugin?.i18n?.description;
-    const proPrice = proPlugin ? formatPluginPrice(proPlugin, uiI18n?.labels?.free || 'Free') : '';
+    const proPrice = proPlugin ? formatPluginPrice(proPlugin, uiI18n?.labels?.free || 'Free', uiI18n) : '';
+
+    // Check if proPrice is "Free until renewal" (rebate amount is 0)
+    const isProFreeUntilRenewal = proPrice === (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal');
+
+    // Extract full price for pro plugin using common utility function
+    const proFullPriceAmount = getFullPrice(proPlugin);
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -570,12 +576,12 @@ export default function ProductDetailRankMath({
                                                 !subscriptionStatus["seo-by-rank-math-pro"] && (
                                                   <div className="gv-price-container">
                                                     <div className="gv-price">
-                                                      <span className="gv-price-text">{proPrice}{proPrice && `,-`}</span>
-                                                      {proPrice && <span className="gv-period">/mo</span>}
+                                                      <span className="gv-price-text">{proPrice}{proPrice && !isProFreeUntilRenewal && `,-`}</span>
+                                                      {proPrice && !isProFreeUntilRenewal && <span className="gv-period">/mo</span>}
                                                     </div>
                                                     {proPrice &&
                                                     <div className="gv-price-info">
-                                                      <div className="gv-info">1 year [{proPrice}]/mo.</div>
+                                                      <div className="gv-info">{uiI18n.labels.afterThat} [{proFullPriceAmount}]/mo.</div>
                                                     </div>}
                                                   </div>
                                                 )

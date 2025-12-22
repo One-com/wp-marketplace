@@ -72,8 +72,31 @@ export default function FeaturedCarousel({ loading = false }) {
         return true;
     };
 
-    // Filter featured plugins that are not active, pass rules check, and reverse the order
-    const featuredPlugins = plugins.filter(plugin => plugin.featured === true && plugin.activated !== true && shouldShowPlugin(plugin)).reverse();
+    // Check activation status of Rank Math plugins
+    const rankMathActivated = plugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
+    const rankMathProActivated = plugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
+
+    // Filter featured plugins that are not active, pass rules check, and handle Rank Math logic
+    const featuredPlugins = plugins.filter(plugin => {
+        // Skip activated plugins
+        if (plugin.activated === true || plugin.featured !== true) {
+            return false;
+        }
+
+        // Handle Rank Math plugin visibility
+        if (plugin.slug === "seo-by-rank-math") {
+            // Show seo-by-rank-math only if BOTH plugins are NOT activated
+            return !rankMathActivated && !rankMathProActivated && shouldShowPlugin(plugin);
+        }
+
+        if (plugin.slug === "seo-by-rank-math-pro") {
+            // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
+            return rankMathActivated && shouldShowPlugin(plugin);
+        }
+
+        // For all other plugins, apply normal filtering
+        return shouldShowPlugin(plugin);
+    }).reverse();
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -204,7 +227,7 @@ export default function FeaturedCarousel({ loading = false }) {
                         const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
                             ? plugin.i18n.freeTrialPeriod
                             : (uiI18n?.labels?.free || 'Free');
-                        const price = formatPluginPrice(plugin, freeLabel);
+                        const price = formatPluginPrice(plugin, freeLabel, uiI18n);
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
                         // Extract category name from plugin categories array
@@ -263,7 +286,7 @@ export default function FeaturedCarousel({ loading = false }) {
 
                                             <span className="gv-price gv-text-bold gv-text-md gv-ml-md">
                                                 {price}
-                                                {plugin.licenseType !== "free" && price && price !== freeLabel && <span className="gv-period">/mo</span>}
+                                                {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/mo</span>}
                                             </span>
                                         </div>
                                     </div>

@@ -4,7 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getFullPrice, getRebatePrice } from "../utils/priceFormatter";
 
 export default function ProductDetail({
     plugin,
@@ -168,7 +168,14 @@ export default function ProductDetail({
     const hasFreeTrialText = freeTrialText && freeTrialText.trim() !== '';
     const price = hasFreeTrialText
         ? (uiI18n?.headings?.freeTrial || 'Free trial*')
-        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free');
+        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n);
+
+    // Check if price is "Free until renewal" (rebate amount is 0)
+    const isFreeUntilRenewal = price === (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal');
+
+    // Extract full and rebate prices using common utility functions
+    const fullPriceAmount = getFullPrice(plugin);
+    const rebatePriceAmount = getRebatePrice(plugin);
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -302,17 +309,18 @@ export default function ProductDetail({
                                                 !subscriptionStatus[plugin.slug] && (
                                                     <div className="gv-price-container">
                                                         <div className="gv-price">
-                                                            <span className="gv-price-text">{price} {!isFree && !hasFreeTrialText && price && `,-`}</span>
-                                                            {!isFree && !hasFreeTrialText && price && <span className="gv-period">/mo</span>}
+                                                            <span className="gv-price-text">{rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount}</span>
+                                                            {!isFree && !hasFreeTrialText && !isFreeUntilRenewal && price && <span className="gv-period">/mo</span>}
                                                         </div>
                                                       {hasFreeTrialText ? (
                                                         <div className="gv-price-info">
                                                           <div className="gv-info">{freeTrialText}</div>
                                                         </div>
                                                       ) : (
-                                                        !isFree && price &&
+                                                        !isFree && price && fullPriceAmount && rebatePriceAmount !== null &&
                                                         <div className="gv-price-info">
-                                                          <div className="gv-info">1 year [{price}]/mo.</div>
+                                                          <div className="gv-info">{uiI18n.labels.untilRenewal} [{rebatePriceAmount}]/mo.</div>
+                                                          <div className="gv-info">{uiI18n.labels.afterThat} [{fullPriceAmount}]/mo.</div>
                                                         </div>
                                                       )}
                                                     </div>

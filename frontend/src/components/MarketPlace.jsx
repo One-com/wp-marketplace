@@ -418,10 +418,41 @@ export default function Marketplace() {
     const categoryMap = new Map();
 
     // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
-    // Also filter out activated plugins, seo-by-rank-math, and plugins that don't pass rules check
+    // Also filter out activated plugins and plugins that don't pass rules check
+    // Handle Rank Math plugin display logic:
+    // - Show seo-by-rank-math when BOTH seo-by-rank-math and seo-by-rank-math-pro are NOT activated
+    // - Show seo-by-rank-math-pro when seo-by-rank-math IS activated
     const bySlug = new Map();
+
+    // Check activation status of Rank Math plugins
+    const rankMathActivated = plugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
+    const rankMathProActivated = plugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
+
     plugins.forEach((p) => {
-        if (!bySlug.has(p.slug) && p.activated !== true && p.slug !== "seo-by-rank-math" && shouldShowPlugin(p)) {
+        // Skip if already in map or activated
+        if (bySlug.has(p.slug) || p.activated === true) {
+            return;
+        }
+
+        // Handle Rank Math plugin visibility
+        if (p.slug === "seo-by-rank-math") {
+            // Show seo-by-rank-math only if BOTH plugins are NOT activated
+            if (!rankMathActivated && !rankMathProActivated && shouldShowPlugin(p)) {
+                bySlug.set(p.slug, p);
+            }
+            return;
+        }
+
+        if (p.slug === "seo-by-rank-math-pro") {
+            // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
+            if (rankMathActivated && shouldShowPlugin(p)) {
+                bySlug.set(p.slug, p);
+            }
+            return;
+        }
+
+        // For all other plugins, apply normal filtering
+        if (shouldShowPlugin(p)) {
             bySlug.set(p.slug, p);
         }
     });
@@ -476,7 +507,7 @@ export default function Marketplace() {
                             const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
                                 ? plugin.i18n.freeTrialPeriod
                                 : (uiI18n?.labels?.free || 'Free');
-                            const price = formatPluginPrice(plugin, freeLabel);
+                            const price = formatPluginPrice(plugin, freeLabel, uiI18n);
                             return (
                                 <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
                                     <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
@@ -488,7 +519,7 @@ export default function Marketplace() {
                                         <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">
                                         {price}
-                                        {plugin.licenseType !== "free" && price && price !== freeLabel && <span className="gv-period">/mo</span>}
+                                        {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/mo</span>}
                                       </span>
                                     </div>
                                     <div className="gv-span-2 gv-content-center gv-text-right">
