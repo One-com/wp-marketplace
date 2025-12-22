@@ -61,7 +61,7 @@ module.exports = [
       ...jsxA11yPlugin.configs.recommended.rules,
       ...eslintConfigPrettier.rules,
       'react/react-in-jsx-scope': 'off',
-      'react/prop-types': 'warn',
+      'react/prop-types': 'off',
       'no-console': 'off',
       'no-undef': 'error',
       semi: 'error',

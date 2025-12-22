@@ -2,14 +2,14 @@
  * Currency symbol mapping - scalable for future currencies
  */
 const CURRENCY_SYMBOLS = {
-    'EUR': '€',
-    'USD': '$',
-    'GBP': '£',
-     'DKK': 'kr',
-     'NOK': 'kr',
-     'SEK': 'kr',
-    // Add more currencies here as needed
-    // 'JPY': '¥',
+  EUR: '€',
+  USD: '$',
+  GBP: '£',
+  DKK: 'kr',
+  NOK: 'kr',
+  SEK: 'kr'
+  // Add more currencies here as needed
+  // 'JPY': '¥',
 };
 
 /**
@@ -24,7 +24,7 @@ const CURRENCIES_WITH_POST_SYMBOL = ['DKK', 'SEK', 'NOK'];
  * @returns {string} - The currency symbol or the code itself as fallback
  */
 const getCurrencySymbol = (currencyCode) => {
-    return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
+  return CURRENCY_SYMBOLS[currencyCode] || currencyCode;
 };
 
 /**
@@ -35,10 +35,10 @@ const getCurrencySymbol = (currencyCode) => {
  * @returns {string} - Formatted price with symbol in correct position
  */
 const formatPriceWithSymbol = (amount, symbol, currencyCode) => {
-    if (CURRENCIES_WITH_POST_SYMBOL.includes(currencyCode)) {
-        return `${amount} ${symbol}`;
-    }
-    return `${symbol} ${amount}`;
+  if (CURRENCIES_WITH_POST_SYMBOL.includes(currencyCode)) {
+    return `${amount} ${symbol}`;
+  }
+  return `${symbol} ${amount}`;
 };
 
 /**
@@ -48,38 +48,38 @@ const formatPriceWithSymbol = (amount, symbol, currencyCode) => {
  * @returns {string} - Formatted price string ('Free', 'Symbol Amount', or blank)
  */
 export const formatPluginPrice = (plugin, freeLabel = 'Free') => {
-    const isFree = plugin.licenseType === "free";
+  const isFree = plugin.licenseType === 'free';
 
-    if (isFree) {
-        return freeLabel;
+  if (isFree) {
+    return freeLabel;
+  }
+
+  // Handle new API format with prices array
+  if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
+    // Find the first active price, or use first price if isActive is not present
+    let priceToUse = plugin.prices.find((price) => price.isActive === true);
+
+    // If no price with isActive:true found, use first price (for formats without isActive)
+    if (!priceToUse) {
+      priceToUse = plugin.prices[0];
     }
 
-    // Handle new API format with prices array
-    if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
-        // Find the first active price, or use first price if isActive is not present
-        let priceToUse = plugin.prices.find(price => price.isActive === true);
-
-        // If no price with isActive:true found, use first price (for formats without isActive)
-        if (!priceToUse) {
-            priceToUse = plugin.prices[0];
-        }
-
-        if (priceToUse && priceToUse.amount && priceToUse.currency) {
-            const symbol = getCurrencySymbol(priceToUse.currency);
-            // Format amount to 2 decimal places
-            const formattedAmount = Number(priceToUse.amount).toFixed(2);
-            return formatPriceWithSymbol(formattedAmount, symbol, priceToUse.currency);
-        }
+    if (priceToUse && priceToUse.amount && priceToUse.currency) {
+      const symbol = getCurrencySymbol(priceToUse.currency);
+      // Format amount to 2 decimal places
+      const formattedAmount = Number(priceToUse.amount).toFixed(2);
+      return formatPriceWithSymbol(formattedAmount, symbol, priceToUse.currency);
     }
+  }
 
-    // Backward compatibility: Handle old format with priceCurrency and priceAmount
-    if (plugin.priceCurrency && plugin.priceAmount) {
-        const symbol = getCurrencySymbol(plugin.priceCurrency);
-        // Format amount to 2 decimal places
-        const formattedAmount = Number(plugin.priceAmount).toFixed(2);
-        return formatPriceWithSymbol(formattedAmount, symbol, plugin.priceCurrency);
-    }
+  // Backward compatibility: Handle old format with priceCurrency and priceAmount
+  if (plugin.priceCurrency && plugin.priceAmount) {
+    const symbol = getCurrencySymbol(plugin.priceCurrency);
+    // Format amount to 2 decimal places
+    const formattedAmount = Number(plugin.priceAmount).toFixed(2);
+    return formatPriceWithSymbol(formattedAmount, symbol, plugin.priceCurrency);
+  }
 
-    // Return blank for premium products without prices
-    return '';
+  // Return blank for premium products without prices
+  return '';
 };

@@ -5,7 +5,10 @@ export function normalizePlugins(rawResponse) {
   if (!rawResponse || !rawResponse.data || !Array.isArray(rawResponse.data.catalog)) {
     // Log a clear error when the response is not supported
     // Keeping a minimal, non-crashing fallback of returning an empty object
-    console.error("Unsupported marketplace response shape. Expected { data: { catalog: [...] } }.", rawResponse);
+    console.error(
+      'Unsupported marketplace response shape. Expected { data: { catalog: [...] } }.',
+      rawResponse
+    );
     return { plugins: [], uiI18n: {}, locale: null };
   }
 
@@ -20,35 +23,34 @@ export function normalizePlugins(rawResponse) {
     // Prefer description coming from i18n.description, then fallback to description field
     const descriptionFromTextKeys = plugin?.i18n?.description;
     const description =
-      (typeof descriptionFromTextKeys === "string" && descriptionFromTextKeys)
+      typeof descriptionFromTextKeys === 'string' && descriptionFromTextKeys
         ? descriptionFromTextKeys
-        : (typeof plugin?.description === "object" && plugin.description !== null
-            ? (plugin.description["en-gb"] || Object.values(plugin.description)[0] || "")
-            : (plugin?.description || "")
-          );
+        : typeof plugin?.description === 'object' && plugin.description !== null
+          ? plugin.description['en-gb'] || Object.values(plugin.description)[0] || ''
+          : plugin?.description || '';
 
-    const download = plugin?.download || plugin?.download_url || plugin?.downloadUrl || "";
+    const download = plugin?.download || plugin?.download_url || plugin?.downloadUrl || '';
 
     // Author may be a string or an object { name, url }
-    const authorName = typeof plugin?.author === "object" && plugin.author !== null
-      ? (plugin.author.name || "")
-      : (plugin?.author || "");
-    const authorUrl = typeof plugin?.author === "object" && plugin.author !== null
-      ? (plugin.author.url || "")
-      : "";
+    const authorName =
+      typeof plugin?.author === 'object' && plugin.author !== null
+        ? plugin.author.name || ''
+        : plugin?.author || '';
+    const authorUrl =
+      typeof plugin?.author === 'object' && plugin.author !== null ? plugin.author.url || '' : '';
 
-    const priceAmount = typeof plugin?.price === "object" && plugin.price !== null
-      ? plugin.price.amount
-      : undefined;
-    const priceCurrency = typeof plugin?.price === "object" && plugin.price !== null
-      ? plugin.price.currency
-      : undefined;
+    const priceAmount =
+      typeof plugin?.price === 'object' && plugin.price !== null ? plugin.price.amount : undefined;
+    const priceCurrency =
+      typeof plugin?.price === 'object' && plugin.price !== null
+        ? plugin.price.currency
+        : undefined;
 
     return {
       ...plugin,
-      name: plugin?.name || "Unknown",
-      slug: plugin?.slug || "",
-      thumbnail: plugin?.thumbnail || "",
+      name: plugin?.name || 'Unknown',
+      slug: plugin?.slug || '',
+      thumbnail: plugin?.thumbnail || '',
       description,
       download,
       author: authorName,
@@ -57,7 +59,7 @@ export function normalizePlugins(rawResponse) {
       priceCurrency,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
-      i18n: plugin?.i18n || {},
+      i18n: plugin?.i18n || {}
     };
   });
 

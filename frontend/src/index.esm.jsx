@@ -1,5 +1,5 @@
-import MarketplaceApp from "./MarketplaceApp";
+import MarketplaceApp from './MarketplaceApp';
 
-import "@group.one/gravity/dist/css/brands/one.min.css";
+import '@group.one/gravity/dist/css/brands/one.min.css';
 
 export default MarketplaceApp;
