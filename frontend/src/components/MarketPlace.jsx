@@ -473,7 +473,9 @@ export default function Marketplace() {
                     {info.description && <p className="gv-text-sm">{info.description}</p>}
                     <div className="product-grid gv-grid gv-gap-lg  gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
                         {list.map((plugin) => {
-                            const freeLabel = uiI18n?.labels?.free || 'Free';
+                            const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
+                                ? plugin.i18n.freeTrialPeriod
+                                : (uiI18n?.labels?.free || 'Free');
                             const price = formatPluginPrice(plugin, freeLabel);
                             return (
                                 <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">

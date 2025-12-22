@@ -201,7 +201,9 @@ export default function FeaturedCarousel({ loading = false }) {
                     {featuredPlugins.map((plugin, index) => {
                         const title = plugin?.i18n?.featuredTitle;
                         const description = plugin?.i18n?.featuredContent;
-                        const freeLabel = uiI18n?.labels?.free || 'Free';
+                        const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
+                            ? plugin.i18n.freeTrialPeriod
+                            : (uiI18n?.labels?.free || 'Free');
                         const price = formatPluginPrice(plugin, freeLabel);
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
