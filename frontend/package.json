@@ -15,10 +15,9 @@
     "README.md"
   ],
   "scripts": {
-    "start": "npm run minify-css && node copy-build.js --watch & wp-scripts start",
-    "build": "npm run minify-css && webpack --config webpack.wp.js && node copy-build.js",
+    "start": "npm run minify-css && wp-scripts start",
+    "build": "npm run minify-css && webpack --config webpack.wp.js",
     "build:standalone": "vite build",
-    "copy": "node copy-build.js",
     "lint": "eslint 'src/**/*.{js,jsx}'",
     "lint:fix": "eslint . --fix",
     "format": "prettier --log-level=error --write 'src/**/*.{js,jsx,css,scss}'",
