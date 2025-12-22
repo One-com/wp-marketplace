@@ -133,7 +133,7 @@ export const MarketplaceProvider = ({
       window.removeEventListener('onConsentStatusChanged', handleConsentChange);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []); // Empty dependency array - only run on mount/unmount
+  }, [consentStatus]); // Added consentStatus to dependencies
 
   // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
   const fetchSubscriptionStatus = useCallback(

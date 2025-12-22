@@ -293,11 +293,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={`${mainImage} 1x, ${mainImage} 2x`} />
-              <img
-                src={mainImage}
-                srcSet={`${mainImage} 1x, ${mainImage} 2x`}
-                alt={title}
-              />
+              <img src={mainImage} srcSet={`${mainImage} 1x, ${mainImage} 2x`} alt={title} />
             </picture>
           </div>
         </header>
