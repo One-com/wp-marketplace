@@ -20,7 +20,6 @@ Thumbs.db
 # Build artifacts
 frontend/build/
 frontend/standalone/
-assets/min-css/marketplace.min.css
 
 # CI/CD
 .phpcs-cache
