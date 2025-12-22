@@ -1,4 +1,4 @@
 # Copy this file to .npmrc and add your GitLab personal access token
 # Registry configuration for private @group.one packages
-@group.one:registry=https://gitlab.group.one/api/v4/projects/5722/packages/npm/
-//gitlab.group.one/api/v4/projects/5722/packages/npm/:_authToken="${NPM_TOKEN}"
+@group.one:registry=https://gitlab.group.one/api/v4/projects/5623/packages/npm/
+//gitlab.group.one/api/v4/projects/5623/packages/npm/:_authToken="${NPM_TOKEN}"
