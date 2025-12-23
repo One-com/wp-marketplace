@@ -568,24 +568,16 @@ export default function ProductDetailRankMath({
                                               <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
                                             </div>
                                             <div className="gv-bottom">
-                                              {isCheckingSubscription["seo-by-rank-math-pro"] ? (
-                                                <div className="gv-price-container">
-                                                  <div className="gv-skeleton gv-skeleton-text" style={{ width: '120px', height: '32px' }}></div>
-                                                </div>
-                                              ) : (
-                                                !subscriptionStatus["seo-by-rank-math-pro"] && (
                                                   <div className="gv-price-container">
                                                     <div className="gv-price">
                                                       <span className="gv-price-text">{proPrice}{proPrice && !isProFreeUntilRenewal && `,-`}</span>
-                                                      {proPrice && !isProFreeUntilRenewal && <span className="gv-period">/mo</span>}
+                                                      {proPrice && !isProFreeUntilRenewal && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                                     </div>
                                                     {proPrice &&
                                                     <div className="gv-price-info">
-                                                      <div className="gv-info">{uiI18n.labels.afterThat} [{proFullPriceAmount}]/mo.</div>
+                                                      <div className="gv-info">{uiI18n.labels.afterThat} [{proFullPriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
                                                     </div>}
                                                   </div>
-                                                )
-                                              )}
                                               {useWPHandlers && proPlugin ? (
                                                 <PluginActions
                                                   plugin={proPlugin}

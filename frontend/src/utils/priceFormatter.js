@@ -104,8 +104,7 @@ export const formatPluginPrice = (plugin, freeLabel = 'Free', uiI18n = null) => 
                 const symbol = getCurrencySymbol(rebatePrice.currency);
                 const formattedAmount = Number(rebatePrice.amount).toFixed(2);
                 const priceWithSymbol = formatPriceWithSymbol(formattedAmount, symbol, rebatePrice.currency);
-                const untilRenewalLabel = uiI18n?.labels?.untilRenewal || 'until renewal';
-                return `${priceWithSymbol} ${untilRenewalLabel}`;
+                return `${priceWithSymbol} `;
             }
         }
 
