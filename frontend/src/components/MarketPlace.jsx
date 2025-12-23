@@ -6,7 +6,7 @@ import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorState from "./ErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getRebatePrice,getFullPrice } from "../utils/priceFormatter";
 import { trackMarketplaceVisit, trackPluginDetailVisit, trackPageView } from "../utils/mixpanelTracking";
 
 export default function Marketplace() {
@@ -78,6 +78,7 @@ export default function Marketplace() {
         url.searchParams.delete("plugin");
         return url.toString();
     };
+
 
     // After plugins load, select plugin from query if present
     useEffect(() => {
@@ -508,6 +509,8 @@ export default function Marketplace() {
                                 ? plugin.i18n.freeTrialPeriod
                                 : (uiI18n?.labels?.free || 'Free');
                             const price = formatPluginPrice(plugin, freeLabel, uiI18n);
+                            const fullPriceAmount = getFullPrice(plugin);
+                            const rebatePriceAmount = getRebatePrice(plugin);
                             return (
                                 <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
                                     <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
@@ -518,8 +521,8 @@ export default function Marketplace() {
                                         <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
                                         <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">
-                                        {price}
-                                        {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/mo</span>}
+                                        {plugin.licenseType === "premium" && (rebatePriceAmount > 0) ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount) : price}
+                                        {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                       </span>
                                     </div>
                                     <div className="gv-span-2 gv-content-center gv-text-right">

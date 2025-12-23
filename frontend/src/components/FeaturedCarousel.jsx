@@ -276,17 +276,17 @@ export default function FeaturedCarousel({ loading = false }) {
                                             {description}
                                         </p>
 
-                                        <div className="gv-slide-footer gv-flex gv-align-center gv-flex-wrap gv-items-center">
+                                        <div className="gv-slide-footer gv-flex gv-align-center gv-items-center">
                                             <button
                                                 onClick={() => handleReadMore(plugin)}
-                                                className="gv-button gv-button-secondary gv-w-auto"
+                                                className="gv-button gv-button-secondary gv-w-auto gv-flex-shrink-0"
                                             >
                                               {uiI18n?.featuredCta}
                                             </button>
 
-                                            <span className="gv-price gv-text-bold gv-text-md gv-ml-md">
+                                            <span className="gv-price gv-text-bold gv-text-md gv-ml-md gv-flex-1">
                                                 {price}
-                                                {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/mo</span>}
+                                                {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                             </span>
                                         </div>
                                     </div>
