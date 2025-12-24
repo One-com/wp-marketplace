@@ -20,6 +20,7 @@ export const MarketplaceProvider = ({
     const [loadingPlugin, setLoadingPlugin] = useState('');
     const [noticeState, setNoticeState] = useState({ visible: false, type: null, pluginSlug: null });
     const [errorState, setErrorState] = useState({ visible: false, type: null, pluginSlug: null });
+    const [successState, setSuccessState] = useState({ visible: false, type: null, pluginSlug: null });
     const [allPluginsActivated, setAllPluginsActivated] = useState(false);
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
@@ -185,6 +186,9 @@ export const MarketplaceProvider = ({
         if (action === 'activate') {
             const activatingMsg = uiI18n?.notifications?.activating || 'Activating {0}';
             loadingMessage = activatingMsg.replace('{0}', pluginName);
+        } else if (action === 'deactivate') {
+            const deactivatingMsg = uiI18n?.notifications?.deactivating || 'Deactivating {0}';
+            loadingMessage = deactivatingMsg.replace('{0}', pluginName);
         } else if (action === 'install') {
             const installingMsg = uiI18n?.notifications?.installing || 'Installing {0}';
             loadingMessage = installingMsg.replace('{0}', pluginName);
@@ -305,6 +309,7 @@ export const MarketplaceProvider = ({
                 } else if (action === 'activate' && result.data.activated) {
                     activationSuccessful = true; // Mark activation as successful to prevent finally block from clearing pluginInAction
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
+                    setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
 
                     // Track successful activate
                     trackButtonClick({
@@ -330,6 +335,19 @@ export const MarketplaceProvider = ({
                     setLoadingAction('');
                     setLoadingPlugin('');
                     return; // Skip finally block (though finally will still execute, activationSuccessful flag prevents clearing)
+                } else if (action === 'deactivate' && !result.data.activated) {
+                    setSuccessState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
+
+                    // Track successful deactivate
+                    trackButtonClick({
+                        buttonName: 'Deactivate',
+                        buttonAction: 'product_deactivate',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'success',
+                        }
+                    });
                 }
             } else {
                 // Show error toast for activation and installation errors
@@ -344,7 +362,21 @@ export const MarketplaceProvider = ({
                         context: {
                             action: action,
                             result: 'error',
-                            error_message: result.data?.message || 'Activation failed',
+                            error_message: result.data?.message || uiI18n?.notifications?.pluginActivationFailed || 'Activation failed',
+                        }
+                    });
+                } else if (action === 'deactivate') {
+                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
+
+                    // Track deactivation error
+                    trackButtonClick({
+                        buttonName: 'Deactivate',
+                        buttonAction: 'product_deactivate',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'error',
+                            error_message: result.data?.message || uiI18n?.notifications?.pluginDeactivationFailed || 'Deactivation failed',
                         }
                     });
                 } else if (action === 'install') {
@@ -417,6 +449,8 @@ export const MarketplaceProvider = ({
         setNoticeState,
         errorState,
         setErrorState,
+        successState,
+        setSuccessState,
         allPluginsActivated,
         setAllPluginsActivated,
         catalogError,

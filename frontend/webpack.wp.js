@@ -3,10 +3,13 @@ const path = require("path");
 
 module.exports = {
 	...defaultConfig,
-	entry: "./src/index.jsx",
+	entry: {
+		index: "./src/index.jsx",
+		addons: "./src/addons.jsx",
+	},
 	output: {
 		path: path.resolve(__dirname, "build/"),
-		filename: "index.js",
+		filename: "[name].js",
 		library: {
 			type: "window",
 			name: "MarketPlaceWP",
