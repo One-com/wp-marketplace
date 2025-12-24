@@ -197,6 +197,11 @@ class MarketplaceController {
 	 * @param string $parent_menu_slug The parent menu slug (default: uses config parent_menu_slug)
 	 */
 	public function register_addons_menu( $menu_slug = 'onecom-marketplace-products', $page_title = null, $menu_title = null, $parent_menu_slug = null ) {
+		// When called via WordPress action hook, the first argument may be an empty string
+		if ( empty( $menu_slug ) || ! is_string( $menu_slug ) ) {
+			$menu_slug = 'onecom-marketplace-products';
+		}
+
 		$page_title = $page_title ?: __( 'Marketplace Products', 'text-domain' );
 		$menu_title = $menu_title ?: __( 'Products', 'text-domain' );
 		$parent_menu_slug = $parent_menu_slug ?: $this->config['parent_menu_slug'];

@@ -1,15 +1,15 @@
 import React, { useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 
-export default function ErrorToast({ plugin }) {
+export default function SuccessToast({ plugin }) {
     const {
         assetsBaseUrl,
-        errorState,
-        setErrorState,
+        successState,
+        setSuccessState,
         uiI18n
     } = useMarketplace();
 
-    const isVisible = errorState && errorState.visible && errorState.pluginSlug === plugin?.slug;
+    const isVisible = successState && successState.visible && successState.pluginSlug === plugin?.slug;
 
     useEffect(() => {
         if (isVisible) {
@@ -29,12 +29,11 @@ export default function ErrorToast({ plugin }) {
     const iconBase = assetBase ? `${assetBase}assets/` : "";
 
     const handleClose = () => {
-        setErrorState({ visible: false, type: null, pluginSlug: null });
+        setSuccessState({ visible: false, type: null, pluginSlug: null });
     };
 
-    const isActivateError = errorState.type === 'activate';
-    const isDeactivateError = errorState.type === 'deactivate';
-    const isInstallError = errorState.type === 'install';
+    const isActivated = successState.type === 'activate';
+    const isDeactivated = successState.type === 'deactivate';
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -46,21 +45,20 @@ export default function ErrorToast({ plugin }) {
 
     return (
         <div className="gv-toast-container">
-            <div className="gv-toast gv-toast-alert gv-visible">
+            <div className="gv-toast gv-toast-success gv-visible">
                 <gv-icon
                     className="gv-notice-icon"
                     aria-hidden="true"
-                    src={`${iconBase}icons/error.svg`}
+                    src={`${iconBase}icons/check_circle.svg`}
                 ></gv-icon>
                 <div className="gv-toast-content">
-                    {isActivateError && formatMessage(uiI18n?.notifications?.pluginActivationFailed || "Couldn't activate plugin.", pluginName)}
-                    {isDeactivateError && formatMessage(uiI18n?.notifications?.pluginDeactivationFailed || "Couldn't deactivate plugin.", pluginName)}
-                    {isInstallError && formatMessage(uiI18n?.notifications?.pluginInstallationFailed || "Couldn't install plugin.", pluginName)}
+                    {isActivated && formatMessage(uiI18n?.notifications?.pluginActivatedShort || "Plugin activated.", pluginName)}
+                    {isDeactivated && formatMessage(uiI18n?.notifications?.pluginDeactivated || "Plugin deactivated.", pluginName)}
                 </div>
                 <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>
                 </button>
             </div>
         </div>
-            );
-            }
+    );
+}
