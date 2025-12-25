@@ -6,6 +6,7 @@ import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorToast from "./ErrorToast";
 import SuccessToast from "./SuccessToast";
 import "@group.one/gravity";
+import ErrorState from "./ErrorState";
 
 export default function Addons() {
     const {
@@ -14,6 +15,7 @@ export default function Addons() {
         pluginInAction,
         setPluginInAction,
         subscriptionStatus,
+        fetchSubscriptionStatus,
         isOnecomBrand,
         plugins,
         setPlugins,
@@ -116,6 +118,18 @@ export default function Addons() {
                     if (uiI18nData) {
                         setUiI18n(uiI18nData);
                     }
+
+                    // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
+                    if (isOnecomBrand) {
+                        const specialPlugins = allPlugins.filter(p =>
+                            p.slug === "wp-rocket" || p.slug === "seo-by-rank-math-pro"
+                        );
+
+                        // Fetch subscription status for each special plugin
+                        specialPlugins.forEach(plugin => {
+                            fetchSubscriptionStatus(plugin.slug);
+                        });
+                    }
                 } else {
                     throw new Error("Invalid API response structure");
                 }
@@ -163,9 +177,19 @@ export default function Addons() {
     // Show loading state
     if (catalogLoading) {
         return (
-            <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-p-fluid">
-                <div className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
-                    {[0, 1, 2, 3].map((index) => (
+            <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap" >
+              <div className="gv-skeleton gv-heading-lg gv-mb-sm" style={{ width: '13%' }}></div>
+              <div className="gv-skeleton gv-text-sm gv-mb-fluid" style={{ width: '33%' }}></div>
+
+              <div className="gv-flex gv-justify-between gv-items-start">
+                <div className="gv-w-full">
+              <div className="gv-skeleton gv-heading-sm gv-mb-sm" style={{ width: '13%' }}></div>
+              <div className="gv-skeleton gv-text-sm gv-mb-md" style={{ width: '33%' }}></div>
+                </div>
+                <div className="gv-skeleton gv-text-sm gv-mb-md" style={{ width: '13%' }}></div>
+                </div>
+                <div className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-skeleton-loader">
+                    {[0, 1, 2].map((index) => (
                         <div key={index} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
                             <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                                 <div className="gv-skeleton gv-icon-tile"></div>
@@ -181,6 +205,34 @@ export default function Addons() {
                         </div>
                     ))}
                 </div>
+
+                <div className="gv-data-table gv-mt-lg gv-overflow-x-auto gv-skeleton-loader">
+                    <table className="gv-col-5-shrink gv-col-6-shrink">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col"><div className="gv-skeleton" style={{ height: '16px', width: '50px' }}></div></th>
+                            <th scope="col"><div className="gv-skeleton" style={{ height: '16px', width: '50px' }}></div></th>
+                            <th scope="col"><div className="gv-skeleton" style={{ height: '16px', width: '50px' }}></div></th>
+                            <th scope="col"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {[0, 1].map((index) => (
+                            <tr key={index}>
+                                <td style={{ width: "80px" }}>
+                                    <div className="gv-skeleton gv-icon-tile"></div>
+                                </td>
+                                <td><div className="gv-skeleton gv-text-sm" ></div></td>
+                                <td><div className="gv-skeleton gv-text-sm" ></div></td>
+                                <td><div className="gv-skeleton gv-text-sm" ></div></td>
+                                <td><div className="gv-skeleton gv-text-sm" style={{width: '24px' }}></div></td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+
             </div>
         );
     }
@@ -188,12 +240,7 @@ export default function Addons() {
     // Show error state
     if (catalogError) {
         return (
-            <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
-              <div className="gv-text-center">
-                    <h5 className="gv-header-md gv-mb-sm">{uiI18n?.notifications?.errorTitle || 'Error'}</h5>
-                    <p className="gv-text-md gv-mb-lg">{catalogError}</p>
-                </div>
-            </div>
+          <ErrorState />
         );
     }
 

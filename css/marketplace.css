@@ -76,6 +76,10 @@ body.one-com_page_onecom-marketplace{
 #marketplace-addons-root .gv-activated .gv-data-table .gv-icon-tile{
   max-width: unset;
 }
+.gv-activated .gv-skeleton-loader .gv-icon-tile{
+  height:48px;
+  width:48px;
+}
 
 /* Responsive styles for Product Banner */
 @media (max-width: 1024px) {
