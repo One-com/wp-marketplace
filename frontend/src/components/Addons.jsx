@@ -228,14 +228,14 @@ export default function Addons() {
             <p className="gv-text-sm">{uiI18n?.text?.myProducts}</p>
           </div>
           <section className="addons-section gv-mt-fluid">
-            <div className="addons-header-container gv-flex gv-max-mob-flex-col gv-justify-between gv-items-start">
-              <div className="heading-container">
+            <div className="addons-header-container gv-flex gv-max-mob-flex-col gv-justify-between gv-items-start gv-tab-gap-lg">
+              <div className="heading-container gv-flex-1">
                 <p
                   className="gv-text-bold gv-text-lg gv-mb-xs">{uiI18n?.headings?.recommendedProducts}</p>
                 <p className="gv-text-sm gv-mb-md">{uiI18n?.text?.recommendedText}</p>
               </div>
               <button
-                className="gv-button gv-button-primary gv-mode-condensed"
+                className="gv-button gv-button-primary gv-mode-condensed gv-flex-shrink-0"
                 onClick={() => {
                   // Navigate to the main marketplace page
                   const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
@@ -375,7 +375,7 @@ export default function Addons() {
                               handlePluginAction('activate', plugin);
                             }}
                           >
-                            {uiI18n?.labels?.activate || 'Activate'}
+                            {uiI18n?.activateButton || 'Activate'}
                           </a>
                         )}
                       </td>
@@ -422,7 +422,7 @@ export default function Addons() {
                                         }}
                                       >
                                         <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
-                                        <span>{uiI18n?.labels?.deactivate || 'Deactivate'}</span>
+                                        <span>{uiI18n?.deactivate || 'Deactivate'}</span>
                                       </a>
                                     )}
                                   </li>

@@ -73,7 +73,7 @@ body.one-com_page_onecom-marketplace{
   border-bottom-width: 1px !important;
 }
 
-#marketplace-addons-root .gv-activated .gv-icon-tile{
+#marketplace-addons-root .gv-activated .gv-data-table .gv-icon-tile{
   max-width: unset;
 }
 
