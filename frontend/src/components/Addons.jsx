@@ -7,6 +7,7 @@ import ErrorToast from "./ErrorToast";
 import SuccessToast from "./SuccessToast";
 import "@group.one/gravity";
 import ErrorState from "./ErrorState";
+import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 
 export default function Addons() {
     const {
@@ -35,6 +36,19 @@ export default function Addons() {
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
 
+    // Use ref to track if addons visit has been tracked (prevent duplicates)
+    const hasTrackedAddonsVisit = useRef(false);
+
+    // Use ref to track last tracked plugin detail to prevent duplicate tracking
+    const lastTrackedPluginSlug = useRef(null);
+
+    // Use ref to store timestamps for tracking
+    const contentReceivedTimestamp = useRef(null);
+    const contentRenderTimestamp = useRef(null);
+
+    // Use ref to store is_cached flag from API response
+    const isCachedRef = useRef(false);
+
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -56,8 +70,15 @@ export default function Addons() {
     const handleManageAction = (plugin) => {
         // Track the manage button click
         if (typeof window !== "undefined" && window.marketplaceConfig?.data_consent_status) {
-            // Tracking would go here if we had mixpanelTracking imported
-            console.log('[Addons] Managing plugin:', plugin.slug);
+          trackButtonClick({
+            buttonName: 'Manage',
+            buttonAction: 'manage_product',
+            context: {
+              product_slug: plugin.slug,
+              product_name: plugin.name,
+              has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
+            }
+          });
         }
 
         // Check if plugin has a redirectUrl from API response
@@ -98,9 +119,16 @@ export default function Addons() {
         fetch(apiBaseUrl)
             .then((res) => {
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                // Capture timestamp when content is received
+                contentReceivedTimestamp.current = Date.now();
                 return res.json();
             })
             .then((data) => {
+                // Check if response was cached
+                if (data.is_cached || data.cached) {
+                    isCachedRef.current = true;
+                }
+
                 if (data.success && data.data && data.data.catalog) {
                     const allPlugins = data.data.catalog;
                     setPlugins(allPlugins);
@@ -131,11 +159,23 @@ export default function Addons() {
                         });
                     }
                 } else {
+                    // Track page view with content render failure
+                    trackPageView({
+                        category: 'addons_page',
+                        itemName: 'Addons Page',
+                        isContentRendered: false,
+                    });
                     throw new Error("Invalid API response structure");
                 }
             })
             .catch((err) => {
                 console.error("Failed to fetch plugins:", err);
+                // Track page view with content render failure
+                trackPageView({
+                    category: 'addons_page',
+                    itemName: 'Addons Page',
+                    isContentRendered: false,
+                });
                 setCatalogError(err.message || "Failed to load plugins");
             })
             .finally(() => {
@@ -168,6 +208,34 @@ export default function Addons() {
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, [plugins]);
+
+    // Track addons page visit when plugins are loaded and no plugin detail is shown
+    useEffect(() => {
+        if (!catalogLoading && !catalogError && plugins.length > 0 && !pluginFromQuery && !hasTrackedAddonsVisit.current) {
+            // Capture timestamp when content is rendered to the page
+            contentRenderTimestamp.current = Date.now();
+
+            // Check if this is a reload caused by plugin activation
+            const skipPageView = sessionStorage.getItem('mp_skip_page_view');
+            if (skipPageView === 'true') {
+                // Clear the flag and skip tracking
+                sessionStorage.removeItem('mp_skip_page_view');
+                console.log('[Addons] Skipping page view tracking after activation reload');
+            } else {
+                // Normal page load, track the visit
+                trackPageView({
+                    category: 'addons_page',
+                    itemName: 'Addons Page',
+                    contentReceivedAt: contentReceivedTimestamp.current,
+                    contentRenderedAt: contentRenderTimestamp.current,
+                    isCached: isCachedRef.current,
+                });
+            }
+
+            hasTrackedAddonsVisit.current = true;
+        }
+    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery]);
+
 
     // Determine which detail component to use
     const shouldUseRankMathDetail = (plugin) => {

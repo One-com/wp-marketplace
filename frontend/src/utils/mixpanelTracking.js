@@ -167,6 +167,7 @@ export const getGlobalProperties = () => {
             hit_type: 'event',
             page: pageParam || window.location.pathname,
             path: window.location.pathname + window.location.search,
+            referrer: document.referrer.split('/').filter(Boolean).pop() || '',
         };
 
         // Filter out empty values to keep the payload clean

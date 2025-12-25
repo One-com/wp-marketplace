@@ -96,7 +96,11 @@ export default function FeaturedCarousel({ loading = false }) {
 
         // For all other plugins, apply normal filtering
         return shouldShowPlugin(plugin);
-    }).reverse();
+    }).sort((a, b) => {
+        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
+        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        return orderA - orderB;
+    });
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
