@@ -386,7 +386,7 @@ export default function Addons() {
                   };
 
                   return (
-                    <tr key={plugin.slug}>
+                    <tr id={plugin.slug} key={plugin.slug}>
                       <td style={{width: "80px"}}>
                         <img
                           src={plugin.iconUrl || `${iconBase}add_box.svg`}

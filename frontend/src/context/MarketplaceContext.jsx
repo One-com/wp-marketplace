@@ -179,13 +179,13 @@ export const MarketplaceProvider = ({
 
         if (action === 'activate') {
             const activatingMsg = uiI18n?.notifications?.activating || 'Activating {0}';
-            loadingMessage = activatingMsg.replace('{0}', pluginName);
+            loadingMessage = activatingMsg.replace('{0}', pluginName) + '...';
         } else if (action === 'deactivate') {
             const deactivatingMsg = uiI18n?.notifications?.deactivating || 'Deactivating {0}';
-            loadingMessage = deactivatingMsg.replace('{0}', pluginName);
+            loadingMessage = deactivatingMsg.replace('{0}', pluginName) + '...';
         } else if (action === 'install') {
             const installingMsg = uiI18n?.notifications?.installing || 'Installing {0}';
-            loadingMessage = installingMsg.replace('{0}', pluginName);
+            loadingMessage = installingMsg.replace('{0}', pluginName) + '...';
         } else {
             // Fallback for other actions
             const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
