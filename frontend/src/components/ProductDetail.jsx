@@ -166,7 +166,10 @@ export default function ProductDetail({
     const isFree = plugin.licenseType === "free";
     const freeTrialText = plugin.i18n?.freeTrialText || '';
     const hasFreeTrialText = freeTrialText && freeTrialText.trim() !== '';
-    const price = hasFreeTrialText
+    const freeTrialPeriod = plugin.i18n?.freeTrialPeriod || '';
+    const hasFreeTrialPeriod = freeTrialPeriod && freeTrialPeriod.trim() !== '';
+
+    const price = (hasFreeTrialPeriod || hasFreeTrialText)
         ? (uiI18n?.headings?.freeTrial || 'Free trial*')
         : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n);
 
@@ -301,23 +304,31 @@ export default function ProductDetail({
                                             <p>{subTitle}</p>
                                         </div>
                                         <div className="gv-bottom">
-                                                    <div className="gv-price-container">
-                                                        <div className="gv-price">
+                                            <div className="gv-price-container">
+                                                <div className="gv-price">
+                                                    {(hasFreeTrialPeriod || hasFreeTrialText) ? (
+                                                        <span className="gv-price-text">{price}</span>
+                                                    ) : (
+                                                        <>
                                                             <span className="gv-price-text">{rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount}</span>
-                                                            {!isFree && !hasFreeTrialText && !isFreeUntilRenewal && price && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                                        </div>
-                                                      {hasFreeTrialText ? (
-                                                        <div className="gv-price-info">
-                                                          <div className="gv-info">{freeTrialText}</div>
-                                                        </div>
-                                                      ) : (
-                                                        !isFree && price && fullPriceAmount && rebatePriceAmount !== null &&
-                                                        <div className="gv-price-info">
-                                                          <div className="gv-info">{uiI18n.labels.untilRenewal} [{rebatePriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
-                                                          <div className="gv-info">{uiI18n.labels.afterThat} [{fullPriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
-                                                        </div>
-                                                      )}
+                                                            {!isFree && !isFreeUntilRenewal && price && (
+                                                                <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                </div>
+                                                {(hasFreeTrialPeriod || hasFreeTrialText) ? (
+                                                    <div className="gv-price-info">
+                                                        <div className="gv-info">{freeTrialText}</div>
                                                     </div>
+                                                ) : (
+                                                    !isFree && price && fullPriceAmount && rebatePriceAmount !== null &&
+                                                    <div className="gv-price-info">
+                                                        <div className="gv-info">{uiI18n.labels.untilRenewal} [{rebatePriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
+                                                        <div className="gv-info">{uiI18n.labels.afterThat} [{fullPriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
+                                                    </div>
+                                                )}
+                                            </div>
                                             {useWPHandlers ? (
                                                 <PluginActions
                                                     plugin={plugin}
