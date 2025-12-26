@@ -7,7 +7,9 @@ import { MarketplaceProvider, useMarketplace } from "./context/MarketplaceContex
 
 // Inner component that can access the context
 const MarketplaceContent = () => {
-    const { allPluginsActivated, catalogError, catalogLoading } = useMarketplace();
+    const { allPluginsActivated, catalogError, catalogLoading, isWpVersionSupported } = useMarketplace();
+
+    const isSupportedWpVersion = isWpVersionSupported('6.2');
 
     // Track detail page visibility with state
     const [isDetailPage, setIsDetailPage] = useState(
@@ -51,8 +53,8 @@ const MarketplaceContent = () => {
             <div className="gv-activated">
                 <div className="marketplace-container gv-layout-product gv-surface-dim gv-w-max-container gv-mx-auto gv-p-fluid ">
 
-                    {!isDetailPage && !catalogError && <ProductBanner loading={catalogLoading} />}
-                    {!isDetailPage && !allPluginsActivated && <FeaturedCarousel loading={catalogLoading} />}
+                    {!isDetailPage && !catalogError && isSupportedWpVersion && <ProductBanner loading={catalogLoading} />}
+                    {!isDetailPage && !allPluginsActivated && isSupportedWpVersion && <FeaturedCarousel loading={catalogLoading} />}
 
                     <Marketplace />
                 </div>

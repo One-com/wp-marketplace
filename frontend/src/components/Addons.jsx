@@ -7,6 +7,7 @@ import ErrorToast from "./ErrorToast";
 import SuccessToast from "./SuccessToast";
 import "@group.one/gravity";
 import ErrorState from "./ErrorState";
+import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 
 export default function Addons() {
@@ -26,7 +27,11 @@ export default function Addons() {
         catalogError,
         setCatalogError,
         catalogLoading,
-        setCatalogLoading
+        setCatalogLoading,
+        shouldShowProvision,
+        isSpecialPlugin,
+        shouldShowPlugin,
+        isWpVersionSupported
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
@@ -141,6 +146,11 @@ export default function Addons() {
                     // Hide if it is already active on the site
                     const featured = allPlugins
                         .filter(plugin => {
+                            // Apply visibility rules
+                            if (!shouldShowPlugin(plugin)) {
+                                return false;
+                            }
+
                             // Skip activated plugins
                             if (plugin.activated === true || (plugin.featured !== true && plugin.featured !== "true")) {
                                 return false;
@@ -176,9 +186,7 @@ export default function Addons() {
 
                     // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                     if (isOnecomBrand) {
-                        const specialPlugins = allPlugins.filter(p =>
-                            p.slug === "wp-rocket" || p.slug === "seo-by-rank-math-pro"
-                        );
+                        const specialPlugins = allPlugins.filter(p => isSpecialPlugin(p.slug));
 
                         // Fetch subscription status for each special plugin
                         specialPlugins.forEach(plugin => {
@@ -208,7 +216,7 @@ export default function Addons() {
             .finally(() => {
                 setCatalogLoading(false);
             });
-    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading]);
+    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin]);
 
     // After plugins load, select plugin from query if present
     useEffect(() => {
@@ -269,6 +277,13 @@ export default function Addons() {
         return plugin && plugin.slug === 'seo-by-rank-math';
     };
 
+    // Show WP version error state
+    if (!isWpVersionSupported('6.2')) {
+        return (
+            <WpVersionErrorState />
+        );
+    }
+
     // Show loading state
     if (catalogLoading) {
         return (
@@ -301,7 +316,7 @@ export default function Addons() {
                     ))}
                 </div>
 
-                <div className="gv-data-table gv-mt-lg gv-overflow-auto gv-skeleton-loader">
+                <div className="gv-data-table gv-mt-lg gv-overflow-x-auto gv-skeleton-loader">
                     <table className="gv-col-5-shrink gv-col-6-shrink">
                         <thead>
                         <tr>
@@ -352,16 +367,7 @@ export default function Addons() {
     // }
 
     // Filter plugins for the table: installed OR special plugins with subscription
-    const installedPlugins = plugins.filter(p => {
-        if (p.installed) return true;
-
-        const isSpecialPlugin = p.slug === "wp-rocket" || p.slug === "seo-by-rank-math-pro";
-        if (isOnecomBrand && isSpecialPlugin && subscriptionStatus[p.slug] === true) {
-            return true;
-        }
-
-        return false;
-    });
+    const installedPlugins = plugins.filter(p => p.installed || shouldShowProvision(p));
 
     return (
         <div className="marketplace-container gv-flex gv-flex-col">
@@ -394,6 +400,7 @@ export default function Addons() {
               <div
                 className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
                 {featuredPlugins.map((plugin) => {
+                    const isProvisionable = shouldShowProvision(plugin);
                     const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
                       ? plugin.i18n.freeTrialPeriod
                       : (uiI18n?.labels?.free || 'Free');
@@ -418,15 +425,19 @@ export default function Addons() {
                             {plugin.i18n.listingDescription || plugin.i18n.subtitle}
                           </p>
                           <span className="gv-caption-lg gv-text-bold">
-                                            {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
-                                              ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
-                                              : price}
-                            {plugin.licenseType !== "free" &&
-                              price &&
-                              price !== freeLabel &&
-                              price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
-                              <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                        </span>
+                            {isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (
+                                <>
+                                    {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
+                                      ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
+                                      : price}
+                                    {plugin.licenseType !== "free" &&
+                                      price &&
+                                      price !== freeLabel &&
+                                      price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
+                                      <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                </>
+                            )}
+                          </span>
                         </div>
                         <div className="gv-span-2 gv-content-center gv-text-right">
                           <a
@@ -449,7 +460,7 @@ export default function Addons() {
                 </div>
 
             {installedPlugins.length > 0 && (
-              <div className="gv-data-table gv-mt-lg gv-overflow-auto">
+              <div className="gv-data-table gv-mt-lg gv-addons-table">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>
                   <tr>
@@ -463,8 +474,7 @@ export default function Addons() {
                   </thead>
                   <tbody>
                   {installedPlugins.map((plugin, index) => {
-                    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "seo-by-rank-math-pro";
-                    const shouldShowProvision = isOnecomBrand && isSpecialPlugin && !plugin.installed && subscriptionStatus[plugin.slug] === true;
+                    const isProvisionable = shouldShowProvision(plugin);
 
                     const handleProvisionClick = (e) => {
                       e.preventDefault();
@@ -497,11 +507,11 @@ export default function Addons() {
                           <div className="gv-text-indicator">
                             <span
                               className={plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
-                            <span> {plugin.activated ? (uiI18n?.labels?.active || 'Active') : (uiI18n?.labels?.notActive || 'Not Active')}</span>
+                            <span> {plugin.activated ? (uiI18n?.labels?.active || 'Active') : (isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (uiI18n?.labels?.notActive || 'Not Active'))}</span>
                           </div>
                         </td>
                         <td>
-                          {shouldShowProvision ? (
+                          {isProvisionable ? (
                             <a
                               href="#"
                               className="gv-action"
