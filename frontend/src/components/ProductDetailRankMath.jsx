@@ -541,7 +541,7 @@ export default function ProductDetailRankMath({
                                         <div className="gv-table-row" role="row">
                                             <div className="gv-product gv-p-0" role="columnheader">
                                                 <div className="gv-content">
-                                                    <h3 className="gv-title">{title}</h3>
+                                                    <h3 className="gv-title">{`${title} free`}</h3>
                                                     <p>{subtitle}</p>
                                                 </div>
                                                 <div className="gv-bottom">

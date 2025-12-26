@@ -80,6 +80,9 @@ body.one-com_page_onecom-marketplace{
   height:48px;
   width:48px;
 }
+.gv-activated .gv-addons-table{
+  overflow:visible;
+}
 
 /* Responsive styles for Product Banner */
 @media (max-width: 1024px) {
@@ -109,6 +112,9 @@ body.one-com_page_onecom-marketplace{
   .gv-activated .gv-recommended-heading{
     font-size:24px;
     font-weight:700
+  }
+  .gv-activated .gv-addons-table{
+    overflow-x:auto;
   }
 }
 

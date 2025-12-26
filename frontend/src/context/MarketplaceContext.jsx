@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
+import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
 
 const MarketplaceContext = createContext(null);
 
@@ -41,6 +42,21 @@ export const MarketplaceProvider = ({
 
     const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
     const isOnecomBrand = brand === "onecom";
+
+    // Get active plugin slugs from WordPress config
+    const activePlugins = typeof window !== "undefined" && window.marketplaceConfig?.activePlugins
+        ? window.marketplaceConfig.activePlugins
+        : [];
+
+    // Get active theme author from WordPress config
+    const activeThemeAuthor = typeof window !== "undefined" && window.marketplaceConfig?.activeThemeAuthor
+        ? window.marketplaceConfig.activeThemeAuthor
+        : "";
+
+    // Get WP version from WordPress config
+    const wpVersion = typeof window !== "undefined" && window.marketplaceConfig?.wpVersion
+        ? window.marketplaceConfig.wpVersion
+        : "";
 
     // Initialize Mixpanel on mount and monitor consent changes
     // Uses useEffect to ensure Mixpanel only initializes when consent is given
@@ -117,8 +133,7 @@ export const MarketplaceProvider = ({
     const fetchSubscriptionStatus = useCallback(async (pluginSlug) => {
         if (!isOnecomBrand) return;
 
-        const isSpecialPlugin = pluginSlug === "wp-rocket" || pluginSlug === "seo-by-rank-math-pro";
-        if (!isSpecialPlugin) return;
+        if (!isSpecialPlugin(pluginSlug)) return;
 
         // Mark as being checked
         setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: true }));
@@ -162,6 +177,58 @@ export const MarketplaceProvider = ({
             reloadTimeoutRef.current = null;
         }
     }, []);
+
+    const isSpecialPlugin = useCallback((pluginSlug) => {
+        return pluginSlug === "wp-rocket" || pluginSlug === "seo-by-rank-math-pro";
+    }, []);
+
+    const isWpVersionSupported = useCallback((minVersion) => {
+        return isWpVersionSupportedHelper(wpVersion, minVersion);
+    }, [wpVersion]);
+
+    const shouldShowProvision = useCallback((plugin) => {
+        if (!plugin || !isOnecomBrand) return false;
+        return isSpecialPlugin(plugin.slug) && !plugin.installed && subscriptionStatus[plugin.slug] === true;
+    }, [isOnecomBrand, subscriptionStatus, isSpecialPlugin]);
+
+    // Helper function to check if a plugin should be visible based on its rules
+    const shouldShowPlugin = useCallback((plugin) => {
+        // If plugin has no rules, show it by default
+        if (!plugin.rules) {
+            return true;
+        }
+
+        // Check mustHavePlugins rule
+        if (plugin.rules.mustHavePlugins && Array.isArray(plugin.rules.mustHavePlugins)) {
+            // If the array is empty, no requirements exist, so show the plugin
+            if (plugin.rules.mustHavePlugins.length === 0) {
+                return true;
+            }
+
+            // Plugin should be visible if ANY of the required plugins is active
+            const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
+                activePlugins.includes(requiredSlug)
+            );
+
+            // If mustHavePlugins rule exists but no required plugin is active, hide the plugin
+            if (!hasRequiredPlugin) {
+                return false;
+            }
+        }
+
+        // Check mustHaveThemesByAuthor rule
+        if (plugin.rules.mustHaveThemesByAuthor && typeof plugin.rules.mustHaveThemesByAuthor === 'string') {
+            // Plugin should be visible only if the active theme author matches the required author
+            const requiredAuthor = plugin.rules.mustHaveThemesByAuthor;
+            if (activeThemeAuthor !== requiredAuthor) {
+                return false;
+            }
+        }
+
+        // Add support for other rule types here in the future
+        // For now, if all rules pass (or don't exist), show the plugin
+        return true;
+    }, [activePlugins, activeThemeAuthor]);
 
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin) => {
@@ -465,7 +532,14 @@ export const MarketplaceProvider = ({
         catalogError,
         setCatalogError,
         catalogLoading,
-        setCatalogLoading
+        setCatalogLoading,
+        shouldShowProvision,
+        isSpecialPlugin,
+        shouldShowPlugin,
+        isWpVersionSupported,
+        wpVersion,
+        activePlugins,
+        activeThemeAuthor
     };
 
     return (

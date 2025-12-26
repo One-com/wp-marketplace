@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorState from "./ErrorState";
+import WpVersionErrorState from "./WpVersionErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getRebatePrice,getFullPrice } from "../utils/priceFormatter";
 import { trackMarketplaceVisit, trackPluginDetailVisit, trackPageView } from "../utils/mixpanelTracking";
@@ -30,7 +31,11 @@ export default function Marketplace() {
         catalogError,
         setCatalogError,
         catalogLoading,
-        setCatalogLoading
+        setCatalogLoading,
+        shouldShowProvision,
+        isSpecialPlugin,
+        shouldShowPlugin,
+        isWpVersionSupported
     } = useMarketplace();
 
     // Get active plugin slugs from WordPress config
@@ -161,9 +166,7 @@ export default function Marketplace() {
 
                 // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                 if (isOnecomBrand) {
-                    const specialPlugins = normalizedPlugins.filter(p =>
-                        p.slug === "wp-rocket" || p.slug === "seo-by-rank-math-pro"
-                    );
+                    const specialPlugins = normalizedPlugins.filter(p => isSpecialPlugin(p.slug));
 
                     // Fetch subscription status for each special plugin
                     specialPlugins.forEach(plugin => {
@@ -266,44 +269,6 @@ export default function Marketplace() {
         }
     }, [selectedPlugin]);
 
-    // Helper function to check if a plugin should be visible based on its rules
-    const shouldShowPlugin = (plugin) => {
-        // If plugin has no rules, show it by default
-        if (!plugin.rules) {
-            return true;
-        }
-
-        // Check mustHavePlugins rule
-        if (plugin.rules.mustHavePlugins && Array.isArray(plugin.rules.mustHavePlugins)) {
-            // If the array is empty, no requirements exist, so show the plugin
-            if (plugin.rules.mustHavePlugins.length === 0) {
-                return true;
-            }
-
-            // Plugin should be visible if ANY of the required plugins is active
-            const hasRequiredPlugin = plugin.rules.mustHavePlugins.some(requiredSlug =>
-                activePlugins.includes(requiredSlug)
-            );
-
-            // If mustHavePlugins rule exists but no required plugin is active, hide the plugin
-            if (!hasRequiredPlugin) {
-                return false;
-            }
-        }
-
-        // Check mustHaveThemesByAuthor rule
-        if (plugin.rules.mustHaveThemesByAuthor && typeof plugin.rules.mustHaveThemesByAuthor === 'string') {
-            // Plugin should be visible only if the active theme author matches the required author
-            const requiredAuthor = plugin.rules.mustHaveThemesByAuthor;
-            if (activeThemeAuthor !== requiredAuthor) {
-                return false;
-            }
-        }
-
-        // Add support for other rule types here in the future
-        // For now, if all rules pass (or don't exist), show the plugin
-        return true;
-    };
 
     // Helper function to determine if we should use ProductDetailRankMath
     const shouldUseRankMathDetail = (plugin) => {
@@ -313,6 +278,11 @@ export default function Marketplace() {
         const isRankMathPlugin = plugin.slug === "seo-by-rank-math-pro" || plugin.slug === "seo-by-rank-math";
         return isOnecomBrand && isRankMathPlugin;
     };
+
+    // Show WP version error state
+    if (!isWpVersionSupported('6.2')) {
+        return <WpVersionErrorState />;
+    }
 
     if (catalogLoading) {
         // If there's a plugin parameter in the URL, show appropriate skeleton based on plugin type
@@ -505,6 +475,7 @@ export default function Marketplace() {
                     {info.description && <p className="gv-text-sm">{info.description}</p>}
                     <div className="product-grid gv-grid gv-gap-lg  gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
                         {list.map((plugin) => {
+                            const isProvisionable = shouldShowProvision(plugin);
                             const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
                                 ? plugin.i18n.freeTrialPeriod
                                 : (uiI18n?.labels?.free || 'Free');
@@ -521,8 +492,12 @@ export default function Marketplace() {
                                         <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
                                         <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">
-                                        {plugin.licenseType === "premium" && (rebatePriceAmount > 0) ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount) : price}
-                                        {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                        {isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (
+                                            <>
+                                                {plugin.licenseType === "premium" && (rebatePriceAmount > 0) ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount) : price}
+                                                {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                            </>
+                                        )}
                                       </span>
                                     </div>
                                     <div className="gv-span-2 gv-content-center gv-text-right">

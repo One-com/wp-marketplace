@@ -10,10 +10,9 @@ export default function PluginActions({ plugin }) {
         isCheckingSubscription,
         isOnecomBrand,
         handlePluginAction,
-        uiI18n
+        uiI18n,
+        isSpecialPlugin
     } = useMarketplace();
-
-    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "seo-by-rank-math-pro";
 
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
@@ -24,7 +23,7 @@ export default function PluginActions({ plugin }) {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
 
-        if (isOnecomBrand && isSpecialPlugin && isNotInstalled && action === "install") {
+        if (isOnecomBrand && isSpecialPlugin(plugin.slug) && isNotInstalled && action === "install") {
             // Track install event with result: initiated for special plugins
             trackButtonClick({
                 buttonName: 'Install',
@@ -122,11 +121,11 @@ export default function PluginActions({ plugin }) {
     const pluginName = plugin?.name || '';
 
     // Check if we should show "Select" button instead of install/activate
-    const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin && !plugin.installed && pluginSubscriptionStatus === false;
+    const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin(plugin.slug) && !plugin.installed && pluginSubscriptionStatus === false;
 
     // Check if we should show skeleton loader (while checking subscription for special plugins)
     // Show skeleton if: checking OR status is undefined (not yet fetched)
-    const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin && !plugin.installed &&
+    const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin(plugin.slug) && !plugin.installed &&
         (pluginIsCheckingSubscription || pluginSubscriptionStatus === undefined);
 
     return (
