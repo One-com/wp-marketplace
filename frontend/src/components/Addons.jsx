@@ -449,7 +449,7 @@ export default function Addons() {
                 </div>
 
             {installedPlugins.length > 0 && (
-              <div className="gv-data-table gv-mt-lg gv-overflow-x-auto">
+              <div className="gv-data-table gv-mt-lg gv-overflow-auto">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>
                   <tr>
