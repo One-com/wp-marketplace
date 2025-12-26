@@ -301,7 +301,7 @@ export default function Addons() {
                     ))}
                 </div>
 
-                <div className="gv-data-table gv-mt-lg gv-overflow-x-auto gv-skeleton-loader">
+                <div className="gv-data-table gv-mt-lg gv-overflow-auto gv-skeleton-loader">
                     <table className="gv-col-5-shrink gv-col-6-shrink">
                         <thead>
                         <tr>
@@ -391,196 +391,197 @@ export default function Addons() {
               </button>
 
             </div>
-            <div
-              className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
-              {featuredPlugins.map((plugin) => {
-                const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
-                  ? plugin.i18n.freeTrialPeriod
-                  : (uiI18n?.labels?.free || 'Free');
-                const price = formatPluginPrice(plugin, freeLabel, uiI18n);
-                const fullPriceAmount = getFullPrice(plugin);
-                const rebatePriceAmount = getRebatePrice(plugin);
+              <div
+                className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
+                {featuredPlugins.map((plugin) => {
+                    const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
+                      ? plugin.i18n.freeTrialPeriod
+                      : (uiI18n?.labels?.free || 'Free');
+                    const price = formatPluginPrice(plugin, freeLabel, uiI18n);
+                    const fullPriceAmount = getFullPrice(plugin);
+                    const rebatePriceAmount = getRebatePrice(plugin);
 
-                return (
-                  <div key={plugin.slug}
-                       className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
-                    <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
-                      <img
-                        className="gv-icon-tile"
-                        src={plugin.iconUrl || `${iconBase}add_box.svg`}
-                        alt={plugin.name}
-                        style={{maxwidth: "auto"}}
-                      />
-                    </div>
-                    <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
-                      <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
-                      <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm">
-                        {plugin.i18n.listingDescription || plugin.i18n.subtitle}
-                      </p>
-                      <span className="gv-caption-lg gv-text-bold">
-                                        {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
-                                          ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
-                                          : price}
-                        {plugin.licenseType !== "free" &&
-                          price &&
-                          price !== freeLabel &&
-                          price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
-                          <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                    </span>
-                    </div>
-                    <div className="gv-span-2 gv-content-center gv-text-right">
-                      <a
-                        href={getMarketplaceUrl(plugin.slug)}
-                        className="gv-reset-button"
-                        style={{display: "inline-block"}}
-                        aria-label={`View details for ${plugin.name}`}
-                      >
-                        <img
-                          className="gv-tile"
-                          src={`${iconBase}arrow_forward.svg`}
-                          alt={`View ${plugin.name} details`}
-                          style={{minWidth: "24px"}}
-                        />
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="gv-data-table gv-mt-lg gv-overflow-x-auto">
-              <table className="gv-col-5-shrink gv-col-6-shrink">
-                <thead>
-                <tr>
-                  <th scope="col"></th>
-                  <th scope="col">{uiI18n?.labels?.name}</th>
-                  <th scope="col">{uiI18n?.labels?.type}</th>
-                  <th scope="col">{uiI18n?.labels?.status}</th>
-                  <th scope="col"></th>
-                  <th scope="col"></th>
-                </tr>
-                </thead>
-                <tbody>
-                {installedPlugins.map((plugin, index) => {
-                  const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "seo-by-rank-math-pro";
-                  const shouldShowProvision = isOnecomBrand && isSpecialPlugin && !plugin.installed && subscriptionStatus[plugin.slug] === true;
-
-                  const handleProvisionClick = (e) => {
-                    e.preventDefault();
-
-                    // Dispatch custom event for provisioning
-                    const event = new CustomEvent("onecom-plugin-provision", {
-                      detail: {
-                        slug: plugin.slug,
-                      },
-                      bubbles: true,
-                      cancelable: true,
-                      composed: true
-                    });
-                    document.dispatchEvent(event);
-                  };
-
-                  return (
-                    <tr id={plugin.slug} key={plugin.slug}>
-                      <td style={{width: "80px"}}>
-                        <img
-                          src={plugin.iconUrl || `${iconBase}add_box.svg`}
-                          alt={plugin.name}
-                          className="gv-icon-tile"
-                          style={{maxWidth: "auto"}}
-                        />
-                      </td>
-                      <td>{plugin.name}</td>
-                      <td>{plugin.licenseType === 'free' ? uiI18n?.labels?.freePlugin : uiI18n?.labels?.premiumPlugin}</td>
-                      <td>
-                        <div className="gv-text-indicator">
-                          <span
-                            className={plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
-                          <span> {plugin.activated ? (uiI18n?.labels?.active || 'Active') : (uiI18n?.labels?.notActive || 'Not Active')}</span>
+                    return (
+                      <div key={plugin.slug}
+                           className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                        <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
+                          <img
+                            className="gv-icon-tile"
+                            src={plugin.iconUrl || `${iconBase}add_box.svg`}
+                            alt={plugin.name}
+                            style={{maxwidth: "auto"}}
+                          />
                         </div>
-                      </td>
-                      <td>
-                        {shouldShowProvision ? (
+                        <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
+                          <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
+                          <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm">
+                            {plugin.i18n.listingDescription || plugin.i18n.subtitle}
+                          </p>
+                          <span className="gv-caption-lg gv-text-bold">
+                                            {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
+                                              ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
+                                              : price}
+                            {plugin.licenseType !== "free" &&
+                              price &&
+                              price !== freeLabel &&
+                              price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
+                              <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                        </span>
+                        </div>
+                        <div className="gv-span-2 gv-content-center gv-text-right">
                           <a
-                            href="#"
-                            className="gv-action"
-                            onClick={handleProvisionClick}
+                            href={getMarketplaceUrl(plugin.slug)}
+                            className="gv-reset-button"
+                            style={{display: "inline-block"}}
+                            aria-label={`View details for ${plugin.name}`}
                           >
-                            {uiI18n?.installAndActivate || 'Install and activate'}
+                            <img
+                              className="gv-tile"
+                              src={`${iconBase}arrow_forward.svg`}
+                              alt={`View ${plugin.name} details`}
+                              style={{minWidth: "24px"}}
+                            />
                           </a>
-                        ) : !plugin.activated && (
-                          <a
-                            href="#"
-                            className="gv-action"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handlePluginAction('activate', plugin);
-                            }}
-                          >
-                            {uiI18n?.activateButton || 'Activate'}
-                          </a>
-                        )}
-                      </td>
-                      <td>
-                        {plugin.activated && (
-                          <div className="gv-pos-relative">
-                            <button
-                              type="button"
-                              aria-label="Toggle menu"
-                              className="gv-reset-button"
-                              onClick={() => setOpenMenuIndex(openMenuIndex === index ? null : index)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+            {installedPlugins.length > 0 && (
+              <div className="gv-data-table gv-mt-lg gv-overflow-x-auto">
+                <table className="gv-col-5-shrink gv-col-6-shrink">
+                  <thead>
+                  <tr>
+                    <th scope="col"></th>
+                    <th scope="col">{uiI18n?.labels?.name}</th>
+                    <th scope="col">{uiI18n?.labels?.type}</th>
+                    <th scope="col">{uiI18n?.labels?.status}</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  {installedPlugins.map((plugin, index) => {
+                    const isSpecialPlugin = plugin.slug === "wp-rocket" || plugin.slug === "seo-by-rank-math-pro";
+                    const shouldShowProvision = isOnecomBrand && isSpecialPlugin && !plugin.installed && subscriptionStatus[plugin.slug] === true;
+
+                    const handleProvisionClick = (e) => {
+                      e.preventDefault();
+
+                      // Dispatch custom event for provisioning
+                      const event = new CustomEvent("onecom-plugin-provision", {
+                        detail: {
+                          slug: plugin.slug,
+                        },
+                        bubbles: true,
+                        cancelable: true,
+                        composed: true
+                      });
+                      document.dispatchEvent(event);
+                    };
+
+                    return (
+                      <tr id={plugin.slug} key={plugin.slug}>
+                        <td style={{width: "80px"}}>
+                          <img
+                            src={plugin.iconUrl || `${iconBase}add_box.svg`}
+                            alt={plugin.name}
+                            className="gv-icon-tile"
+                            style={{maxWidth: "auto"}}
+                          />
+                        </td>
+                        <td>{plugin.name}</td>
+                        <td>{plugin.licenseType === 'free' ? uiI18n?.labels?.freePlugin : uiI18n?.labels?.premiumPlugin}</td>
+                        <td>
+                          <div className="gv-text-indicator">
+                            <span
+                              className={plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
+                            <span> {plugin.activated ? (uiI18n?.labels?.active || 'Active') : (uiI18n?.labels?.notActive || 'Not Active')}</span>
+                          </div>
+                        </td>
+                        <td>
+                          {shouldShowProvision ? (
+                            <a
+                              href="#"
+                              className="gv-action"
+                              onClick={handleProvisionClick}
                             >
-                              <gv-icon aria-hidden="true" src={`${iconBase}more_horiz.svg`}></gv-icon>
-                            </button>
-                            <div
-                              className={`gv-contextual-menu gv-pos-right ${openMenuIndex === index ? '' : 'gv-invisible'}`}>
-                              <div className="gv-menu">
-                                <ul>
-                                  <li>
-                                    {plugin.activated && (
-                                      <a
-                                        href="#"
-                                        className="gv-menu-item"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setOpenMenuIndex(null);
-                                          handleManageAction(plugin);
-                                        }}
-                                      >
-                                        <gv-icon aria-hidden="true" src={`${iconBase}settings.svg`}></gv-icon>
-                                        <span>{uiI18n?.labels?.manage || 'Manage'}</span>
-                                      </a>
-                                    )}
-                                  </li>
-                                  <li>
-                                    {plugin.activated && (
-                                      <a
-                                        href="#"
-                                        className="gv-menu-item"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setOpenMenuIndex(null);
-                                          handlePluginAction('deactivate', plugin);
-                                        }}
-                                      >
-                                        <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
-                                        <span>{uiI18n?.deactivate || 'Deactivate'}</span>
-                                      </a>
-                                    )}
-                                  </li>
-                                </ul>
+                              {uiI18n?.installAndActivate || 'Install and activate'}
+                            </a>
+                          ) : !plugin.activated && (
+                            <a
+                              href="#"
+                              className="gv-action"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handlePluginAction('activate', plugin);
+                              }}
+                            >
+                              {uiI18n?.activateButton || 'Activate'}
+                            </a>
+                          )}
+                        </td>
+                        <td>
+                          {plugin.activated && (
+                            <div className="gv-pos-relative">
+                              <button
+                                type="button"
+                                aria-label="Toggle menu"
+                                className="gv-reset-button"
+                                onClick={() => setOpenMenuIndex(openMenuIndex === index ? null : index)}
+                              >
+                                <gv-icon aria-hidden="true" src={`${iconBase}more_horiz.svg`}></gv-icon>
+                              </button>
+                              <div
+                                className={`gv-contextual-menu gv-pos-right ${openMenuIndex === index ? '' : 'gv-invisible'}`}>
+                                <div className="gv-menu">
+                                  <ul>
+                                    <li>
+                                      {plugin.activated && (
+                                        <a
+                                          href="#"
+                                          className="gv-menu-item"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setOpenMenuIndex(null);
+                                            handleManageAction(plugin);
+                                          }}
+                                        >
+                                          <gv-icon aria-hidden="true" src={`${iconBase}settings.svg`}></gv-icon>
+                                          <span>{uiI18n?.labels?.manage || 'Manage'}</span>
+                                        </a>
+                                      )}
+                                    </li>
+                                    <li>
+                                      {plugin.activated && (
+                                        <a
+                                          href="#"
+                                          className="gv-menu-item"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setOpenMenuIndex(null);
+                                            handlePluginAction('deactivate', plugin);
+                                          }}
+                                        >
+                                          <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                          <span>{uiI18n?.deactivate || 'Deactivate'}</span>
+                                        </a>
+                                      )}
+                                    </li>
+                                  </ul>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-                </tbody>
-              </table>
-            </div>
-
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
           {installedPlugins.map(plugin => (
