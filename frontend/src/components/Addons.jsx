@@ -133,11 +133,38 @@ export default function Addons() {
                     const allPlugins = data.data.catalog;
                     setPlugins(allPlugins);
 
-                    // Filter featured plugins and get top 4
+                    // Check activation status of Rank Math plugins
+                    const rankMathActivated = allPlugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
+                    const rankMathProActivated = allPlugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
+
+                    // Filter featured plugins and get top 3
                     // Hide if it is already active on the site
                     const featured = allPlugins
-                        .filter(plugin => (plugin.featured === true || plugin.featured === "true") && !plugin.activated)
-                        .slice(0, 4);
+                        .filter(plugin => {
+                            // Skip activated plugins
+                            if (plugin.activated === true || (plugin.featured !== true && plugin.featured !== "true")) {
+                                return false;
+                            }
+
+                            // Handle Rank Math plugin visibility
+                            if (plugin.slug === "seo-by-rank-math") {
+                                // Show seo-by-rank-math only if BOTH plugins are NOT activated
+                                return !rankMathActivated && !rankMathProActivated;
+                            }
+
+                            if (plugin.slug === "seo-by-rank-math-pro") {
+                                // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
+                                return rankMathActivated;
+                            }
+
+                            return true;
+                        })
+                        .sort((a, b) => {
+                            const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
+                            const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+                            return orderA - orderB;
+                        })
+                        .slice(0, 3);
 
                     setFeaturedPlugins(featured);
 
@@ -339,7 +366,7 @@ export default function Addons() {
     return (
         <div className="marketplace-container gv-flex gv-flex-col">
           <div className="addons-header-wrap">
-            <h3>{uiI18n?.headings?.yourAddons}</h3>
+            <h3>{uiI18n?.headings?.myProducts}</h3>
             <p className="gv-text-sm">{uiI18n?.text?.myProducts}</p>
           </div>
           <section className="addons-section gv-mt-fluid">

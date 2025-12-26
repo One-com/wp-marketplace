@@ -170,8 +170,8 @@ export const MarketplaceProvider = ({
 
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
 
-        // Use ref to track if activation was successful (to prevent finally block from clearing pluginInAction)
-        let activationSuccessful = false;
+        // Use ref to track if action was successful (to prevent finally block from clearing pluginInAction)
+        let actionSuccessful = false;
 
         // Set loading state for overlay using API response keys
         const pluginName = plugin.name || plugin.slug;
@@ -302,7 +302,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'activate' && result.data.activated) {
-                    activationSuccessful = true; // Mark activation as successful to prevent finally block from clearing pluginInAction
+                    actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction
                     setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
                     setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
 
@@ -329,8 +329,9 @@ export const MarketplaceProvider = ({
                     // Clear loading state only
                     setLoadingAction('');
                     setLoadingPlugin('');
-                    return; // Skip finally block (though finally will still execute, activationSuccessful flag prevents clearing)
+                    return; // Skip finally block (though finally will still execute, actionSuccessful flag prevents clearing)
                 } else if (action === 'deactivate' && !result.data.activated) {
+                    actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction
                     setSuccessState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
 
                     // Track successful deactivate
@@ -343,6 +344,19 @@ export const MarketplaceProvider = ({
                             result: 'success',
                         }
                     });
+
+                    // Schedule reload after deactivation to refresh plugin state
+                    reloadTimeoutRef.current = setTimeout(() => {
+                        // Set flag to skip page view tracking on reload
+                        sessionStorage.setItem('mp_skip_page_view', 'true');
+                        window.location.reload();
+                    }, 3000);
+
+                    // Don't clear pluginInAction for successful deactivation - keep back button disabled until reload
+                    // Clear loading state only
+                    setLoadingAction('');
+                    setLoadingPlugin('');
+                    return;
                 }
             } else {
                 // Show error toast for activation and installation errors
@@ -409,9 +423,9 @@ export const MarketplaceProvider = ({
                 });
             }
         } finally {
-            // Only clear pluginInAction if activation was not successful
-            // For successful activations, keep it true until page reload
-            if (!activationSuccessful) {
+            // Only clear pluginInAction if action was not successful
+            // For successful actions (activate/deactivate), keep it true until page reload
+            if (!actionSuccessful) {
                 setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
             }
             // Clear loading state
