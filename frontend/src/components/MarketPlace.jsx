@@ -279,10 +279,7 @@ export default function Marketplace() {
         return isOnecomBrand && isRankMathPlugin;
     };
 
-    // Show WP version error state
-    if (!isWpVersionSupported('6.2')) {
-        return <WpVersionErrorState />;
-    }
+
 
     if (catalogLoading) {
         // If there's a plugin parameter in the URL, show appropriate skeleton based on plugin type
@@ -359,6 +356,11 @@ export default function Marketplace() {
     if (catalogError) {
         return <ErrorState />;
     }
+
+  // Show WP version error state
+  if (!isWpVersionSupported('6.2')) {
+    return <WpVersionErrorState />;
+  }
 
     // Early return: show full page detail instead of list
     if (selectedPlugin && pluginFromQuery) {
