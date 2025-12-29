@@ -277,12 +277,7 @@ export default function Addons() {
         return plugin && plugin.slug === 'seo-by-rank-math';
     };
 
-    // Show WP version error state
-    if (!isWpVersionSupported('6.2')) {
-        return (
-            <WpVersionErrorState />
-        );
-    }
+
 
     // Show loading state
     if (catalogLoading) {
@@ -353,6 +348,12 @@ export default function Addons() {
           <ErrorState />
         );
     }
+  // Show WP version error state
+  if (!isWpVersionSupported('6.2')) {
+    return (
+      <WpVersionErrorState />
+    );
+  }
 
     // Show empty state if no featured plugins
     // if (featuredPlugins.length === 0) {
