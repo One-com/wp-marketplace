@@ -38,6 +38,7 @@ export default function Addons() {
     const [selectedPlugin, setSelectedPlugin] = useState(null);
     const [featuredPlugins, setFeaturedPlugins] = useState([]);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
+    const menuRef = useRef(null);
 
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
@@ -222,6 +223,24 @@ export default function Addons() {
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, [plugins]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setOpenMenuIndex(null);
+            }
+        };
+
+        if (openMenuIndex !== null) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [openMenuIndex]);
 
     // Track addons page visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
@@ -512,7 +531,7 @@ export default function Addons() {
                         </td>
                         <td>
                           {plugin.activated && (
-                            <div className="gv-pos-relative">
+                            <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
                                 aria-label="Toggle menu"
@@ -523,7 +542,16 @@ export default function Addons() {
                               </button>
                               <div
                                 className={`gv-contextual-menu gv-pos-right ${openMenuIndex === index ? '' : 'gv-invisible'}`}>
+
                                 <div className="gv-menu">
+                                  <button
+                                    type="button"
+                                    className="gv-btn-close"
+                                    aria-label="Close"
+                                    onClick={() => setOpenMenuIndex(null)}
+                                  >
+                                    <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
+                                  </button>
                                   <ul>
                                     <li>
                                       {plugin.activated && (
