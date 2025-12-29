@@ -9,6 +9,7 @@ import "@group.one/gravity";
 import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
+import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 
 export default function Addons() {
     const {
@@ -82,35 +83,13 @@ export default function Addons() {
               product_slug: plugin.slug,
               product_name: plugin.name,
               has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
+              has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== ''),
             }
           });
         }
 
-        // Check if plugin has a redirectUrl from API response
-        if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
-            const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
-                ? window.marketplaceConfig.wpConfig.adminUrl
-                : '/wp-admin/';
-
-            let cleanPath = plugin.redirectUrl;
-            // JSON might have escaped slashes
-            cleanPath = cleanPath.replace(/\\\//g, '/');
-
-            if (cleanPath.startsWith('wp-admin/')) {
-                cleanPath = cleanPath.substring('wp-admin/'.length);
-            }
-
-            // Ensure we don't have double slashes if cleanPath starts with /
-            const separator = (adminUrl.endsWith('/') || cleanPath.startsWith('/')) ? '' : '/';
-            window.location.href = `${adminUrl}${separator}${cleanPath}`;
-            return;
-        }
-
-        // Fallback: Open detail overlay
-        setSelectedPlugin(plugin);
-        const url = new URL(window.location.href);
-        url.searchParams.set("plugin", plugin.slug);
-        window.history.pushState({}, '', url.toString());
+        const redirectUrl = getPluginRedirectUrl(plugin, false);
+        navigateToPluginUrl(redirectUrl);
     };
 
     // Fetch plugins from API
@@ -426,7 +405,6 @@ export default function Addons() {
                             {plugin.i18n.listingDescription || plugin.i18n.subtitle}
                           </p>
                           <span className="gv-caption-lg gv-text-bold">
-                            {isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (
                                 <>
                                     {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
                                       ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
@@ -437,7 +415,6 @@ export default function Addons() {
                                       price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
                                       <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                 </>
-                            )}
                           </span>
                         </div>
                         <div className="gv-span-2 gv-content-center gv-text-right">

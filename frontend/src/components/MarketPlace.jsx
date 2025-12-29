@@ -494,12 +494,10 @@ export default function Marketplace() {
                                         <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
                                         <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">
-                                        {isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (
                                             <>
                                                 {plugin.licenseType === "premium" && (rebatePriceAmount > 0) ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount) : price}
                                                 {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                             </>
-                                        )}
                                       </span>
                                     </div>
                                     <div className="gv-span-2 gv-content-center gv-text-right">

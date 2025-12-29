@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
+import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 
 export default function PluginActions({ plugin }) {
     const {
@@ -80,36 +81,12 @@ export default function PluginActions({ plugin }) {
                 product_slug: plugin.slug,
                 product_name: plugin.name,
                 has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
+                has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== ''),
             }
         });
 
-        // Check if plugin has a redirectUrl from API response
-        if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
-            // Get the admin URL from config (provided by PHP)
-            const adminUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl;
-
-            if (adminUrl) {
-                // Construct full URL using adminUrl from PHP config
-                // adminUrl is like "https://example.com/wp-admin/"
-                // redirectUrl comes as "wp-admin\/admin.php?page=termly" (JSON unescapes \/ to /)
-                // Strip "wp-admin/" prefix from redirectUrl if present to avoid duplication
-                let cleanPath = plugin.redirectUrl;
-                if (cleanPath.startsWith('wp-admin/')) {
-                    cleanPath = cleanPath.substring('wp-admin/'.length);
-                }
-                const fullUrl = `${adminUrl}${cleanPath}`;
-                window.location.href = fullUrl;
-            } else {
-                // Fallback: use window.location.origin if adminUrl not available
-                const siteUrl = window.location.origin;
-                const fullUrl = `${siteUrl}/${plugin.redirectUrl}`;
-                window.location.href = fullUrl;
-            }
-            return;
-        }
-
-        // Fallback to plugins page
-        window.location.href = '/wp-admin/plugins.php';
+        const redirectUrl = getPluginRedirectUrl(plugin, false);
+        navigateToPluginUrl(redirectUrl);
     };
 
     // Helper function to replace {0} with plugin name

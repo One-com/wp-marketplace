@@ -308,6 +308,7 @@ class MarketplaceController {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
 			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
 			'assetsBaseUrl' => $base_url,
@@ -443,6 +444,7 @@ class MarketplaceController {
  			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
  			'adminUrl' => admin_url(),
  			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+ 			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
  		],
  		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
  		'assetsBaseUrl' => $base_url,
@@ -879,7 +881,13 @@ class MarketplaceController {
 			wp_send_json_error([ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ]);
 		}
 
-		deactivate_plugins( $plugin_file, false, is_multisite() );
+		// Ensure the plugin is loaded so its deactivation hooks are registered.
+		if ( is_plugin_active( $plugin_file ) ) {
+			include_once WP_PLUGIN_DIR . '/' . $plugin_file;
+		}
+
+		// Handle both site-wide and network-wide deactivation to ensure hooks fire correctly
+		deactivate_plugins( $plugin_file, false, null );
 
 		if ( is_plugin_active( $plugin_file ) ) {
 			wp_send_json_error([ 'message' => __( 'Failed to deactivate plugin', 'onecom-wp' ) ]);
