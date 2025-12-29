@@ -9,6 +9,7 @@ import "@group.one/gravity";
 import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
+import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 
 export default function Addons() {
     const {
@@ -37,6 +38,7 @@ export default function Addons() {
     const [selectedPlugin, setSelectedPlugin] = useState(null);
     const [featuredPlugins, setFeaturedPlugins] = useState([]);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
+    const menuRef = useRef(null);
 
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
@@ -82,35 +84,13 @@ export default function Addons() {
               product_slug: plugin.slug,
               product_name: plugin.name,
               has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
+              has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== ''),
             }
           });
         }
 
-        // Check if plugin has a redirectUrl from API response
-        if (plugin.redirectUrl && plugin.redirectUrl.trim() !== '') {
-            const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
-                ? window.marketplaceConfig.wpConfig.adminUrl
-                : '/wp-admin/';
-
-            let cleanPath = plugin.redirectUrl;
-            // JSON might have escaped slashes
-            cleanPath = cleanPath.replace(/\\\//g, '/');
-
-            if (cleanPath.startsWith('wp-admin/')) {
-                cleanPath = cleanPath.substring('wp-admin/'.length);
-            }
-
-            // Ensure we don't have double slashes if cleanPath starts with /
-            const separator = (adminUrl.endsWith('/') || cleanPath.startsWith('/')) ? '' : '/';
-            window.location.href = `${adminUrl}${separator}${cleanPath}`;
-            return;
-        }
-
-        // Fallback: Open detail overlay
-        setSelectedPlugin(plugin);
-        const url = new URL(window.location.href);
-        url.searchParams.set("plugin", plugin.slug);
-        window.history.pushState({}, '', url.toString());
+        const redirectUrl = getPluginRedirectUrl(plugin, false);
+        navigateToPluginUrl(redirectUrl);
     };
 
     // Fetch plugins from API
@@ -243,6 +223,24 @@ export default function Addons() {
         window.addEventListener('popstate', handlePopState);
         return () => window.removeEventListener('popstate', handlePopState);
     }, [plugins]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setOpenMenuIndex(null);
+            }
+        };
+
+        if (openMenuIndex !== null) {
+            document.addEventListener("mousedown", handleClickOutside);
+        } else {
+            document.removeEventListener("mousedown", handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [openMenuIndex]);
 
     // Track addons page visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
@@ -426,7 +424,6 @@ export default function Addons() {
                             {plugin.i18n.listingDescription || plugin.i18n.subtitle}
                           </p>
                           <span className="gv-caption-lg gv-text-bold">
-                            {isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (
                                 <>
                                     {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
                                       ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
@@ -437,7 +434,6 @@ export default function Addons() {
                                       price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
                                       <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                 </>
-                            )}
                           </span>
                         </div>
                         <div className="gv-span-2 gv-content-center gv-text-right">
@@ -535,7 +531,7 @@ export default function Addons() {
                         </td>
                         <td>
                           {plugin.activated && (
-                            <div className="gv-pos-relative">
+                            <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
                                 aria-label="Toggle menu"
@@ -546,7 +542,16 @@ export default function Addons() {
                               </button>
                               <div
                                 className={`gv-contextual-menu gv-pos-right ${openMenuIndex === index ? '' : 'gv-invisible'}`}>
+
                                 <div className="gv-menu">
+                                  <button
+                                    type="button"
+                                    className="gv-btn-close"
+                                    aria-label="Close"
+                                    onClick={() => setOpenMenuIndex(null)}
+                                  >
+                                    <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
+                                  </button>
                                   <ul>
                                     <li>
                                       {plugin.activated && (
