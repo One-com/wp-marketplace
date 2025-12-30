@@ -1,14 +1,16 @@
 import React, { useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 
-export default function SuccessToast({ plugin }) {
+export default function SuccessToast({ plugin: propPlugin }) {
     const {
         assetsBaseUrl,
         successState,
         setSuccessState,
-        uiI18n
+        uiI18n,
+        plugins
     } = useMarketplace();
 
+    const plugin = propPlugin || plugins.find(p => p.slug === successState.pluginSlug);
     const isVisible = successState && successState.visible && successState.pluginSlug === plugin?.slug;
 
     useEffect(() => {
@@ -34,6 +36,7 @@ export default function SuccessToast({ plugin }) {
 
     const isActivated = successState.type === 'activate';
     const isDeactivated = successState.type === 'deactivate';
+    const isDeleted = successState.type === 'delete';
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -54,6 +57,7 @@ export default function SuccessToast({ plugin }) {
                 <div className="gv-toast-content">
                     {isActivated && formatMessage(uiI18n?.notifications?.pluginActivatedShort || "Plugin activated.", pluginName)}
                     {isDeactivated && formatMessage(uiI18n?.notifications?.pluginDeactivated || "Plugin deactivated.", pluginName)}
+                    {isDeleted && formatMessage(uiI18n?.notifications?.pluginDeleted || "Plugin deleted successfully.", pluginName)}
                 </div>
                 <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>
