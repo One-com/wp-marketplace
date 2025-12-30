@@ -253,6 +253,9 @@ export const MarketplaceProvider = ({
         } else if (action === 'install') {
             const installingMsg = uiI18n?.notifications?.installing || 'Installing {0}';
             loadingMessage = installingMsg.replace('{0}', pluginName) + '...';
+        } else if (action === 'delete') {
+            const deletingMsg = uiI18n?.notifications?.deleting || 'Deleting {0}';
+            loadingMessage = deletingMsg.replace('{0}', pluginName) + '...';
         } else {
             // Fallback for other actions
             const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
@@ -366,7 +369,7 @@ export const MarketplaceProvider = ({
                     })
                 );
 
-                // Show success notice for install and activate actions
+                // Show success notice for install, activate and delete actions
                 if (action === 'install' && result.data.installed) {
                     setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
 
@@ -374,6 +377,20 @@ export const MarketplaceProvider = ({
                     trackButtonClick({
                         buttonName: 'Install',
                         buttonAction: 'product_install',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'success',
+                        }
+                    });
+                } else if (action === 'delete' && !result.data.installed) {
+                    setNoticeState({ visible: true, type: 'deleted', pluginSlug: plugin.slug });
+                    setSuccessState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
+
+                    // Track successful delete
+                    trackButtonClick({
+                        buttonName: 'Delete',
+                        buttonAction: 'product_delete',
                         plugin: plugin,
                         context: {
                             action: action,
@@ -481,6 +498,20 @@ export const MarketplaceProvider = ({
                             error_message: result.data?.message || 'Installation failed',
                         }
                     });
+                } else if (action === 'delete') {
+                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
+
+                    // Track deletion error
+                    trackButtonClick({
+                        buttonName: 'Delete',
+                        buttonAction: 'product_delete',
+                        plugin: plugin,
+                        context: {
+                            action: action,
+                            result: 'error',
+                            error_message: result.data?.message || uiI18n?.notifications?.pluginDeletionFailed || 'Deletion failed',
+                        }
+                    });
                 } else {
                     alert(result.data?.message || "Failed to perform action");
                 }
@@ -489,10 +520,10 @@ export const MarketplaceProvider = ({
             console.error("Plugin action failed", err);
 
             // Track network/exception errors for install and activate
-            if (action === 'activate' || action === 'install') {
+            if (action === 'activate' || action === 'install' || action === 'delete') {
                 trackButtonClick({
-                    buttonName: action === 'activate' ? 'Activate' : 'Install',
-                    buttonAction: action === 'activate' ? 'product_activate' : 'product_install',
+                    buttonName: action === 'activate' ? 'Activate' : (action === 'install' ? 'Install' : 'Delete'),
+                    buttonAction: action === 'activate' ? 'product_activate' : (action === 'install' ? 'product_install' : 'product_delete'),
                     plugin: plugin,
                     context: {
                         action: action,

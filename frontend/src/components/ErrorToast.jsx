@@ -1,14 +1,16 @@
 import React, { useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 
-export default function ErrorToast({ plugin }) {
+export default function ErrorToast({ plugin: propPlugin }) {
     const {
         assetsBaseUrl,
         errorState,
         setErrorState,
-        uiI18n
+        uiI18n,
+        plugins
     } = useMarketplace();
 
+    const plugin = propPlugin || plugins.find(p => p.slug === errorState.pluginSlug);
     const isVisible = errorState && errorState.visible && errorState.pluginSlug === plugin?.slug;
 
     useEffect(() => {
@@ -35,6 +37,7 @@ export default function ErrorToast({ plugin }) {
     const isActivateError = errorState.type === 'activate';
     const isDeactivateError = errorState.type === 'deactivate';
     const isInstallError = errorState.type === 'install';
+    const isDeleteError = errorState.type === 'delete';
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -56,6 +59,7 @@ export default function ErrorToast({ plugin }) {
                     {isActivateError && formatMessage(uiI18n?.notifications?.pluginActivationFailed || "Couldn't activate plugin.", pluginName)}
                     {isDeactivateError && formatMessage(uiI18n?.notifications?.pluginDeactivationFailed || "Couldn't deactivate plugin.", pluginName)}
                     {isInstallError && formatMessage(uiI18n?.notifications?.pluginInstallationFailed || "Couldn't install plugin.", pluginName)}
+                    {isDeleteError && formatMessage(uiI18n?.notifications?.pluginDeletionFailed || "Couldn't delete plugin.", pluginName)}
                 </div>
                 <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>

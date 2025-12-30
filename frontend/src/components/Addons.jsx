@@ -530,7 +530,7 @@ export default function Addons() {
                           )}
                         </td>
                         <td>
-                          {plugin.activated && (
+                          {(plugin.activated || (plugin.installed && !isProvisionable)) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
@@ -553,8 +553,9 @@ export default function Addons() {
                                     <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
                                   </button>
                                   <ul>
+                                    {plugin.activated && (
                                     <li>
-                                      {plugin.activated && (
+
                                         <a
                                           href="#"
                                           className="gv-menu-item"
@@ -567,10 +568,12 @@ export default function Addons() {
                                           <gv-icon aria-hidden="true" src={`${iconBase}settings.svg`}></gv-icon>
                                           <span>{uiI18n?.labels?.manage || 'Manage'}</span>
                                         </a>
-                                      )}
+
                                     </li>
+                                        )}
+                                    {plugin.activated && (
                                     <li>
-                                      {plugin.activated && (
+
                                         <a
                                           href="#"
                                           className="gv-menu-item"
@@ -582,6 +585,23 @@ export default function Addons() {
                                         >
                                           <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
                                           <span>{uiI18n?.deactivate || 'Deactivate'}</span>
+                                        </a>
+
+                                    </li>
+                                    )}
+                                    <li>
+                                      {!plugin.activated && plugin.installed && (
+                                        <a
+                                          href="#"
+                                          className="gv-menu-item"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setOpenMenuIndex(null);
+                                            handlePluginAction('delete', plugin);
+                                          }}
+                                        >
+                                          <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                          <span>{uiI18n?.deleteButton || 'Delete'}</span>
                                         </a>
                                       )}
                                     </li>
@@ -600,12 +620,8 @@ export default function Addons() {
             )}
           </section>
 
-          {installedPlugins.map(plugin => (
-            <React.Fragment key={`toasts-${plugin.slug}`}>
-              <ErrorToast plugin={plugin} />
-              <SuccessToast plugin={plugin} />
-            </React.Fragment>
-          ))}
+          <ErrorToast />
+          <SuccessToast />
 
           {/* Render detail overlay when plugin is selected */}
           {selectedPlugin && !pluginFromQuery && (() => {

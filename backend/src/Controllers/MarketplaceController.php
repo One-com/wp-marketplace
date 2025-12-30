@@ -166,6 +166,7 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_install_plugin', [ $this, 'ajax_install_plugin' ] );
 			add_action( 'wp_ajax_marketplace_activate_plugin', [ $this, 'ajax_activate_plugin' ] );
 			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
+			add_action( 'wp_ajax_marketplace_delete_plugin', [ $this, 'ajax_delete_plugin' ] );
 
 			//reset transient for marketplace catalog
 			add_action('deactivated_plugin', [$this, 'reset_marketplace_catalog_transient'], 10, 2);
@@ -913,6 +914,56 @@ class MarketplaceController {
 			'installed' => true,
 			'activated' => false,
 		]);
+	}
+
+	public function ajax_delete_plugin() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'delete_plugins' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
+		}
+
+		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
+		if ( empty( $slug ) ) {
+			wp_send_json_error( [ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ] );
+		}
+
+		// Check if plugin is installed first
+		if ( ! $this->is_installed( $slug ) ) {
+			wp_send_json_error( [ 'message' => __( 'Plugin not installed', 'onecom-wp' ) ] );
+		}
+
+		// Resolve the plugin file
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+
+		if ( empty( $plugin_file ) ) {
+			wp_send_json_error( [ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ] );
+		}
+
+		// Check if the plugin is active
+		if ( is_plugin_active( $plugin_file ) ) {
+			wp_send_json_error( [ 'message' => __( 'Cannot delete an active plugin. Please deactivate it first.', 'onecom-wp' ) ] );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
+		$result = delete_plugins( [ $plugin_file ] );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( $result === false ) {
+			wp_send_json_error( [ 'message' => __( 'Failed to delete plugin', 'onecom-wp' ) ] );
+		}
+
+		wp_send_json_success( [
+			'message'   => __( 'Plugin deleted successfully', 'onecom-wp' ),
+			'installed' => false,
+			'activated' => false,
+		] );
 	}
 
 	/**
