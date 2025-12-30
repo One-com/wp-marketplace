@@ -843,6 +843,14 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Plugin file not found.', 'text-domain' ) ] );
 		}
 
+		if ( $plugin_file === 'seo-by-rank-math-pro/rank-math-pro.php' ) {
+			// Also activate the Free version if it's installed and not active
+			$free_plugin_file = 'seo-by-rank-math/rank-math.php';
+			if ( $this->is_installed( 'seo-by-rank-math' ) && ! is_plugin_active( $free_plugin_file ) ) {
+				activate_plugin( $free_plugin_file );
+			}
+		}
+
 		$result = activate_plugin( $plugin_file );
 
 		if ( is_wp_error( $result ) ) {
@@ -876,6 +884,13 @@ class MarketplaceController {
 		// Resolve the plugin file using the enhanced helper function
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+
+		if ( $plugin_file === 'seo-by-rank-math/rank-math.php' ) {
+			// Also deactivate the Pro version if it's active
+			if ( is_plugin_active( 'seo-by-rank-math-pro/rank-math-pro.php' ) ) {
+				deactivate_plugins( 'seo-by-rank-math-pro/rank-math-pro.php' );
+			}
+		}
 
 		if ( empty( $plugin_file ) ) {
 			wp_send_json_error([ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ]);

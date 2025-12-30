@@ -94,6 +94,7 @@ body.one-com_page_onecom-marketplace{
   }
   .gv-activated .gv-addons-table{
     overflow-x:auto;
+    overflow-y: hidden;
   }
 }
 

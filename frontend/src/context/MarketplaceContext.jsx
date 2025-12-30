@@ -347,11 +347,23 @@ export const MarketplaceProvider = ({
 
             if (result.success) {
                 setPlugins(prev =>
-                    prev.map(p =>
-                        p.slug === plugin.slug
-                            ? { ...p, installed: result.data.installed, activated: result.data.activated }
-                            : p
-                    )
+                    prev.map(p => {
+                        if (p.slug === plugin.slug) {
+                            return { ...p, installed: result.data.installed, activated: result.data.activated };
+                        }
+
+                        // Handle Rank Math dependency: if Free is deactivated, Pro is also deactivated
+                        if (action === 'deactivate' && plugin.slug === 'seo-by-rank-math' && p.slug === 'seo-by-rank-math-pro') {
+                            return { ...p, activated: false };
+                        }
+
+                        // Handle Rank Math dependency: if Pro is activated, Free is also activated
+                        if (action === 'activate' && plugin.slug === 'seo-by-rank-math-pro' && p.slug === 'seo-by-rank-math') {
+                            return { ...p, activated: true };
+                        }
+
+                        return p;
+                    })
                 );
 
                 // Show success notice for install and activate actions
