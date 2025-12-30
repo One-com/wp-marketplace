@@ -92,6 +92,9 @@ body.one-com_page_onecom-marketplace{
   .gv-activated .marketplace-container.gv-layout-product{
     gap:24px;
   }
+  .gv-activated .gv-addons-table{
+    overflow-x:auto;
+  }
 }
 
 @media (max-width: 600px) {
@@ -152,9 +155,7 @@ body.one-com_page_onecom-marketplace{
     max-width: 480px;
     width: 100%;
   }
-  .gv-activated .gv-addons-table{
-    overflow:auto;
-  }
+
 
 
 }
