@@ -310,7 +310,11 @@ export default function ProductDetail({
                                                         <span className="gv-price-text">{price}</span>
                                                     ) : (
                                                         <>
-                                                            <span className="gv-price-text">{rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount}</span>
+                                                            <span className="gv-price-text">
+                                                                {plugin.licenseType === "premium" && rebatePriceAmount !== null
+                                                                    ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
+                                                                    : price}
+                                                            </span>
                                                             {!isFree && !isFreeUntilRenewal && price && (
                                                                 <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>
                                                             )}
