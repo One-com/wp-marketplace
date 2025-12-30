@@ -554,7 +554,7 @@ export default function Addons() {
                                   </button>
                                   <ul>
                                     {plugin.activated && (
-                                    <li>
+                                    <li className="gv-mb-0">
 
                                         <a
                                           href="#"
@@ -572,7 +572,7 @@ export default function Addons() {
                                     </li>
                                         )}
                                     {plugin.activated && (
-                                    <li>
+                                    <li className="gv-mb-0">
 
                                         <a
                                           href="#"
@@ -589,7 +589,7 @@ export default function Addons() {
 
                                     </li>
                                     )}
-                                    <li>
+                                    <li className="gv-mb-0">
                                       {!plugin.activated && plugin.installed && (
                                         <a
                                           href="#"
