@@ -522,7 +522,7 @@ export default function Addons() {
                               className="gv-action"
                               onClick={(e) => {
                                 e.preventDefault();
-                                handlePluginAction('activate', plugin);
+                                handlePluginAction('activate', plugin, 'addons');
                               }}
                             >
                               {uiI18n?.activateButton || 'Activate'}
@@ -580,7 +580,7 @@ export default function Addons() {
                                           onClick={(e) => {
                                             e.preventDefault();
                                             setOpenMenuIndex(null);
-                                            handlePluginAction('deactivate', plugin);
+                                            handlePluginAction('deactivate', plugin, 'addons');
                                           }}
                                         >
                                           <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
@@ -597,7 +597,7 @@ export default function Addons() {
                                           onClick={(e) => {
                                             e.preventDefault();
                                             setOpenMenuIndex(null);
-                                            handlePluginAction('delete', plugin);
+                                            handlePluginAction('delete', plugin, 'addons');
                                           }}
                                         >
                                           <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
