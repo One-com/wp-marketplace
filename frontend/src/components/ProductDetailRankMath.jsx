@@ -52,7 +52,7 @@ export default function ProductDetailRankMath({
                       }}
                     >
                       <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-                      <span>Back</span>
+                      <span>{uiI18n.backButton}</span>
                     </a>
                   </nav>
 
@@ -496,7 +496,7 @@ export default function ProductDetailRankMath({
                         }}
                     >
                         <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-                        <span>Back</span>
+                        <span>{uiI18n.backButton}</span>
                     </a>
                 <SuccessNotice plugin={freePlugin} />
                 <ErrorToast plugin={freePlugin} />

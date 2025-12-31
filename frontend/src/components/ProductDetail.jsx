@@ -259,7 +259,7 @@ export default function ProductDetail({
                     >
                         <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}arrow_back.svg`}
                                         alt="Back to plugins" />
-                        <span>Back</span>
+                        <span>{uiI18n.backButton}</span>
                     </a>
                     <SuccessNotice plugin={plugin} />
                     <ErrorToast plugin={plugin} />
