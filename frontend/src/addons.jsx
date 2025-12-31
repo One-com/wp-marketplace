@@ -1,12 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import MarketplaceApp from "./MarketplaceApp";
+import AddonsApp from "./AddonsApp";
 import './i18n'
 import { isWpVersionSupported } from "./utils/wpVersionHelper";
 
 // Inside-WP auto-mount
 document.addEventListener("DOMContentLoaded", () => {
-    const el = document.getElementById("marketplace-root");
+    const el = document.getElementById("marketplace-addons-root");
     if (el) {
         const config = window.marketplaceConfig || {};
         if (config.locale) {
@@ -20,12 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (typeof ReactDOM.createRoot === 'function' && isSupported) {
             // React 18+
             const root = ReactDOM.createRoot(el);
-            root.render(<MarketplaceApp {...config} />);
+            root.render(<AddonsApp {...config} />);
         } else {
             // React 17 or unsupported version
-            // For unsupported versions, MarketplaceApp will still render and show WpVersionErrorState
+            // For unsupported versions, AddonsApp will still render and show WpVersionErrorState
             // We just need to use the compatible render method
-            ReactDOM.render(<MarketplaceApp {...config} />, el);
+            ReactDOM.render(<AddonsApp {...config} />, el);
         }
     }
 });
