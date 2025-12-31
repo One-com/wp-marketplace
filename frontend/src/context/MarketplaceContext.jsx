@@ -58,6 +58,35 @@ export const MarketplaceProvider = ({
         ? window.marketplaceConfig.wpVersion
         : "";
 
+    useEffect(() => {
+        const persistedNotice = sessionStorage.getItem('mp_success_notice');
+        if (persistedNotice) {
+            try {
+                const noticeData = JSON.parse(persistedNotice);
+                setNoticeState({
+                    visible: noticeData.visible,
+                    type: noticeData.type,
+                    pluginSlug: noticeData.pluginSlug
+                });
+                setSuccessState({
+                    visible: noticeData.visible,
+                    type: noticeData.successType,
+                    pluginSlug: noticeData.pluginSlug
+                });
+
+                // Schedule clearing from sessionStorage AFTER the notice is set in state
+                // and the components have had a chance to mount and check it.
+                // We use a small timeout to ensure it stays in sessionStorage long enough
+                // for ProductDetail.jsx mount effect to see it.
+                setTimeout(() => {
+                    sessionStorage.removeItem('mp_success_notice');
+                }, 100);
+            } catch (e) {
+                console.error('Error parsing persisted success notice', e);
+            }
+        }
+    }, []);
+
     // Initialize Mixpanel on mount and monitor consent changes
     // Uses useEffect to ensure Mixpanel only initializes when consent is given
     useEffect(() => {
@@ -176,6 +205,7 @@ export const MarketplaceProvider = ({
             clearTimeout(reloadTimeoutRef.current);
             reloadTimeoutRef.current = null;
         }
+        sessionStorage.removeItem('mp_success_notice');
     }, []);
 
     const isSpecialPlugin = useCallback((pluginSlug) => {
@@ -231,7 +261,7 @@ export const MarketplaceProvider = ({
     }, [activePlugins, activeThemeAuthor]);
 
     // Handle plugin actions (install, activate, deactivate)
-    const handlePluginAction = useCallback(async (action, plugin) => {
+    const handlePluginAction = useCallback(async (action, plugin, source = '') => {
         // Check if this is Imagify plugin activation (handles 302 redirect case)
         const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
 
@@ -284,49 +314,47 @@ export const MarketplaceProvider = ({
                     console.log("Imagify activation request initiated, reload will proceed");
                 });
 
-                // Show success notice after delay
-                setTimeout(() => {
-                    setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
-                    setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+                // Track successful Imagify activation
+                trackButtonClick({
+                    buttonName: 'Activate',
+                    buttonAction: 'product_activate',
+                    plugin: plugin,
+                    context: {
+                        action: action,
+                        result: 'success',
+                        special_case: 'imagify_redirect',
+                    }
+                });
 
-                    // Track successful Imagify activation
-                    trackButtonClick({
-                        buttonName: 'Activate',
-                        buttonAction: 'product_activate',
-                        plugin: plugin,
-                        context: {
-                            action: action,
-                            result: 'success',
-                            special_case: 'imagify_redirect',
-                        }
-                    });
-                }, 1000);
-
-                // Clear loading overlay after success notice appears
-                // Keep pluginInAction true to disable back button until reload
-                setTimeout(() => {
-                    setLoadingAction('');
-                    setLoadingPlugin('');
-                }, 1100);
-
-                // Update plugin state to activated
-                setTimeout(() => {
-                    setPlugins(prev =>
-                        prev.map(p =>
-                            p.slug === plugin.slug
-                                ? { ...p, installed: true, activated: true }
-                                : p
-                        )
-                    );
-                }, 1200);
-
-                // Schedule reload after showing the success notice and updated state
-                // User can cancel this by clicking "Get Started" button
-                reloadTimeoutRef.current = setTimeout(() => {
+                if (source === 'product_detail') {
                     // Set flag to skip page view tracking on reload
                     sessionStorage.setItem('mp_skip_page_view', 'true');
-                    window.location.reload();
-                }, 5000);
+                    sessionStorage.setItem('mp_success_notice', JSON.stringify({
+                        visible: true,
+                        type: 'activated',
+                        pluginSlug: plugin.slug,
+                        successType: 'activate'
+                    }));
+
+                    // Schedule reload almost instantly
+                    reloadTimeoutRef.current = setTimeout(() => {
+                        window.location.reload();
+                    }, 500);
+                } else {
+                    // Old flow for addons page
+                    setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+
+                    // Schedule reload after a while
+                    reloadTimeoutRef.current = setTimeout(() => {
+                        sessionStorage.setItem('mp_skip_page_view', 'true');
+                        window.location.reload();
+                    }, 3000);
+
+                    // Clear loading state only
+                    setLoadingAction('');
+                    setLoadingPlugin('');
+                    actionSuccessful = true;
+                }
             }, 100);
             return;
         }
@@ -399,8 +427,6 @@ export const MarketplaceProvider = ({
                     });
                 } else if (action === 'activate' && result.data.activated) {
                     actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction
-                    setNoticeState({ visible: true, type: 'activated', pluginSlug: plugin.slug });
-                    setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
 
                     // Track successful activate
                     trackButtonClick({
@@ -413,18 +439,36 @@ export const MarketplaceProvider = ({
                         }
                     });
 
-                    // Schedule reload after activation to refresh plugin state
-                    // User can cancel this by clicking "Get Started" button
-                    reloadTimeoutRef.current = setTimeout(() => {
+                    if (source === 'product_detail') {
                         // Set flag to skip page view tracking on reload
                         sessionStorage.setItem('mp_skip_page_view', 'true');
-                        window.location.reload();
-                    }, 3000);
+                        sessionStorage.setItem('mp_success_notice', JSON.stringify({
+                            visible: true,
+                            type: 'activated',
+                            pluginSlug: plugin.slug,
+                            successType: 'activate'
+                        }));
 
-                    // Don't clear pluginInAction for successful activation - keep back button disabled until reload
-                    // Clear loading state only
-                    setLoadingAction('');
-                    setLoadingPlugin('');
+                        // Schedule reload almost instantly
+                        reloadTimeoutRef.current = setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    } else {
+                        // Old flow for addons page
+                        setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+
+                        // Schedule reload after a while
+                        reloadTimeoutRef.current = setTimeout(() => {
+                            // Set flag to skip page view tracking on reload
+                            sessionStorage.setItem('mp_skip_page_view', 'true');
+                            window.location.reload();
+                        }, 3000);
+
+                        // Clear loading state only
+                        setLoadingAction('');
+                        setLoadingPlugin('');
+                    }
+
                     return; // Skip finally block (though finally will still execute, actionSuccessful flag prevents clearing)
                 } else if (action === 'deactivate' && !result.data.activated) {
                     actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction

@@ -24,8 +24,10 @@ const resources = {
 	it_IT: { translation: it_IT },
 	nl_NL: { translation: nl_NL },
 	no_NO: { translation: no_NO },
+	nb_NO: { translation: no_NO },
 	pt_PT: { translation: pt_PT },
 	sv_SE: { translation: sv_SE },
+	fi: { translation: fi_FI },
 };
 
 i18n.use(initReactI18next).init({

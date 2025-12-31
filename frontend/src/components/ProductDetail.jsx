@@ -139,8 +139,9 @@ export default function ProductDetail({
     // Clear banners when component mounts (handles case when user returns via browser back button)
     useEffect(() => {
         // Clear any existing banners when ProductDetail mounts
-        setNoticeState({ visible: false, type: null, pluginSlug: null });
-        setErrorState({ visible: false, type: null, pluginSlug: null });
+        // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
+        setNoticeState(prev => (prev.visible && prev.pluginSlug === plugin.slug) ? prev : { visible: false, type: null, pluginSlug: null });
+        setErrorState(prev => (prev.visible && prev.pluginSlug === plugin.slug) ? prev : { visible: false, type: null, pluginSlug: null });
     }, [plugin.slug, setNoticeState, setErrorState]);
 
     // Hide banners when user navigates back and returns to the product detail page
@@ -259,7 +260,7 @@ export default function ProductDetail({
                     >
                         <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}arrow_back.svg`}
                                         alt="Back to plugins" />
-                        <span>Back</span>
+                        <span>{uiI18n.backButton}</span>
                     </a>
                     <SuccessNotice plugin={plugin} />
                     <ErrorToast plugin={plugin} />

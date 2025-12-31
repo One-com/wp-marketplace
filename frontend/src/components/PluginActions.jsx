@@ -51,7 +51,7 @@ export default function PluginActions({ plugin }) {
         }
 
         // Default behavior
-        handlePluginAction(action, plugin);
+        handlePluginAction(action, plugin, 'product_detail');
     };
 
     const handleSelectClick = () => {

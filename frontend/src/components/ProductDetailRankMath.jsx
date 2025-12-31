@@ -19,8 +19,15 @@ export default function ProductDetailRankMath({
         plugins,
         uiI18n,
         subscriptionStatus,
-        isCheckingSubscription
+        isCheckingSubscription,
+        noticeState,
+        setNoticeState,
+        setErrorState
     } = useMarketplace();
+
+    // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
+    const freePlugin = plugins.find(p => p.slug === "seo-by-rank-math") || null;
+    const proPlugin = plugins.find(p => p.slug === "seo-by-rank-math-pro") || null;
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -52,7 +59,7 @@ export default function ProductDetailRankMath({
                       }}
                     >
                       <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-                      <span>Back</span>
+                      <span>{uiI18n.backButton}</span>
                     </a>
                   </nav>
 
@@ -125,6 +132,26 @@ export default function ProductDetailRankMath({
     useEffect(() => {
         window.scrollTo(0, 0);
     }, [plugin]);
+
+    // Clear banners when component mounts (handles case when user returns via browser back button)
+    useEffect(() => {
+        // Clear any existing banners when ProductDetail mounts
+        // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
+        setNoticeState(prev => (prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)) ? prev : { visible: false, type: null, pluginSlug: null });
+        setErrorState(prev => (prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)) ? prev : { visible: false, type: null, pluginSlug: null });
+    }, [freePlugin?.slug, proPlugin?.slug, setNoticeState, setErrorState]);
+
+    // Hide banners when user navigates back and returns to the product detail page
+    useEffect(() => {
+        const handlePopState = () => {
+            // Clear notice and error state when navigating via browser back/forward
+            setNoticeState({ visible: false, type: null, pluginSlug: null });
+            setErrorState({ visible: false, type: null, pluginSlug: null });
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, [setNoticeState, setErrorState]);
 
     // Navigation button click handlers
     const handlePrevClick = () => {
@@ -402,10 +429,6 @@ export default function ProductDetailRankMath({
         };
     }, []);
 
-    // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
-    const freePlugin = plugins.find(p => p.slug === "seo-by-rank-math") || null;
-    const proPlugin = plugins.find(p => p.slug === "seo-by-rank-math-pro") || null;
-
     // Use the clicked plugin for header/main content, but always use freePlugin for first column
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
@@ -479,6 +502,10 @@ export default function ProductDetailRankMath({
                         href="#"
                         onClick={e => {
                             e.preventDefault();
+                            // Disable back navigation when plugin is being activated and reload is pending
+                            if (pluginInAction[plugin.slug]) {
+                                return;
+                            }
                             // First check if history is available and has navigable records
                             if (typeof window !== "undefined" && window.history && window.history.length > 1) {
                                 try {
@@ -494,11 +521,20 @@ export default function ProductDetailRankMath({
                                 onClose();
                             }
                         }}
+                        className="gv-flex gv-items-center gv-gap-xs"
+                        role="button"
+                        aria-label="Go back"
+                        style={{
+                            opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
+                            pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
+                            cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
+                        }}
+                        aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
                     >
                         <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-                        <span>Back</span>
+                        <span>{uiI18n.backButton}</span>
                     </a>
-                <SuccessNotice plugin={freePlugin} />
+                <SuccessNotice plugin={noticeState?.pluginSlug === proPlugin?.slug ? proPlugin : freePlugin} />
                 <ErrorToast plugin={freePlugin} />
                 <ErrorToast plugin={proPlugin} />
                 </nav>

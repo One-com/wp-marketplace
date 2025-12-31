@@ -22,10 +22,11 @@ export default function SuccessNotice({ plugin }) {
 
     const handleClose = () => {
         setNoticeState({ visible: false, type: null, pluginSlug: null });
+        sessionStorage.removeItem('mp_success_notice');
     };
 
     const handleActivate = () => {
-        handlePluginAction("activate", plugin);
+        handlePluginAction("activate", plugin, 'product_detail');
     };
 
     const handleManage = () => {
