@@ -1,4 +1,4 @@
-import { createRoot } from '@wordpress/element';
+import { createRoot } from 'react-dom/client';
 import MarketplaceApp from './MarketplaceApp';
 import './i18n';
 import { isWpVersionSupported } from './utils/wpVersionHelper';

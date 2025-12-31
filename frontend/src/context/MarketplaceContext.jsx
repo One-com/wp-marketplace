@@ -381,9 +381,9 @@ export const MarketplaceProvider = ({
           // Update plugin state to activated
           setTimeout(() => {
             setPlugins((prev) =>
-              prev.map((p) =>
-                p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p
-              )
+              prev.map((p) => {
+                return p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p;
+              })
             );
           }, 1200);
 
