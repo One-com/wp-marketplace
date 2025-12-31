@@ -1,4 +1,12 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo
+} from 'react';
 import {
   trackButtonClick,
   initializeMixpanel,
@@ -374,7 +382,7 @@ export const MarketplaceProvider = ({
           setTimeout(() => {
             setPlugins((prev) =>
               prev.map((p) =>
-                (p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p)
+                p.slug === plugin.slug ? { ...p, installed: true, activated: true } : p
               )
             );
           }, 1200);

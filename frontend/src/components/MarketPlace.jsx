@@ -201,7 +201,16 @@ export default function Marketplace() {
     }
 
     fetchPlugins();
-  }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins, isSpecialPlugin, setCatalogError, setCatalogLoading, setUiI18n]);
+  }, [
+    apiBaseUrl,
+    isOnecomBrand,
+    fetchSubscriptionStatus,
+    setPlugins,
+    isSpecialPlugin,
+    setCatalogError,
+    setCatalogLoading,
+    setUiI18n
+  ]);
 
   // Update allPluginsActivated in context whenever plugins change
   useEffect(() => {

@@ -206,7 +206,17 @@ export default function Addons() {
       .finally(() => {
         setCatalogLoading(false);
       });
-  }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin, fetchSubscriptionStatus, isOnecomBrand, isSpecialPlugin]);
+  }, [
+    apiBaseUrl,
+    setPlugins,
+    setUiI18n,
+    setCatalogError,
+    setCatalogLoading,
+    shouldShowPlugin,
+    fetchSubscriptionStatus,
+    isOnecomBrand,
+    isSpecialPlugin
+  ]);
 
   // After plugins load, select plugin from query if present
   useEffect(() => {

@@ -444,11 +444,7 @@ export default function ProductDetailRankMath({
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={`${mainImage} 2x, ${mainImage} 1x`} />
-              <img
-                src={mainImage}
-                srcSet={`${mainImage} 2x, ${mainImage} 1x`}
-                alt="Rank Math"
-              />
+              <img src={mainImage} srcSet={`${mainImage} 2x, ${mainImage} 1x`} alt="Rank Math" />
             </picture>
           </div>
         </header>
