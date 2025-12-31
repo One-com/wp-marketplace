@@ -1,4 +1,4 @@
-import { createRoot } from 'react-dom/client';
+import { createRoot } from '@wordpress/element';
 import AddonsApp from './AddonsApp';
 import './i18n';
 import { isWpVersionSupported } from './utils/wpVersionHelper';
