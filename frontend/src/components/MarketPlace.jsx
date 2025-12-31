@@ -189,15 +189,35 @@ export default function Marketplace() {
         fetchPlugins();
     }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
 
+    // Use useMemo to filter plugins based on rules and activation status
+    const visiblePlugins = React.useMemo(() => {
+        if (!plugins.length) return [];
+
+        const bySlug = new Map();
+
+        plugins.forEach((p) => {
+            // Skip if already in map or activated
+            if (bySlug.has(p.slug) || p.activated === true) {
+                return;
+            }
+
+            // Apply filtering based on rules
+            if (shouldShowPlugin(p)) {
+                bySlug.set(p.slug, p);
+            }
+        });
+
+        return Array.from(bySlug.values());
+    }, [plugins, shouldShowPlugin]);
+
     // Update allPluginsActivated in context whenever plugins change
     useEffect(() => {
         if (plugins.length > 0) {
-            // Filter out activated plugins
-            const nonActivatedPlugins = plugins.filter(p => p.activated !== true);
-            const allActivated = nonActivatedPlugins.length === 0;
+            // If there are no plugins that should be visible (not activated and passing rules), then all are activated/hidden
+            const allActivated = visiblePlugins.length === 0;
             setAllPluginsActivated(allActivated);
         }
-    }, [plugins, setAllPluginsActivated]);
+    }, [plugins, visiblePlugins, setAllPluginsActivated]);
 
     // Track marketplace visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
@@ -390,47 +410,7 @@ export default function Marketplace() {
     // Group plugins by a single, specific category (first category), avoid duplicates across headings
     const categoryMap = new Map();
 
-    // Deduplicate plugins by slug first (in case backend/normalizer still returns duplicates)
-    // Also filter out activated plugins and plugins that don't pass rules check
-    // Handle Rank Math plugin display logic:
-    // - Show seo-by-rank-math when BOTH seo-by-rank-math and seo-by-rank-math-pro are NOT activated
-    // - Show seo-by-rank-math-pro when seo-by-rank-math IS activated
-    const bySlug = new Map();
-
-    // Check activation status of Rank Math plugins
-    const rankMathActivated = plugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
-    const rankMathProActivated = plugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
-
-    plugins.forEach((p) => {
-        // Skip if already in map or activated
-        if (bySlug.has(p.slug) || p.activated === true) {
-            return;
-        }
-
-        // Handle Rank Math plugin visibility
-        if (p.slug === "seo-by-rank-math") {
-            // Show seo-by-rank-math only if BOTH plugins are NOT activated
-            if (!rankMathActivated && !rankMathProActivated && shouldShowPlugin(p)) {
-                bySlug.set(p.slug, p);
-            }
-            return;
-        }
-
-        if (p.slug === "seo-by-rank-math-pro") {
-            // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
-            if (rankMathActivated && shouldShowPlugin(p)) {
-                bySlug.set(p.slug, p);
-            }
-            return;
-        }
-
-        // For all other plugins, apply normal filtering
-        if (shouldShowPlugin(p)) {
-            bySlug.set(p.slug, p);
-        }
-    });
-
-    Array.from(bySlug.values()).forEach((p) => {
+    visiblePlugins.forEach((p) => {
         // Handle new category object structure: { id, slug, title, description }
         const categoryObj = Array.isArray(p.categories) && p.categories.length
             ? (typeof p.categories[0] === 'object' ? p.categories[0] : { slug: String(p.categories[0]), title: String(p.categories[0]), description: null })
