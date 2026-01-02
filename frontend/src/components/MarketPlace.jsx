@@ -193,9 +193,30 @@ export default function Marketplace() {
 
         const bySlug = new Map();
 
+        // Check activation status of Rank Math plugins
+        const rankMathActivated = plugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
+        const rankMathProActivated = plugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
+
         plugins.forEach((p) => {
             // Skip if already in map or activated
             if (bySlug.has(p.slug) || p.activated === true) {
+                return;
+            }
+
+            // Handle Rank Math plugin visibility
+            if (p.slug === "seo-by-rank-math") {
+                // Show seo-by-rank-math only if BOTH plugins are NOT activated
+                if (!rankMathActivated && !rankMathProActivated && shouldShowPlugin(p)) {
+                    bySlug.set(p.slug, p);
+                }
+                return;
+            }
+
+            if (p.slug === "seo-by-rank-math-pro") {
+                // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
+                if (rankMathActivated && shouldShowPlugin(p)) {
+                    bySlug.set(p.slug, p);
+                }
                 return;
             }
 
