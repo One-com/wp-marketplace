@@ -485,7 +485,31 @@ class MarketplaceController {
 			'callback'            => [ $this, 'get_plugins' ],
 			'permission_callback' => '__return_true',
 		] );
+
+		register_rest_route( 'marketplace/v1', '/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)', [
+			'methods'             => 'GET',
+			'callback'            => [ $this, 'check_plugin_activation' ],
+			'permission_callback' => '__return_true',
+		] );
 	}
+
+	public function check_plugin_activation( $request ) {
+		$slug = $request->get_param( 'slug' );
+		if ( empty( $slug ) ) {
+			return new WP_REST_Response( [ 'activated' => false, 'error' => 'Missing slug' ], 400 );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+
+		$activated = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
+
+		return new WP_REST_Response( [
+			'slug'      => $slug,
+			'activated' => $activated,
+		], 200 );
+	}
+
 
 	public function get_plugins( $request ) {
 
