@@ -29,7 +29,6 @@ export const MarketplaceProvider = ({
     // State for tracking consent status
     const [consentStatus, setConsentStatus] = useState(() => {
         const initialConsent = typeof window !== "undefined" && window.marketplaceConfig?.data_consent_status;
-        console.log('[MarketplaceContext] Initializing with consent status from config:', initialConsent, 'Type:', typeof initialConsent);
         // Convert to boolean: handle true, 'true', '1', 1 as true
         return initialConsent === true || initialConsent === 'true' || initialConsent === '1' || initialConsent === 1;
     });
@@ -92,16 +91,12 @@ export const MarketplaceProvider = ({
     useEffect(() => {
         // Initialize Mixpanel on component mount based on initial consent status
         if (consentStatus === true) {
-            console.log('[MarketplaceContext] Initial consent is true - initializing Mixpanel');
             initializeMixpanel();
-        } else {
-            console.log('[MarketplaceContext] Initial consent is false - Mixpanel will not initialize');
         }
 
         // Set up listener for consent changes from plugin
         const handleConsentChange = (e) => {
             const newConsentStatus = e.detail?.data_consent_status !== undefined ? e.detail.data_consent_status : false;
-            console.log('[MarketplaceContext] Consent change detected via onConsentStatusChanged event:', newConsentStatus);
 
             // Update state
             setConsentStatus(newConsentStatus);
@@ -109,8 +104,6 @@ export const MarketplaceProvider = ({
             // Handle Mixpanel based on new consent status
             if (newConsentStatus === true) {
                 // Consent granted - enable Mixpanel
-                console.log('[MarketplaceContext] Consent granted - enabling Mixpanel tracking');
-
                 // Update window.marketplaceConfig consent status
                 // Note: mixpanel config (token, globalProperties, distinctId) is always sent by PHP
                 // regardless of consent status, so we can use it directly
@@ -121,8 +114,6 @@ export const MarketplaceProvider = ({
                 // Enable Mixpanel - it will read the config from window.marketplaceConfig
                 enableMixpanel();
             } else {
-                // Consent revoked - disable Mixpanel
-                console.log('[MarketplaceContext] Consent revoked - disabling Mixpanel tracking');
 
                 // Update window.marketplaceConfig
                 if (typeof window !== "undefined" && window.marketplaceConfig) {
@@ -142,7 +133,6 @@ export const MarketplaceProvider = ({
             // Only handle changes to our consent key
             if (e.key === 'onecom_data_consent_status') {
                 const newConsentStatus = e.newValue === '1';
-                console.log('[MarketplaceContext] Consent change detected via storage event (cross-page):', newConsentStatus);
 
                 // Trigger the same handler with the new consent status
                 handleConsentChange({ detail: { data_consent_status: newConsentStatus } });
@@ -170,12 +160,9 @@ export const MarketplaceProvider = ({
         try {
             const ajaxUrl = typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
             if (!ajaxUrl) {
-                console.warn("ajaxUrl not available in marketplaceConfig");
                 setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: false }));
                 return;
             }
-
-            console.log(`[MarketplaceContext] Fetching subscription status for ${pluginSlug}`);
 
             const formData = new FormData();
             formData.append('action', 'get_addon_purchase_status');
@@ -188,11 +175,9 @@ export const MarketplaceProvider = ({
             });
 
             const json = await res.json();
-            console.log(`[MarketplaceContext] Subscription status response for ${pluginSlug}:`, json);
 
             setSubscriptionStatus(prev => ({ ...prev, [pluginSlug]: json.is_purchased }));
         } catch (e) {
-            console.error(`[MarketplaceContext] Failed to fetch subscription status for ${pluginSlug}`, e);
             setSubscriptionStatus(prev => ({ ...prev, [pluginSlug]: false }));
         } finally {
             setIsCheckingSubscription(prev => ({ ...prev, [pluginSlug]: false }));
@@ -308,53 +293,99 @@ export const MarketplaceProvider = ({
             }
 
             // Allow React to render loading overlay, then execute Imagify flow
-            setTimeout(() => {
+            setTimeout(async () => {
                 // Initiate the activation request (don't wait for response due to 302 redirect)
-                fetch(url, { method: "POST" }).catch(err => {
-                    console.log("Imagify activation request initiated, reload will proceed");
-                });
-
-                // Track successful Imagify activation
-                trackButtonClick({
-                    buttonName: 'Activate',
-                    buttonAction: 'product_activate',
-                    plugin: plugin,
-                    context: {
-                        action: action,
-                        result: 'success',
-                        special_case: 'imagify_redirect',
-                    }
-                });
-
-                if (source === 'product_detail') {
-                    // Set flag to skip page view tracking on reload
-                    sessionStorage.setItem('mp_skip_page_view', 'true');
-                    sessionStorage.setItem('mp_success_notice', JSON.stringify({
-                        visible: true,
-                        type: 'activated',
-                        pluginSlug: plugin.slug,
-                        successType: 'activate'
-                    }));
-
-                    // Schedule reload almost instantly
-                    reloadTimeoutRef.current = setTimeout(() => {
-                        window.location.reload();
-                    }, 500);
-                } else {
-                    // Old flow for addons page
-                    setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
-
-                    // Schedule reload after a while
-                    reloadTimeoutRef.current = setTimeout(() => {
-                        sessionStorage.setItem('mp_skip_page_view', 'true');
-                        window.location.reload();
-                    }, 3000);
-
-                    // Clear loading state only
-                    setLoadingAction('');
-                    setLoadingPlugin('');
-                    actionSuccessful = true;
+                try {
+                    await fetch(url, { method: "POST" });
+                } catch (err) {
+                    console.log("Imagify activation request initiated");
                 }
+
+                // Poll for activation status
+                let attempts = 0;
+                const maxAttempts = 6;
+                const checkActivation = async () => {
+                    try {
+                        const checkUrl = `${apiBaseUrl}/active/${plugin.slug}`;
+                        const response = await fetch(checkUrl);
+                        const data = await response.json();
+
+                        if (data && data.activated) {
+                            // Track successful Imagify activation
+                            trackButtonClick({
+                                buttonName: 'Activate',
+                                buttonAction: 'product_activate',
+                                plugin: plugin,
+                                context: {
+                                    action: action,
+                                    result: 'success',
+                                    special_case: 'imagify_redirect',
+                                }
+                            });
+
+                            if (source === 'product_detail') {
+                                // Set flag to skip page view tracking on reload
+                                sessionStorage.setItem('mp_skip_page_view', 'true');
+                                sessionStorage.setItem('mp_success_notice', JSON.stringify({
+                                    visible: true,
+                                    type: 'activated',
+                                    pluginSlug: plugin.slug,
+                                    successType: 'activate'
+                                }));
+
+                                // Schedule reload
+                                reloadTimeoutRef.current = setTimeout(() => {
+                                    window.location.reload();
+                                }, 500);
+                            } else {
+                                // Old flow for addons page
+                                setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+
+                                // Schedule reload after a while
+                                reloadTimeoutRef.current = setTimeout(() => {
+                                    sessionStorage.setItem('mp_skip_page_view', 'true');
+                                    window.location.reload();
+                                }, 3000);
+
+                                // Clear loading state only
+                                setLoadingAction('');
+                                setLoadingPlugin('');
+                                actionSuccessful = true;
+                            }
+                            return;
+                        }
+                    } catch (e) {
+                        console.error("Error checking activation status", e);
+                    }
+
+                    attempts++;
+                    if (attempts < maxAttempts) {
+                        setTimeout(checkActivation, 1000);
+                    } else {
+                        // If we reached max attempts and still not activated, show error
+                        setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+
+                        // Track activation error
+                        trackButtonClick({
+                            buttonName: 'Activate',
+                            buttonAction: 'product_activate',
+                            plugin: plugin,
+                            context: {
+                                action: action,
+                                result: 'error',
+                                error_message: 'Imagify activation timeout after polling',
+                            }
+                        });
+
+                        // Clear loading state
+                        setLoadingAction('');
+                        setLoadingPlugin('');
+                        setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
+                    }
+                };
+
+                // Start checking
+                setTimeout(checkActivation, 1000);
             }, 100);
             return;
         }

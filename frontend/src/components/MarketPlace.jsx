@@ -136,7 +136,6 @@ export default function Marketplace() {
 
                 // Check for API error response (success: false)
                 if (json && json.success === false) {
-                    console.error("API returned error:", json.error);
                     // Track page view with content render failure
                     trackPageView({
                         category: 'marketplace_home',
@@ -174,7 +173,6 @@ export default function Marketplace() {
                     });
                 }
             } catch (e) {
-                console.error("Failed to fetch plugins", e);
                 // Track page view with content render failure
                 trackPageView({
                     category: 'marketplace_home',
@@ -230,7 +228,6 @@ export default function Marketplace() {
             if (skipPageView === 'true') {
                 // Clear the flag and skip tracking
                 sessionStorage.removeItem('mp_skip_page_view');
-                console.log('[Marketplace] Skipping page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
                 trackMarketplaceVisit(contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
@@ -250,7 +247,6 @@ export default function Marketplace() {
             if (skipPageView === 'true') {
                 // Clear the flag and skip tracking
                 sessionStorage.removeItem('mp_skip_page_view');
-                console.log('[Marketplace] Skipping plugin detail page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
                 trackPluginDetailVisit(selectedPlugin, contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
@@ -278,16 +274,9 @@ export default function Marketplace() {
 
     const openDetail = (plugin, e) => {
         // Debug to confirm click
-        console.log("Opening detail for plugin:", plugin.slug);
         setSelectedPlugin(plugin);
     };
 
-    // Debug: log whenever selectedPlugin changes
-    useEffect(() => {
-        if (selectedPlugin) {
-            console.log("Selected plugin state now:", selectedPlugin.slug);
-        }
-    }, [selectedPlugin]);
 
 
     // Helper function to determine if we should use ProductDetailRankMath
