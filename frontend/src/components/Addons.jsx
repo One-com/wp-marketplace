@@ -353,17 +353,6 @@ export default function Addons() {
     );
   }
 
-    // Show empty state if no featured plugins
-    // if (featuredPlugins.length === 0) {
-    //     return (
-    //         <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
-    //             <div className="gv-text-center">
-    //                 <h5 className="gv-header-md gv-mb-sm">{uiI18n?.notifications?.noFeaturedPlugins || 'No Featured Plugins'}</h5>
-    //                 <p className="gv-text-md">{uiI18n?.text?.noFeaturedPluginsDescription || 'There are no featured plugins available at the moment.'}</p>
-    //             </div>
-    //         </div>
-    //     );
-    // }
 
     // Filter plugins for the table: installed OR special plugins with subscription
     const installedPlugins = plugins.filter(p => p.installed || shouldShowProvision(p));
@@ -374,89 +363,93 @@ export default function Addons() {
             <h3>{uiI18n?.headings?.myProducts}</h3>
             <p className="gv-text-sm">{uiI18n?.text?.myProducts}</p>
           </div>
-          <section className="addons-section gv-mt-fluid">
-            <div className="addons-header-container gv-flex gv-max-mob-flex-col gv-justify-between gv-items-start gv-tab-gap-lg">
-              <div className="heading-container gv-flex-1">
-                <p
-                  className="gv-text-bold gv-text-lg gv-mb-xs">{uiI18n?.headings?.recommendedProducts}</p>
-                <p className="gv-text-sm gv-mb-md">{uiI18n?.text?.recommendedText}</p>
-              </div>
-              <button
-                className="gv-button gv-button-primary gv-mode-condensed gv-flex-shrink-0"
-                onClick={() => {
-                  // Navigate to the main marketplace page
-                  const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
-                    ? window.marketplaceConfig.wpConfig.adminUrl
-                    : '/wp-admin/';
-                  window.location.href = `${adminUrl}admin.php?page=onecom-marketplace`;
-                }}
-              >
-                {uiI18n.seeAllProducts}
-                <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`} alt="See all products"></gv-icon>
-              </button>
-
-            </div>
-              <div
-                className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
-                {featuredPlugins.map((plugin) => {
-                    const isProvisionable = shouldShowProvision(plugin);
-                    const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
-                      ? plugin.i18n.freeTrialPeriod
-                      : (uiI18n?.labels?.free || 'Free');
-                    const price = formatPluginPrice(plugin, freeLabel, uiI18n);
-                    const fullPriceAmount = getFullPrice(plugin);
-                    const rebatePriceAmount = getRebatePrice(plugin);
-
-                    return (
-                      <div key={plugin.slug}
-                           className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
-                        <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
-                          <img
-                            className="gv-icon-tile"
-                            src={plugin.iconUrl || `${iconBase}add_box.svg`}
-                            alt={plugin.name}
-                            style={{maxwidth: "auto"}}
-                          />
-                        </div>
-                        <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
-                          <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
-                          <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm">
-                            {plugin.i18n.listingDescription || plugin.i18n.subtitle}
-                          </p>
-                          <span className="gv-caption-lg gv-text-bold">
-                                <>
-                                    {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
-                                      ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
-                                      : price}
-                                    {plugin.licenseType !== "free" &&
-                                      price &&
-                                      price !== freeLabel &&
-                                      price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
-                                      <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                </>
-                          </span>
-                        </div>
-                        <div className="gv-span-2 gv-content-center gv-text-right">
-                          <a
-                            href={getMarketplaceUrl(plugin.slug)}
-                            className="gv-reset-button"
-                            style={{display: "inline-block"}}
-                            aria-label={`View details for ${plugin.name}`}
-                          >
-                            <img
-                              className="gv-tile"
-                              src={`${iconBase}arrow_forward.svg`}
-                              alt={`View ${plugin.name} details`}
-                              style={{minWidth: "24px"}}
-                            />
-                          </a>
-                        </div>
-                      </div>
-                    );
-                  })}
+          {featuredPlugins.length > 0 && (
+            <section className="addons-section gv-mt-fluid">
+              <div className="addons-header-container gv-flex gv-max-mob-flex-col gv-justify-between gv-items-start gv-tab-gap-lg">
+                <div className="heading-container gv-flex-1">
+                  <p
+                    className="gv-text-bold gv-text-lg gv-mb-xs">{uiI18n?.headings?.recommendedProducts}</p>
+                  <p className="gv-text-sm gv-mb-md">{uiI18n?.text?.recommendedText}</p>
                 </div>
+                <button
+                  className="gv-button gv-button-primary gv-mode-condensed gv-flex-shrink-0"
+                  onClick={() => {
+                    // Navigate to the main marketplace page
+                    const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
+                      ? window.marketplaceConfig.wpConfig.adminUrl
+                      : '/wp-admin/';
+                    window.location.href = `${adminUrl}admin.php?page=onecom-marketplace`;
+                  }}
+                >
+                  {uiI18n.seeAllProducts}
+                  <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`} alt="See all products"></gv-icon>
+                </button>
 
-            {installedPlugins.length > 0 && (
+              </div>
+                <div
+                  className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3 gv-mt-md">
+                  {featuredPlugins.map((plugin) => {
+                      const isProvisionable = shouldShowProvision(plugin);
+                      const freeLabel = (plugin.i18n.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '')
+                        ? plugin.i18n.freeTrialPeriod
+                        : (uiI18n?.labels?.free || 'Free');
+                      const price = formatPluginPrice(plugin, freeLabel, uiI18n);
+                      const fullPriceAmount = getFullPrice(plugin);
+                      const rebatePriceAmount = getRebatePrice(plugin);
+
+                      return (
+                        <div key={plugin.slug}
+                             className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                          <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
+                            <img
+                              className="gv-icon-tile"
+                              src={plugin.iconUrl || `${iconBase}add_box.svg`}
+                              alt={plugin.name}
+                              style={{maxwidth: "auto"}}
+                            />
+                          </div>
+                          <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
+                            <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
+                            <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm">
+                              {plugin.i18n.listingDescription || plugin.i18n.subtitle}
+                            </p>
+                            <span className="gv-caption-lg gv-text-bold">
+                                  <>
+                                      {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
+                                        ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
+                                        : price}
+                                      {plugin.licenseType !== "free" &&
+                                        price &&
+                                        price !== freeLabel &&
+                                        price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
+                                        <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                  </>
+                            </span>
+                          </div>
+                          <div className="gv-span-2 gv-content-center gv-text-right">
+                            <a
+                              href={getMarketplaceUrl(plugin.slug)}
+                              className="gv-reset-button"
+                              style={{display: "inline-block"}}
+                              aria-label={`View details for ${plugin.name}`}
+                            >
+                              <img
+                                className="gv-tile"
+                                src={`${iconBase}arrow_forward.svg`}
+                                alt={`View ${plugin.name} details`}
+                                style={{minWidth: "24px"}}
+                              />
+                            </a>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+              </section>
+          )}
+
+          {installedPlugins.length > 0 && (
+            <section className="addons-section gv-mt-fluid">
               <div className="gv-data-table gv-mt-lg gv-addons-table">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>
@@ -617,8 +610,8 @@ export default function Addons() {
                   </tbody>
                 </table>
               </div>
-            )}
-          </section>
+            </section>
+          )}
 
           <ErrorToast />
           <SuccessToast />
