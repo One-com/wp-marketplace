@@ -253,7 +253,6 @@ export default function Addons() {
             if (skipPageView === 'true') {
                 // Clear the flag and skip tracking
                 sessionStorage.removeItem('mp_skip_page_view');
-                console.log('[Addons] Skipping page view tracking after activation reload');
             } else {
                 // Normal page load, track the visit
                 trackPageView({

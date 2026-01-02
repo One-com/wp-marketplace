@@ -27,7 +27,6 @@ const initializeMixpanel = () => {
         // Check if data consent is given
         const dataConsentStatus = config.data_consent_status;
         if (!dataConsentStatus) {
-            console.log('[MixpanelTracking] Data consent not given. Mixpanel tracking disabled.');
             return false;
         }
 
@@ -36,7 +35,6 @@ const initializeMixpanel = () => {
 
         // Only initialize if token is provided
         if (!token || token === '') {
-            console.warn('[MixpanelTracking] No Mixpanel token provided. Add your token in MarketplaceController.php');
             return false;
         }
 
@@ -65,19 +63,13 @@ const initializeMixpanel = () => {
 
         // Set distinct_id if provided
         const distinctId = mixpanelConfig.distinctId;
-        console.log('[MixpanelTracking] distinctId from config:', distinctId, 'Type:', typeof distinctId);
         if (distinctId && distinctId !== '') {
             mixpanel.identify(distinctId);
-            console.log('[MixpanelTracking] User identified with distinct_id:', distinctId);
-        } else {
-            console.warn('[MixpanelTracking] No valid distinctId provided. Mixpanel will use auto-generated device ID.');
         }
 
         isInitialized = true;
-        console.log('[MixpanelTracking] Mixpanel initialized successfully');
         return true;
     } catch (error) {
-        console.error('[MixpanelTracking] Error initializing Mixpanel:', error);
         return false;
     }
 };
@@ -90,7 +82,6 @@ const isMixpanelAvailable = () => {
     try {
         return isInitialized && typeof mixpanel !== 'undefined';
     } catch (error) {
-        console.warn('[MixpanelTracking] Error checking Mixpanel availability:', error);
         return false;
     }
 };
@@ -105,7 +96,6 @@ export const disableMixpanel = () => {
             // Reset Mixpanel instance to stop tracking
             mixpanel.reset();
             isInitialized = false;
-            console.log('[MixpanelTracking] Mixpanel tracking disabled');
         }
     } catch (error) {
         console.error('[MixpanelTracking] Error disabling Mixpanel:', error);
@@ -128,7 +118,6 @@ export const enableMixpanel = () => {
 
         // Only initialize if token is provided
         if (!token || token === '') {
-            console.warn('[MixpanelTracking] No Mixpanel token provided. Cannot enable tracking.');
             return false;
         }
 
@@ -183,7 +172,6 @@ export const getGlobalProperties = () => {
             })
         );
     } catch (error) {
-        console.error('[MixpanelTracking] Error building global properties:', error);
         return {};
     }
 };
@@ -210,7 +198,6 @@ export const trackEvent = (eventName, eventProperties = {}) => {
         // Track the event
         mixpanel.track(eventName, properties);
 
-        console.log('[MixpanelTracking] Event tracked:', eventName, properties);
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking event:', eventName, error);
     }
@@ -278,7 +265,6 @@ export const trackPageView = ({ pluginSlug, pluginName, category, itemName, isCo
 export const trackPluginAction = ({ action, plugin, result = 'initiated' } = {}) => {
     try {
         if (!plugin) {
-            console.warn('[MixpanelTracking] Plugin object required for tracking action');
             return;
         }
 
