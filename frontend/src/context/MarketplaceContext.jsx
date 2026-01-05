@@ -307,7 +307,6 @@ export const MarketplaceProvider = ({
                 const checkActivation = async () => {
                     try {
                         const checkUrl = `${apiBaseUrl}active/${plugin.slug}`;
-                        console.log("Checking Imagify activation status", checkUrl);
                         const response = await fetch(checkUrl);
                         const data = await response.json();
 
