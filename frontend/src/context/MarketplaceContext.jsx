@@ -283,7 +283,7 @@ export const MarketplaceProvider = ({
         // For Imagify, use setTimeout to allow React to render the loading overlay first
         if (isImagifyActivation) {
             // Build URL for activation
-            let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
+            let url = `${apiBaseUrl}${action}/${plugin.slug}`;
             const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
 
             if (useWPHandlers) {
@@ -306,7 +306,8 @@ export const MarketplaceProvider = ({
                 const maxAttempts = 6;
                 const checkActivation = async () => {
                     try {
-                        const checkUrl = `${apiBaseUrl}/active/${plugin.slug}`;
+                        const checkUrl = `${apiBaseUrl}active/${plugin.slug}`;
+                        console.log("Checking Imagify activation status", checkUrl);
                         const response = await fetch(checkUrl);
                         const data = await response.json();
 
