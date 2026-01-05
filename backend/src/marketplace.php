@@ -1,6 +1,6 @@
 <?php
-namespace WPMarketplace\Dependencies\Groupone\Marketplace;
-use WPMarketplace\Dependencies\Groupone\Marketplace\Controllers\MarketplaceController;
+namespace Groupone\Marketplace;
+use Groupone\Marketplace\Controllers\MarketplaceController;
 
 /**
  * Market Place Embeddable Module
