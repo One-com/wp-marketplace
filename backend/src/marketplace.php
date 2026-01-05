@@ -1,6 +1,6 @@
 <?php
-namespace Groupone\Marketplace;
-use Groupone\Marketplace\Controllers\MarketplaceController;
+namespace WPMarketplace\Dependencies\Groupone\Marketplace;
+use WPMarketplace\Dependencies\Groupone\Marketplace\Controllers\MarketplaceController;
 
 /**
  * Market Place Embeddable Module
@@ -17,7 +17,20 @@ final class Marketplace {
 	 *
 	 * @param array $config Configuration options for the marketplace module.
 	 */
+	private static $booted_locations = [];
+	 
 	public static function run( array $config = [] ) {
+	    
+        // Prevent duplicate Marketplace boot for same menu location
+	    $parent = $config['parent_menu_slug'] ?? '';
+        $slug   = $config['menu_slug']        ?? '';
+        $key = $parent . '::' . $slug;
+        
+        if ( isset(self::$booted_locations[$key]) ) {
+            return;
+        }
+        self::$booted_locations[$key] = true;
+        
 		try {
 			MarketplaceController::boot($config);
 		} catch (\Exception $e) {
