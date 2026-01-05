@@ -160,9 +160,11 @@ class MarketplaceController {
 	 * Initialize hooks.
 	 */
 	public function init() {
-		if ( is_admin() ) {
+		if ( is_admin() || is_network_admin() ) {
 			add_action( 'admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'admin_menu', [ $this, 'register_addons_menu' ] );
+			add_action( 'network_admin_menu', [ $this, 'register_menu' ] );
+			add_action( 'network_admin_menu', [ $this, 'register_addons_menu' ] );
 			add_action( 'wp_ajax_marketplace_install_plugin', [ $this, 'ajax_install_plugin' ] );
 			add_action( 'wp_ajax_marketplace_activate_plugin', [ $this, 'ajax_activate_plugin' ] );
 			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
