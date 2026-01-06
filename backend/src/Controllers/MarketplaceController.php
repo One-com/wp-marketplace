@@ -297,6 +297,9 @@ class MarketplaceController {
 		// Get data consent status from config
 		$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
 
+		// Get Mixpanel token
+		$mixpanel_token = $this->get_mixpanel_token();
+
 		// Build base localized config
 		$localized_config = [
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
@@ -333,7 +336,7 @@ class MarketplaceController {
 			),
 			// Always send mixpanel config so it can be used when consent is granted dynamically
 			'mixpanel' => [
-				'token' => '4cdc36e9083c158244c3e26d280540f6',
+				'token' => $mixpanel_token,
 				'globalProperties' => $global_properties,
 				'distinctId' => $distinct_id,
 			],
@@ -433,6 +436,9 @@ class MarketplaceController {
  	// Get data consent status from config
  	$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
 
+	// Get Mixpanel token
+	$mixpanel_token = $this->get_mixpanel_token();
+
  	// Build base localized config
  	$localized_config = [
  		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
@@ -469,7 +475,7 @@ class MarketplaceController {
  		),
  		// Always send mixpanel config so it can be used when consent is granted dynamically
  		'mixpanel' => [
- 			'token' => '4cdc36e9083c158244c3e26d280540f6',
+ 			'token' => $mixpanel_token,
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
  		],
@@ -479,6 +485,19 @@ class MarketplaceController {
  	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
 
 		echo '<div id="marketplace-root" class="gv-activated"></div>';
+	}
+
+	/**
+	 * Get Mixpanel token based on sandbox mode.
+	 *
+	 * @return string
+	 */
+	protected function get_mixpanel_token(): string {
+		$token = '517e881edc2636e99a2ecf013d8134d3';
+		if ( ! empty( $this->config['mixp_props']['is_sandbox'] ) && $this->config['mixp_props']['is_sandbox'] === true ) {
+			$token = '4cdc36e9083c158244c3e26d280540f6';
+		}
+		return $token;
 	}
 
 	public function register_rest_routes() {
