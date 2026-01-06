@@ -334,7 +334,7 @@ class MarketplaceController {
 			),
 			// Always send mixpanel config so it can be used when consent is granted dynamically
 			'mixpanel' => [
-				'token' => '4cdc36e9083c158244c3e26d280540f6',
+				'token' => '517e881edc2636e99a2ecf013d8134d3',
 				'globalProperties' => $global_properties,
 				'distinctId' => $distinct_id,
 			],
@@ -470,7 +470,7 @@ class MarketplaceController {
  		),
  		// Always send mixpanel config so it can be used when consent is granted dynamically
  		'mixpanel' => [
- 			'token' => '4cdc36e9083c158244c3e26d280540f6',
+ 			'token' => '517e881edc2636e99a2ecf013d8134d3',
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
  		],
