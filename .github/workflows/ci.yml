@@ -73,8 +73,9 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: |
-          npm config set fetch-retry-maxtimeout 120000
-          npm config set fetch-retry-mintimeout 15000
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 300000
           npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -125,8 +126,9 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: |
-          npm config set fetch-retry-maxtimeout 120000
-          npm config set fetch-retry-mintimeout 15000
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 300000
           npm ci
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -174,7 +176,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          (cd frontend && npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-retry-mintimeout 15000 && npm ci)
+          (cd frontend && npm config set fetch-retries 5 && npm config set fetch-retry-mintimeout 20000 && npm config set fetch-retry-maxtimeout 300000 && npm ci)
           composer install --prefer-dist --no-progress
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -233,7 +235,7 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          (cd frontend && npm config set fetch-retry-maxtimeout 120000 && npm config set fetch-retry-mintimeout 15000 && npm ci)
+          (cd frontend && npm config set fetch-retries 5 && npm config set fetch-retry-mintimeout 20000 && npm config set fetch-retry-maxtimeout 300000 && npm ci)
           composer install --no-dev --prefer-dist --optimize-autoloader
           cd frontend && npm run build && npm run build:standalone && cd ..
         env:
