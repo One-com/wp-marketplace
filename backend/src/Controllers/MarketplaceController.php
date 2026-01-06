@@ -292,6 +292,11 @@ class MarketplaceController {
 			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
 		}
 
+		// Unset is_sandbox from global properties so it's not sent with events
+		if ( isset( $global_properties['is_sandbox'] ) ) {
+			unset( $global_properties['is_sandbox'] );
+		}
+
 		// Get distinct_id from config if provided
 		$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
 
@@ -429,6 +434,11 @@ class MarketplaceController {
 		// Merge custom mixpanel properties from config if provided
 		if ( ! empty( $this->config['mixp_props'] ) && is_array( $this->config['mixp_props'] ) ) {
 			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
+		}
+
+		// Unset is_sandbox from global properties so it's not sent with events
+		if ( isset( $global_properties['is_sandbox'] ) ) {
+			unset( $global_properties['is_sandbox'] );
 		}
 
  	// Get distinct_id from config if provided
