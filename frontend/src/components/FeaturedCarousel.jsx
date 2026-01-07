@@ -260,19 +260,24 @@ export default function FeaturedCarousel({ loading = false }) {
                                   background:"#D9EBF7"
                                 }}>
                                     <div
-                                        className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start"
+                                        className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start gv-h-full gv-justify-between"
                                     >
                                       <div className="gv-badge gv-badge-info">{plugin?.name}</div>
                                         <h5
-                                            className="gv-title gv-header-sm"
+                                            className="gv-title gv-header-sm" style={{
+                                          overflow: 'hidden',
+                                          display: '-webkit-box',
+                                          WebkitLineClamp: 3,
+                                          WebkitBoxOrient: 'vertical',
+                                          textOverflow: 'ellipsis'
+                                        }}
                                         >
                                             {title}
                                         </h5>
-                                        <p className="gv-text-sm"
+                                        <p className="gv-text-sm gv-flex-1"
                                             style={{
                                                 overflow: 'hidden',
                                                 display: '-webkit-box',
-                                                WebkitLineClamp: 3,
                                                 WebkitBoxOrient: 'vertical',
                                                 textOverflow: 'ellipsis'
                                             }}
