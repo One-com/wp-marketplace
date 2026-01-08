@@ -143,6 +143,9 @@ require_once __DIR__ . '/vendor/autoload.php';
     'page_title'       => 'Plugin Marketplace',
     'menu_title'       => 'Marketplace',
     'menu_slug'        => 'plugin-marketplace',
+    'addons_menu_slug' => 'your-addons-menu-slug', // Optional: slug for your addons page
+    'addons_page_title' => 'Your Add-ons',        // Optional: page title for your addons page
+    'addons_menu_title' => 'Your Add-ons',        // Optional: menu title for your addons page
     'api_url'          => 'https://example.com/marketplace.json',
     'brand'            => 'your_brand_name', // Optional: brand identifier for API filtering
     'payload'          => [                  // Optional: request body data for API payload
@@ -151,6 +154,9 @@ require_once __DIR__ . '/vendor/autoload.php';
     ],
     // Optional: Explicitly set assets path if auto-detection doesn't work
     'assets_path'      => __DIR__ . '/inc/Dependencies/YourPlugin/Groupone/Marketplace/',
+    'mixp_props'       => [ 'is_sandbox' => false ], // Optional: custom Mixpanel properties. 'is_sandbox' => true can be used for testing.
+    'mixp_distinct_id' => '',                // Optional: distinct ID for Mixpanel tracking
+    'data_consent_status' => false,          // Optional: user data consent status
 ]);
 ```
 
@@ -162,6 +168,9 @@ require_once __DIR__ . '/vendor/autoload.php';
 - `page_title`: Page title for the Marketplace screen. Default: Plugin Marketplace
 - `menu_title`: Menu title for the submenu. Default: Marketplace
 - `menu_slug`: Slug used for the submenu and page. Default: plugin-marketplace
+- `addons_menu_slug`: Slug used for the addons submenu and page. Default: onecom-marketplace-products
+- `addons_page_title`: Page title for the your add-ons screen. Default: Marketplace Products
+- `addons_menu_title`: Menu title for the your add-ons submenu. Default: Your add-ons
 - `api_url`: External API endpoint returning marketplace data. Default: ""
 - `brand`: Optional brand identifier used when constructing marketplace API requests. Can be used to filter or customize marketplace content based on brand. Default: ""
 - `payload`: Optional key-value array passed in the request body for API authentication when fetching plugins. Can be used to include authentication tokens, API keys, or other custom data required by the marketplace API. Default: []
@@ -169,6 +178,9 @@ require_once __DIR__ . '/vendor/autoload.php';
 - `css_handle`: WordPress style handle when registering/enqueuing styles. Default: marketplace-frontend-style
 - `assets_path`: Filesystem path to the package root containing the frontend/ directory. If empty, the module auto-detects it (see below).
 - `register_menu`: Boolean flag to control automatic menu registration. Set to `false` to skip menu registration when your plugin handles it manually (prevents duplicate menus). Default: true
+- `mixp_props`: Optional key-value array for custom Mixpanel properties. Used to send additional tracking data. Including `'is_sandbox' => true` will switch the tracking to the sandbox Mixpanel project. Default: []
+- `mixp_distinct_id`: Optional string for Mixpanel tracking to identify a unique user. Default: ""
+- `data_consent_status`: Boolean flag for user data consent. Controls whether tracking is enabled. Default: false
 
 ---
 

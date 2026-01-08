@@ -480,16 +480,18 @@ export default function Marketplace() {
                                         <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                             alt={plugin.name} />
                                     </div>
-                                    <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
-                                        <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
-                                        <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
+                                  <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
+                                    <div className="gv-flex gv-flex-col gv-justify-between gv-h-full">
+                                    <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
+                                      <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm gv-flex-1"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
                                       <span className="gv-caption-lg gv-text-bold">
                                             <>
                                                 {plugin.licenseType === "premium" && (rebatePriceAmount > 0) ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount) : price}
-                                                {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                              {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                             </>
                                       </span>
                                     </div>
+                                  </div>
                                     <div className="gv-span-2 gv-content-center gv-text-right">
                                         <a
                                             href={`${getBaseUrl()}&plugin=${plugin.slug}`}
