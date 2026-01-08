@@ -154,7 +154,7 @@ require_once __DIR__ . '/vendor/autoload.php';
     ],
     // Optional: Explicitly set assets path if auto-detection doesn't work
     'assets_path'      => __DIR__ . '/inc/Dependencies/YourPlugin/Groupone/Marketplace/',
-    'mixp_props'       => [],                // Optional: custom Mixpanel properties
+    'mixp_props'       => [ 'is_sandbox' => false ], // Optional: custom Mixpanel properties. 'is_sandbox' => true can be used for testing.
     'mixp_distinct_id' => '',                // Optional: distinct ID for Mixpanel tracking
     'data_consent_status' => false,          // Optional: user data consent status
 ]);
@@ -178,7 +178,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 - `css_handle`: WordPress style handle when registering/enqueuing styles. Default: marketplace-frontend-style
 - `assets_path`: Filesystem path to the package root containing the frontend/ directory. If empty, the module auto-detects it (see below).
 - `register_menu`: Boolean flag to control automatic menu registration. Set to `false` to skip menu registration when your plugin handles it manually (prevents duplicate menus). Default: true
-- `mixp_props`: Optional key-value array for custom Mixpanel properties. Used to send additional tracking data. Default: []
+- `mixp_props`: Optional key-value array for custom Mixpanel properties. Used to send additional tracking data. Including `'is_sandbox' => true` will switch the tracking to the sandbox Mixpanel project. Default: []
 - `mixp_distinct_id`: Optional string for Mixpanel tracking to identify a unique user. Default: ""
 - `data_consent_status`: Boolean flag for user data consent. Controls whether tracking is enabled. Default: false
 
