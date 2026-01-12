@@ -475,7 +475,7 @@ export default function Marketplace() {
                             const fullPriceAmount = getFullPrice(plugin);
                             const rebatePriceAmount = getRebatePrice(plugin);
                             return (
-                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-desk-grid-cols-11 gv-grid-cols-12 gv-radius">
                                     <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                                         <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                             alt={plugin.name} />
@@ -492,7 +492,7 @@ export default function Marketplace() {
                                       </span>
                                     </div>
                                   </div>
-                                    <div className="gv-span-2 gv-content-center gv-text-right">
+                                    <div className="gv-span-1 gv-content-center gv-text-right" style={{ width: "22px" }}>
                                         <a
                                             href={`${getBaseUrl()}&plugin=${plugin.slug}`}
                                             className="gv-reset-button"
@@ -510,7 +510,6 @@ export default function Marketplace() {
                                                 className="gv-tile"
                                                 src={`${iconBase}arrow_forward.svg`}
                                                 alt={`View ${plugin.name} details`}
-                                                style={{ minWidth: "24px" }}
                                             />
                                         </a>
 

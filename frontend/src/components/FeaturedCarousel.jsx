@@ -263,27 +263,24 @@ export default function FeaturedCarousel({ loading = false }) {
                                         className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start gv-h-full gv-justify-between"
                                     >
                                       <div className="gv-badge gv-badge-info">{plugin?.name}</div>
-                                        <h5
-                                            className="gv-title gv-header-sm" style={{
-                                          overflow: 'hidden',
-                                          display: '-webkit-box',
-                                          WebkitLineClamp: 3,
-                                          WebkitBoxOrient: 'vertical',
-                                          textOverflow: 'ellipsis'
-                                        }}
-                                        >
-                                            {title}
-                                        </h5>
-                                        <p className="gv-text-sm gv-flex-1"
-                                            style={{
-                                                overflow: 'hidden',
-                                                display: '-webkit-box',
-                                                WebkitBoxOrient: 'vertical',
-                                                textOverflow: 'ellipsis'
+                                        <div style={{
+                                            display: '-webkit-box',
+                                            WebkitBoxOrient: 'vertical',
+                                            WebkitLineClamp: 8,
+                                            overflow: 'hidden',
+                                            width: '100%',
+                                        }}>
+                                            <h5
+                                                className="gv-title gv-header-sm" style={{
+                                                marginBottom: '8px',
                                             }}
-                                        >
-                                            {description}
-                                        </p>
+                                            >
+                                                {title}
+                                            </h5>
+                                            <p className="gv-text-sm">
+                                                {description?.trim()}
+                                            </p>
+                                        </div>
 
                                         <div className="gv-slide-footer gv-flex gv-align-center gv-items-center">
                                             <button
