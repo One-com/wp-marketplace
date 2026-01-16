@@ -475,7 +475,7 @@ export default function Marketplace() {
                             const fullPriceAmount = getFullPrice(plugin);
                             const rebatePriceAmount = getRebatePrice(plugin);
                             return (
-                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius ocmp-plugin-cards">
                                     <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                                         <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                             alt={plugin.name} />
