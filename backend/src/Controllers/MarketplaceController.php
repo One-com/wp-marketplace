@@ -254,69 +254,6 @@ class MarketplaceController {
 			);
 		}
 
-		// Localize JS with config
-		wp_localize_script( 'marketplace-addons-frontend', 'marketplaceConfig', $this->get_localized_config() );
-
-		echo '<div id="marketplace-addons-root" class="gv-activated"></div>';
-	}
-
-	public function render_admin_page() {
-		// Lazy-load assets only when this page is actually rendered (optimization)
-		$this->ensure_assets_resolved();
-
-		$base_path = $this->assets_base_path;
-		$base_url  = $this->assets_base_url;
-
-		// Enqueue JS dynamically
-		$js_file   = 'frontend/build/index.js';
-		$js_path   = $base_path . $js_file;
-		$js_url    = $base_url . $js_file;
-
-		wp_enqueue_script(
-			'marketplace-frontend',
-			$js_url,
-			[ 'wp-element' ],
-			file_exists( $js_path ) ? filemtime( $js_path ) : '1.0.0',
-			true
-		);
-
-		// Enqueue CSS dynamically (custom or default)
-		if ( ! empty( $this->config['custom_css'] ) ) {
-			wp_enqueue_style( 'marketplace-css', esc_url( $this->config['custom_css'] ), [], '1.0.0' );
-		} else {
-			// Enqueue library CSS (one.min.css)
-			$one_css_file = 'assets/min-css/one.min.css';
-			$one_css_path = $base_path . $one_css_file;
-			wp_enqueue_style(
-				'marketplace-one-css',
-				$base_url . $one_css_file,
-				[],
-				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
-			);
-
-			// Enqueue marketplace custom CSS (marketplace.min.css)
-			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
-			$marketplace_css_path = $base_path . $marketplace_css_file;
-			wp_enqueue_style(
-				'marketplace-custom-css',
-				$base_url . $marketplace_css_file,
-				[ 'marketplace-one-css' ],
-				file_exists( $marketplace_css_path ) ? filemtime( $marketplace_css_path ) : '1.0.0'
-			);
-		}
-
-		// Localize JS with config
-		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $this->get_localized_config() );
-
-		echo '<div id="marketplace-root" class="gv-activated"></div>';
-	}
-
-	/**
-	 * Get localized configuration for the frontend.
-	 *
-	 * @return array
-	 */
-	protected function get_localized_config(): array {
 		// Get all active plugin slugs to evaluate rules on frontend
 		$active_plugins = $this->get_active_plugin_slugs();
 
@@ -369,7 +306,7 @@ class MarketplaceController {
 		$mixpanel_token = $this->get_mixpanel_token();
 
 		// Build base localized config
-		return [
+		$localized_config = [
 			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
 			'apiUrl'     => $this->config['api_url'],
 			'locale' => $locale,
@@ -382,7 +319,7 @@ class MarketplaceController {
 				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
 			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
-			'assetsBaseUrl' => $this->assets_base_url,
+			'assetsBaseUrl' => $base_url,
 			'wpVersion' => $wp_version,
 			'activePlugins' => $active_plugins,
 			'activeThemeAuthor' => $active_theme_author,
@@ -409,6 +346,155 @@ class MarketplaceController {
 				'distinctId' => $distinct_id,
 			],
 		];
+
+		// Localize JS with config
+		wp_localize_script( 'marketplace-addons-frontend', 'marketplaceConfig', $localized_config );
+
+		echo '<div id="marketplace-addons-root" class="gv-activated"></div>';
+	}
+
+	public function render_admin_page() {
+		// Lazy-load assets only when this page is actually rendered (optimization)
+		$this->ensure_assets_resolved();
+
+		$base_path = $this->assets_base_path;
+		$base_url  = $this->assets_base_url;
+
+		// Enqueue JS dynamically
+		$js_file   = 'frontend/build/index.js';
+		$js_path   = $base_path . $js_file;
+		$js_url    = $base_url . $js_file;
+
+		wp_enqueue_script(
+			'marketplace-frontend',
+			$js_url,
+			[ 'wp-element' ],
+			file_exists( $js_path ) ? filemtime( $js_path ) : '1.0.0',
+			true
+		);
+
+		// Enqueue CSS dynamically (custom or default)
+		if ( ! empty( $this->config['custom_css'] ) ) {
+			wp_enqueue_style( 'marketplace-css', esc_url( $this->config['custom_css'] ), [], '1.0.0' );
+		} else {
+			// Enqueue library CSS (one.min.css)
+			$one_css_file = 'assets/min-css/one.min.css';
+			$one_css_path = $base_path . $one_css_file;
+			wp_enqueue_style(
+				'marketplace-one-css',
+				$base_url . $one_css_file,
+				[],
+				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
+			);
+
+			// Enqueue marketplace custom CSS (marketplace.min.css)
+			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
+			$marketplace_css_path = $base_path . $marketplace_css_file;
+			wp_enqueue_style(
+				'marketplace-custom-css',
+				$base_url . $marketplace_css_file,
+				[ 'marketplace-one-css' ],
+				file_exists( $marketplace_css_path ) ? filemtime( $marketplace_css_path ) : '1.0.0'
+			);
+		}
+
+		// Get all active plugin slugs to evaluate rules on frontend
+		$active_plugins = $this->get_active_plugin_slugs();
+
+		// Get active theme author to evaluate theme-based rules on frontend
+		$active_theme_author = $this->get_active_theme_author();
+
+		// Get current user information
+		$current_user = wp_get_current_user();
+		$wp_user = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
+		$wp_admin_email = $current_user->user_email ? hash( 'sha256', $current_user->user_email ) : '';
+		$wp_role = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
+		$user_id = $current_user->ID;
+
+		// Get WordPress environment information
+		$wp_version = get_bloginfo( 'version' );
+		$php_version = phpversion();
+		$locale = get_locale();
+
+		// Build global properties for Mixpanel
+		$global_properties = [
+			'application' => 'wordpress_marketplace',
+			'brand' => $this->config['brand'],
+			'wp_locale' => $locale,
+			'wp_version' => $wp_version,
+			'php_version' => $php_version,
+			'wp_user' => $wp_user, // Hashed
+			'wp_admin_email' => $wp_admin_email, // Hashed
+			'wp_role' => $wp_role,
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			'user_id' => $user_id,
+		];
+
+		// Merge custom mixpanel properties from config if provided
+		if ( ! empty( $this->config['mixp_props'] ) && is_array( $this->config['mixp_props'] ) ) {
+			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
+		}
+
+		// Unset is_sandbox from global properties so it's not sent with events
+		if ( isset( $global_properties['is_sandbox'] ) ) {
+			unset( $global_properties['is_sandbox'] );
+		}
+
+ 	// Get distinct_id from config if provided
+ 	$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+
+ 	// Get data consent status from config
+ 	$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
+
+	// Get Mixpanel token
+	$mixpanel_token = $this->get_mixpanel_token();
+
+ 	// Build base localized config
+ 	$localized_config = [
+ 		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+ 		'apiUrl'     => $this->config['api_url'],
+ 		'locale' => $locale,
+ 		'brand' => $this->config['brand'],
+ 		'useWPHandlers' => true,
+ 		'wpConfig' => [
+ 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+ 			'adminUrl' => admin_url(),
+ 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+ 			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
+ 		],
+ 		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
+ 		'assetsBaseUrl' => $base_url,
+ 		'wpVersion' => $wp_version,
+ 		'activePlugins' => $active_plugins,
+ 		'activeThemeAuthor' => $active_theme_author,
+ 		'data_consent_status' => $data_consent_status,
+ 		'labels'=>array(
+ 			'install' => __('Install', 'onecom-wp'),
+ 			'installing' => __('Installing', 'onecom-wp'),
+ 			'activate' => __('Activate', 'onecom-wp'),
+ 			'deactivate' => __('Deactivate', 'onecom-wp'),
+ 			'activating' => __('Activating', 'onecom-wp'),
+ 			'deactivating' => __('Deactivating', 'onecom-wp'),
+ 			'download' => __('Download', 'onecom-wp'),
+ 			'downloading' => __('Downloading...', 'onecom-wp'),
+ 			'learnMore' => __('Learn more', 'onecom-wp'),
+ 			'all' => __('All', 'onecom-wp'),
+ 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
+ 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
+ 			'moreDetails' => __('More details', 'onecom-wp'),
+ 		),
+ 		// Always send mixpanel config so it can be used when consent is granted dynamically
+ 		'mixpanel' => [
+ 			'token' => $mixpanel_token,
+ 			'globalProperties' => $global_properties,
+ 			'distinctId' => $distinct_id,
+ 		],
+ 	];
+
+ 	// Localize JS with config
+ 	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
+
+		echo '<div id="marketplace-root" class="gv-activated"></div>';
 	}
 
 	/**
