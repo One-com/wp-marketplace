@@ -338,7 +338,7 @@ export default function Marketplace() {
                     <div className="product-grid gv-grid gv-gap-lg gv-mob-grid-cols-1 gv-tab-grid-cols-2 gv-mb-md gv-desk-lg-grid-cols-3 gv-mt-md">
                         {/* Generate first 3 skeleton plugin cards */}
                         {[...Array(3)].map((_, index) => (
-                            <div key={index} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                            <div key={index} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius" style={{ maxWidth: '380px' }}>
                                 <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                                   <div className="gv-skeleton" style={{ width: '48px',height:'48px' }}></div>
                                 </div>
@@ -475,7 +475,7 @@ export default function Marketplace() {
                             const fullPriceAmount = getFullPrice(plugin);
                             const rebatePriceAmount = getRebatePrice(plugin);
                             return (
-                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius ocmp-plugin-cards" style={{ maxWidth: '380px' }}>
                                     <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                                         <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                             alt={plugin.name} />
