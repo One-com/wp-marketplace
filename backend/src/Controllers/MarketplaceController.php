@@ -329,7 +329,7 @@ class MarketplaceController {
 			'wp_user' => $wp_user, // Hashed
 			'wp_admin_email' => $wp_admin_email, // Hashed
 			'wp_role' => $wp_role,
-			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
 			'user_id' => $user_id,
 		];
 
@@ -473,7 +473,7 @@ class MarketplaceController {
 			'wp_user' => $wp_user, // Hashed
 			'wp_admin_email' => $wp_admin_email, // Hashed
 			'wp_role' => $wp_role,
-			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
 			'user_id' => $user_id,
 		];
 
@@ -715,8 +715,8 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
 		}
 
-		$slug        = sanitize_text_field( $_REQUEST['slug'] ?? '' );
-		$download_url = esc_url_raw( $_REQUEST['download_url'] ?? '' );
+		$slug        = sanitize_text_field( wp_unslash( $_REQUEST['slug'] ?? '' ) );
+		$download_url = esc_url_raw( wp_unslash( $_REQUEST['download_url'] ?? '' ) );
 
 		if ( empty( $slug ) || empty( $download_url ) ) {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin data.', 'text-domain' ) ] );
@@ -1011,7 +1011,7 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
 		}
 
-		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
+		$slug = sanitize_text_field( wp_unslash( $_REQUEST['slug'] ?? '' ) );
 		if ( empty( $slug ) ) {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ] );
 		}
@@ -1064,7 +1064,7 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
 		}
 
-		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
+		$slug = sanitize_text_field( wp_unslash( $_REQUEST['slug'] ?? '' ) );
 		if ( empty( $slug ) ) {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ] );
 		}
