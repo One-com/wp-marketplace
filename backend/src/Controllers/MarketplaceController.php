@@ -252,9 +252,12 @@ class MarketplaceController {
 		);
 	}
 
+	/**
+	 * Render the addons admin page.
+	 */
 	public function render_addons_page() {
 		$wp_version = get_bloginfo( 'version' );
-		// Lazy-load assets only when this page is actually rendered (optimization)
+		// Lazy-load assets only when this page is actually rendered (optimization).
 		$this->ensure_assets_resolved();
 
 		$base_path = $this->assets_base_path;
