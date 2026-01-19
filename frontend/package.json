@@ -57,7 +57,7 @@
   "license": "GPL-2.0-or-later",
   "dependencies": {
     "@eslint/js": "^8.57.1",
-    "@group.one/gravity": "^5.22.1",
+    "@dogado/gravity": "^5.25.3",
     "globals": "^15.15.0",
     "mixpanel-browser": "^2.73.0",
     "prop-types": "^15.8.1",

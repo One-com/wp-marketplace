@@ -72,11 +72,8 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
-          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies
         working-directory: frontend
@@ -125,11 +122,8 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
-          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies
         working-directory: frontend
@@ -173,14 +167,12 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
 
+
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
-          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies
         run: |
@@ -235,14 +227,12 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
 
+
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "@group.one:registry=https://gitlab.group.one/api/v4/packages/npm/" > .npmrc
-          echo "//gitlab.group.one/api/v4/packages/npm/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies and build
         run: |
