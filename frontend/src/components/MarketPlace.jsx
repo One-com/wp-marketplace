@@ -475,12 +475,12 @@ export default function Marketplace() {
                             const fullPriceAmount = getFullPrice(plugin);
                             const rebatePriceAmount = getRebatePrice(plugin);
                             return (
-                                <div key={plugin.slug} className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius ocmp-plugin-cards">
-                                    <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
+                                <div key={plugin.slug} className="gv-card gv-gap-sm gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius ocmp-plugin-cards">
+                                    <div className="gv-desk-span-2 gv-span-2 gv-tab-span-2">
                                         <img className="gv-icon-tile" src={plugin.iconUrl || `${iconBase}add_box.svg`}
                                             alt={plugin.name} />
                                     </div>
-                                  <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
+                                  <div className="gv-desk-span-9 gv-tab-span-9 gv-span-9 gv-ml-sm">
                                     <div className="gv-flex gv-flex-col gv-justify-between gv-h-full">
                                     <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
                                       <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm gv-flex-1"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
@@ -492,7 +492,7 @@ export default function Marketplace() {
                                       </span>
                                     </div>
                                   </div>
-                                    <div className="gv-span-2 gv-content-center gv-text-right">
+                                    <div className="gv-span-1 gv-content-center gv-text-right">
                                         <a
                                             href={`${getBaseUrl()}&plugin=${plugin.slug}`}
                                             className="gv-reset-button"
