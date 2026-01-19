@@ -10,7 +10,7 @@ export default function ProductDetailRankMath({
   plugin,
   onClose,
   usePortal = true,
-  loading = false
+  loading = false,
 }) {
   const {
     assetsBaseUrl,
@@ -22,7 +22,7 @@ export default function ProductDetailRankMath({
     isCheckingSubscription,
     noticeState,
     setNoticeState,
-    setErrorState
+    setErrorState,
   } = useMarketplace();
 
   // Always get both plugins from context - seo-by-rank-math for first column, rank-math-pro for second
@@ -35,99 +35,15 @@ export default function ProductDetailRankMath({
     '';
   const iconBase = assetBase ? `${assetBase}assets/icons/` : '';
 
-  // Show skeleton loaders while loading (even if plugin is null)
-  if (loading) {
-    const skeletonContent = (
-      <div className={usePortal ? 'gv-surface-dim' : 'gv-surface-dim'}>
-        <article className="gv-w-max-container gv-mx-auto">
-          <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
-            <a
-              href="#"
-              onClick={(e) => {
-                e.preventDefault();
-                // First check if history is available and has navigable records
-                if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
-                  try {
-                    window.history.back();
-                  } catch (error) {
-                    // If history.back() fails, fallback to onClose
-                    if (onClose) {
-                      onClose();
-                    }
-                  }
-                } else if (onClose) {
-                  // Fallback to onClose if history is not available or empty
-                  onClose();
-                }
-              }}
-            >
-              <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-              <span>{uiI18n.backButton}</span>
-            </a>
-          </nav>
+  const [activeSlide, setActiveSlide] = useState(0);
 
-          {/* Header skeleton - single skeleton loader */}
-          <header className="gv-area-header">
-            <div className="gv-image">
-              <div className="gv-card-image gv-h-full">
-                <div
-                  className="gv-skeleton gv-radius-0 gv-h-full"
-                  style={{ minHeight: '300px' }}
-                ></div>
-              </div>
-            </div>
-          </header>
-
-          <header className="gv-area-header gv-mt-fluid gv-mb-fluid">
-            <div className="gv-image">
-              <div className="gv-card-image gv-h-full">
-                <div
-                  className="gv-skeleton gv-radius-0 gv-h-full"
-                  style={{ minHeight: '300px' }}
-                ></div>
-              </div>
-            </div>
-          </header>
-          {/* Benefits skeleton - keep structure, add skeletons */}
-          <div className="gv-area-details gv-grid gv-gap-fluid gv-mb-fluid">
-            <section className="gv-stack-space-md">
-              <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '160px' }}></div>
-              <ul className="">
-                {[...Array(3)].map((_, i) => (
-                  <li key={i}>
-                    <div className="gv-skeleton gv-text-sm"></div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          {/* Core Features skeleton - keep structure, add skeletons */}
-          <div className="gv-area-content gv-grid gv-gap-fluid">
-            <section className="gv-text-sm gv-stack-space-md">
-              <div
-                className="gv-skeleton gv-heading-md"
-                style={{ width: '160px', marginBottom: '28px' }}
-              ></div>
-              <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
-                {[...Array(3)].map((_, i) => (
-                  <div className="gv-item gv-stack-space-sm" key={i}>
-                    <div
-                      className="gv-skeleton gv-heading-md gv-mb-sm"
-                      style={{ width: '160px' }}
-                    ></div>
-                    <div className="gv-skeleton gv-text-sm gv-mb-xs"></div>
-                    <div className="gv-skeleton gv-text-sm"></div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-        </article>
-      </div>
-    );
-    return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
-  }
+  // Refs for slider elements
+  const tableSliderRef = useRef(null);
+  const sliderNavRef = useRef(null);
+  const tableRef = useRef(null);
+  const tableHeaderRef = useRef(null);
+  const paginationRef = useRef(null);
+  const dotsRef = useRef([]);
 
   // Slider functionality
   useEffect(() => {
@@ -370,20 +286,6 @@ export default function ProductDetailRankMath({
     };
   }, []);
 
-  // If not loading and plugin is null, return null
-  if (!plugin) return null;
-
-  // Refs for slider elements
-  const tableSliderRef = useRef(null);
-  const sliderNavRef = useRef(null);
-  const tableRef = useRef(null);
-  const tableHeaderRef = useRef(null);
-  const paginationRef = useRef(null);
-  const dotsRef = useRef([]);
-
-  // State for active slide
-  const [activeSlide, setActiveSlide] = useState(0);
-
   // Scroll to top when component mounts or plugin changes
   useEffect(() => {
     if (plugin) {
@@ -396,16 +298,18 @@ export default function ProductDetailRankMath({
     if (freePlugin || proPlugin) {
       // Clear any existing banners when ProductDetail mounts
       // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
-      setNoticeState((prev) =>
-        (prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
+      setNoticeState((prev) => {
+        return prev.visible &&
+          (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
           ? prev
-          : { visible: false, type: null, pluginSlug: null })
-      );
-      setErrorState((prev) =>
-        (prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
+          : { visible: false, type: null, pluginSlug: null };
+      });
+      setErrorState((prev) => {
+        return prev.visible &&
+          (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
           ? prev
-          : { visible: false, type: null, pluginSlug: null })
-      );
+          : { visible: false, type: null, pluginSlug: null };
+      });
     }
   }, [freePlugin, proPlugin, setNoticeState, setErrorState]);
 
@@ -420,6 +324,104 @@ export default function ProductDetailRankMath({
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [setNoticeState, setErrorState]);
+
+  // Show skeleton loaders while loading (even if plugin is null)
+  if (loading) {
+    const skeletonContent = (
+      <div className={usePortal ? 'gv-surface-dim' : 'gv-surface-dim'}>
+        <article className="gv-w-max-container gv-mx-auto">
+          <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
+            <button
+              type="button"
+              className="gv-reset-button"
+              onClick={(e) => {
+                e.preventDefault();
+                // First check if history is available and has navigable records
+                if (typeof window !== 'undefined' && window.history && window.history.length > 1) {
+                  try {
+                    window.history.back();
+                  } catch (error) {
+                    // If history.back() fails, fallback to onClose
+                    if (onClose) {
+                      onClose();
+                    }
+                  }
+                } else if (onClose) {
+                  // Fallback to onClose if history is not available or empty
+                  onClose();
+                }
+              }}
+            >
+              <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
+              <span>{uiI18n.backButton}</span>
+            </button>
+          </nav>
+
+          {/* Header skeleton - single skeleton loader */}
+          <header className="gv-area-header">
+            <div className="gv-image">
+              <div className="gv-card-image gv-h-full">
+                <div
+                  className="gv-skeleton gv-radius-0 gv-h-full"
+                  style={{ minHeight: '300px' }}
+                ></div>
+              </div>
+            </div>
+          </header>
+
+          <header className="gv-area-header gv-mt-fluid gv-mb-fluid">
+            <div className="gv-image">
+              <div className="gv-card-image gv-h-full">
+                <div
+                  className="gv-skeleton gv-radius-0 gv-h-full"
+                  style={{ minHeight: '300px' }}
+                ></div>
+              </div>
+            </div>
+          </header>
+          {/* Benefits skeleton - keep structure, add skeletons */}
+          <div className="gv-area-details gv-grid gv-gap-fluid gv-mb-fluid">
+            <section className="gv-stack-space-md">
+              <div className="gv-skeleton gv-heading-md gv-mb-md" style={{ width: '160px' }}></div>
+              <ul className="">
+                {[...Array(3)].map((_, i) => (
+                  <li key={i}>
+                    <div className="gv-skeleton gv-text-sm"></div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </div>
+
+          {/* Core Features skeleton - keep structure, add skeletons */}
+          <div className="gv-area-content gv-grid gv-gap-fluid">
+            <section className="gv-text-sm gv-stack-space-md">
+              <div
+                className="gv-skeleton gv-heading-md"
+                style={{ width: '160px', marginBottom: '28px' }}
+              ></div>
+              <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
+                {[...Array(3)].map((_, i) => (
+                  <div className="gv-item gv-stack-space-sm" key={i}>
+                    <div
+                      className="gv-skeleton gv-heading-md gv-mb-sm"
+                      style={{ width: '160px' }}
+                    ></div>
+                    <div className="gv-skeleton gv-text-sm gv-mb-xs"></div>
+                    <div className="gv-skeleton gv-text-sm"></div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
+        </article>
+      </div>
+    );
+    return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
+  }
+
+  // If not loading and plugin is null, return null
+  if (!plugin) return null;
 
   // Navigation button click handlers
   const handlePrevClick = () => {
@@ -561,7 +563,7 @@ export default function ProductDetailRankMath({
             style={{
               opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
               pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
-              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
+              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer',
             }}
             disabled={pluginInAction[plugin.slug]}
           >
@@ -583,11 +585,7 @@ export default function ProductDetailRankMath({
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={`${mainImage} 2x, ${mainImage} 1x`} />
-              <img
-                src={mainImage}
-                srcSet={`${mainImage} 2x, ${mainImage} 1x`}
-                alt="Rank Math"
-              />
+              <img src={mainImage} srcSet={`${mainImage} 2x, ${mainImage} 1x`} alt="Rank Math" />
             </picture>
           </div>
         </header>

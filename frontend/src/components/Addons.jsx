@@ -32,7 +32,7 @@ export default function Addons() {
     shouldShowProvision,
     isSpecialPlugin,
     shouldShowPlugin,
-    isWpVersionSupported
+    isWpVersionSupported,
   } = useMarketplace();
 
   const [selectedPlugin, setSelectedPlugin] = useState(null);
@@ -89,8 +89,8 @@ export default function Addons() {
           product_slug: plugin.slug,
           product_name: plugin.name,
           has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
-          has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== '')
-        }
+          has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== ''),
+        },
       });
     }
 
@@ -188,7 +188,7 @@ export default function Addons() {
           trackPageView({
             category: 'addons_page',
             itemName: 'Addons Page',
-            isContentRendered: false
+            isContentRendered: false,
           });
           throw new Error('Invalid API response structure');
         }
@@ -199,7 +199,7 @@ export default function Addons() {
         trackPageView({
           category: 'addons_page',
           itemName: 'Addons Page',
-          isContentRendered: false
+          isContentRendered: false,
         });
         setCatalogError(err.message || 'Failed to load plugins');
       })
@@ -215,7 +215,7 @@ export default function Addons() {
     shouldShowPlugin,
     fetchSubscriptionStatus,
     isOnecomBrand,
-    isSpecialPlugin
+    isSpecialPlugin,
   ]);
 
   // After plugins load, select plugin from query if present
@@ -286,7 +286,7 @@ export default function Addons() {
           itemName: 'Addons Page',
           contentReceivedAt: contentReceivedTimestamp.current,
           contentRenderedAt: contentRenderTimestamp.current,
-          isCached: isCachedRef.current
+          isCached: isCachedRef.current,
         });
       }
 
@@ -521,11 +521,11 @@ export default function Addons() {
                     // Dispatch custom event for provisioning
                     const event = new CustomEvent('onecom-plugin-provision', {
                       detail: {
-                        slug: plugin.slug
+                        slug: plugin.slug,
                       },
                       bubbles: true,
                       cancelable: true,
-                      composed: true
+                      composed: true,
                     });
                     document.dispatchEvent(event);
                   };

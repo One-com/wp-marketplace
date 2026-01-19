@@ -27,14 +27,14 @@ const resources = {
   nb_NO: { translation: no_NO },
   pt_PT: { translation: pt_PT },
   sv_SE: { translation: sv_SE },
-  fi: { translation: fi_FI }
+  fi: { translation: fi_FI },
 };
 
 i18n.use(initReactI18next).init({
   resources,
   lng: 'en_GB', // default fallback
   fallbackLng: 'en_GB',
-  interpolation: { escapeValue: false }
+  interpolation: { escapeValue: false },
 });
 
 export default i18n;

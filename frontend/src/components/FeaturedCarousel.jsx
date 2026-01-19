@@ -144,7 +144,7 @@ export default function FeaturedCarousel({ loading = false }) {
             className="gv-carousel-track"
             style={{
               display: 'flex',
-              gap: '1rem'
+              gap: '1rem',
             }}
           >
             {/* Generate 2 skeleton carousel slides */}
@@ -160,14 +160,14 @@ export default function FeaturedCarousel({ loading = false }) {
                   borderRadius: '6px',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  maxHeight: '456px'
+                  maxHeight: '456px',
                 }}
               >
                 <header
                   className="gv-product-header gv-area-header gv-w-full"
                   style={{
                     border: 'none',
-                    background: '#D9EBF7'
+                    background: '#D9EBF7',
                   }}
                 >
                   <div className="gv-content gv-stack-space-sm gv-text-sm gv-flex gv-flex-col gv-items-start">
@@ -250,7 +250,7 @@ export default function FeaturedCarousel({ loading = false }) {
             display: 'flex',
             transition: 'transform 0.3s ease-in-out',
             transform: `translateX(calc(-${currentIndex} * ((100% - ${slidesPerView - 1}rem) / ${slidesPerView} + 1rem)))`,
-            gap: '1rem'
+            gap: '1rem',
           }}
         >
           {featuredPlugins.map((plugin, index) => {
@@ -275,7 +275,7 @@ export default function FeaturedCarousel({ loading = false }) {
                   : {
                       slug: String(plugin.categories[0]),
                       title: String(plugin.categories[0]),
-                      description: null
+                      description: null,
                     }
                 : { slug: 'Others', title: 'Others', description: null };
             const categoryName = categoryObj.title || categoryObj.slug || 'Others';
@@ -292,14 +292,14 @@ export default function FeaturedCarousel({ loading = false }) {
                   borderRadius: '6px',
                   display: 'flex',
                   justifyContent: 'space-between',
-                  maxHeight: '456px'
+                  maxHeight: '456px',
                 }}
               >
                 <header
                   className="gv-product-header gv-area-header"
                   style={{
                     border: 'none',
-                    background: '#D9EBF7'
+                    background: '#D9EBF7',
                   }}
                 >
                   <div className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start gv-h-full gv-justify-between">
@@ -311,7 +311,7 @@ export default function FeaturedCarousel({ loading = false }) {
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
-                        textOverflow: 'ellipsis'
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {title}
@@ -322,7 +322,7 @@ export default function FeaturedCarousel({ loading = false }) {
                         overflow: 'hidden',
                         display: '-webkit-box',
                         WebkitBoxOrient: 'vertical',
-                        textOverflow: 'ellipsis'
+                        textOverflow: 'ellipsis',
                       }}
                     >
                       {description}
@@ -379,7 +379,7 @@ export default function FeaturedCarousel({ loading = false }) {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
-              opacity: currentIndex === 0 ? 0.5 : 1
+              opacity: currentIndex === 0 ? 0.5 : 1,
             }}
             aria-label="Previous slide"
           >
@@ -403,7 +403,7 @@ export default function FeaturedCarousel({ loading = false }) {
                   border: 'none',
                   background: currentIndex === index ? '#0066CC' : '#D0D0D0',
                   cursor: 'pointer',
-                  padding: 0
+                  padding: 0,
                 }}
                 aria-label={`Go to slide ${index + 1}`}
               />
@@ -419,7 +419,7 @@ export default function FeaturedCarousel({ loading = false }) {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: currentIndex >= maxIndex ? 'not-allowed' : 'pointer',
-              opacity: currentIndex >= maxIndex ? 0.5 : 1
+              opacity: currentIndex >= maxIndex ? 0.5 : 1,
             }}
             aria-label="Next slide"
           >

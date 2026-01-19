@@ -3,7 +3,7 @@ import {
   trackButtonClick,
   initializeMixpanel,
   enableMixpanel,
-  disableMixpanel
+  disableMixpanel,
 } from '../utils/mixpanelTracking';
 import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
 
@@ -15,7 +15,7 @@ export const MarketplaceProvider = ({
   useWPHandlers,
   wpConfig,
   enableDefaultStyles,
-  assetsBaseUrl
+  assetsBaseUrl,
 }) => {
   const [pluginInAction, setPluginInAction] = useState({});
   const [subscriptionStatus, setSubscriptionStatus] = useState({});
@@ -29,7 +29,7 @@ export const MarketplaceProvider = ({
   const [successState, setSuccessState] = useState({
     visible: false,
     type: null,
-    pluginSlug: null
+    pluginSlug: null,
   });
   const [allPluginsActivated, setAllPluginsActivated] = useState(false);
   const [catalogError, setCatalogError] = useState(false);
@@ -58,10 +58,11 @@ export const MarketplaceProvider = ({
   const isOnecomBrand = brand === 'onecom';
 
   // Get active plugin slugs from WordPress config
-  const activePlugins = React.useMemo(() => 
-    typeof window !== 'undefined' && window.marketplaceConfig?.activePlugins
+  const activePlugins = React.useMemo(() => {
+    return typeof window !== 'undefined' && window.marketplaceConfig?.activePlugins
       ? window.marketplaceConfig.activePlugins
-      : [], []);
+      : [];
+  }, []);
 
   // Get active theme author from WordPress config
   const activeThemeAuthor =
@@ -83,12 +84,12 @@ export const MarketplaceProvider = ({
         setNoticeState({
           visible: noticeData.visible,
           type: noticeData.type,
-          pluginSlug: noticeData.pluginSlug
+          pluginSlug: noticeData.pluginSlug,
         });
         setSuccessState({
           visible: noticeData.visible,
           type: noticeData.successType,
-          pluginSlug: noticeData.pluginSlug
+          pluginSlug: noticeData.pluginSlug,
         });
 
         // Schedule clearing from sessionStorage AFTER the notice is set in state
@@ -196,7 +197,7 @@ export const MarketplaceProvider = ({
 
         const res = await fetch(ajaxUrl, {
           method: 'POST',
-          body: formData
+          body: formData,
         });
 
         const json = await res.json();
@@ -353,8 +354,8 @@ export const MarketplaceProvider = ({
                   context: {
                     action: action,
                     result: 'success',
-                    special_case: 'imagify_redirect'
-                  }
+                    special_case: 'imagify_redirect',
+                  },
                 });
 
                 if (source === 'product_detail') {
@@ -366,7 +367,7 @@ export const MarketplaceProvider = ({
                       visible: true,
                       type: 'activated',
                       pluginSlug: plugin.slug,
-                      successType: 'activate'
+                      successType: 'activate',
                     })
                   );
 
@@ -410,8 +411,8 @@ export const MarketplaceProvider = ({
                 context: {
                   action: action,
                   result: 'error',
-                  error_message: 'Imagify activation timeout after polling'
-                }
+                  error_message: 'Imagify activation timeout after polling',
+                },
               });
 
               // Clear loading state
@@ -484,8 +485,8 @@ export const MarketplaceProvider = ({
               plugin: plugin,
               context: {
                 action: action,
-                result: 'success'
-              }
+                result: 'success',
+              },
             });
           } else if (action === 'delete' && !result.data.installed) {
             setNoticeState({ visible: true, type: 'deleted', pluginSlug: plugin.slug });
@@ -498,8 +499,8 @@ export const MarketplaceProvider = ({
               plugin: plugin,
               context: {
                 action: action,
-                result: 'success'
-              }
+                result: 'success',
+              },
             });
           } else if (action === 'activate' && result.data.activated) {
             actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction
@@ -511,8 +512,8 @@ export const MarketplaceProvider = ({
               plugin: plugin,
               context: {
                 action: action,
-                result: 'success'
-              }
+                result: 'success',
+              },
             });
 
             if (source === 'product_detail') {
@@ -524,7 +525,7 @@ export const MarketplaceProvider = ({
                   visible: true,
                   type: 'activated',
                   pluginSlug: plugin.slug,
-                  successType: 'activate'
+                  successType: 'activate',
                 })
               );
 
@@ -548,7 +549,7 @@ export const MarketplaceProvider = ({
               setLoadingPlugin('');
             }
 
-             // Skip finally block (though finally will still execute, actionSuccessful flag prevents clearing)
+            // Skip finally block (though finally will still execute, actionSuccessful flag prevents clearing)
           } else if (action === 'deactivate' && !result.data.activated) {
             actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction
             setSuccessState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
@@ -560,8 +561,8 @@ export const MarketplaceProvider = ({
               plugin: plugin,
               context: {
                 action: action,
-                result: 'success'
-              }
+                result: 'success',
+              },
             });
 
             // Schedule reload after deactivation to refresh plugin state
@@ -575,7 +576,6 @@ export const MarketplaceProvider = ({
             // Clear loading state only
             setLoadingAction('');
             setLoadingPlugin('');
-            
           }
         } else {
           // Show error toast for activation and installation errors
@@ -593,8 +593,8 @@ export const MarketplaceProvider = ({
                 error_message:
                   result.data?.message ||
                   uiI18n?.notifications?.pluginActivationFailed ||
-                  'Activation failed'
-              }
+                  'Activation failed',
+              },
             });
           } else if (action === 'deactivate') {
             setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
@@ -610,8 +610,8 @@ export const MarketplaceProvider = ({
                 error_message:
                   result.data?.message ||
                   uiI18n?.notifications?.pluginDeactivationFailed ||
-                  'Deactivation failed'
-              }
+                  'Deactivation failed',
+              },
             });
           } else if (action === 'install') {
             setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug });
@@ -624,8 +624,8 @@ export const MarketplaceProvider = ({
               context: {
                 action: action,
                 result: 'error',
-                error_message: result.data?.message || 'Installation failed'
-              }
+                error_message: result.data?.message || 'Installation failed',
+              },
             });
           } else if (action === 'delete') {
             setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
@@ -641,8 +641,8 @@ export const MarketplaceProvider = ({
                 error_message:
                   result.data?.message ||
                   uiI18n?.notifications?.pluginDeletionFailed ||
-                  'Deletion failed'
-              }
+                  'Deletion failed',
+              },
             });
           } else {
             alert(result.data?.message || 'Failed to perform action');
@@ -666,8 +666,8 @@ export const MarketplaceProvider = ({
             context: {
               action: action,
               result: 'error',
-              error_message: err.message || 'Network error'
-            }
+              error_message: err.message || 'Network error',
+            },
           });
         }
       } finally {
@@ -730,7 +730,7 @@ export const MarketplaceProvider = ({
     isWpVersionSupported,
     wpVersion,
     activePlugins,
-    activeThemeAuthor
+    activeThemeAuthor,
   };
 
   return <MarketplaceContext.Provider value={value}>{children}</MarketplaceContext.Provider>;

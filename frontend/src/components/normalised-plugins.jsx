@@ -59,7 +59,7 @@ export function normalizePlugins(rawResponse) {
       priceCurrency,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
-      i18n: plugin?.i18n || {}
+      i18n: plugin?.i18n || {},
     };
   });
 

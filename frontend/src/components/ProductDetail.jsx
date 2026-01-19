@@ -15,7 +15,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     subscriptionStatus,
     isCheckingSubscription,
     setNoticeState,
-    setErrorState
+    setErrorState,
   } = useMarketplace();
 
   const assetBase =
@@ -23,6 +23,43 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
     '';
   const iconBase = assetBase ? `${assetBase}assets/icons/` : '';
+
+  // Scroll to top when component mounts or plugin changes
+  useEffect(() => {
+    if (plugin) {
+      window.scrollTo(0, 0);
+    }
+  }, [plugin]);
+
+  // Clear banners when component mounts (handles case when user returns via browser back button)
+  useEffect(() => {
+    if (plugin) {
+      // Clear any existing banners when ProductDetail mounts
+      // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
+      setNoticeState((prev) => {
+        return prev.visible && prev.pluginSlug === plugin.slug
+          ? prev
+          : { visible: false, type: null, pluginSlug: null };
+      });
+      setErrorState((prev) => {
+        return prev.visible && prev.pluginSlug === plugin.slug
+          ? prev
+          : { visible: false, type: null, pluginSlug: null };
+      });
+    }
+  }, [plugin, setNoticeState, setErrorState]);
+
+  // Hide banners when user navigates back and returns to the product detail page
+  useEffect(() => {
+    const handlePopState = () => {
+      // Clear notice and error state when navigating via browser back/forward
+      setNoticeState({ visible: false, type: null, pluginSlug: null });
+      setErrorState({ visible: false, type: null, pluginSlug: null });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setNoticeState, setErrorState]);
 
   // Show skeleton loaders while loading (even if plugin is null)
   if (loading) {
@@ -135,43 +172,6 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
   }
 
-  // Scroll to top when component mounts or plugin changes
-  useEffect(() => {
-    if (plugin) {
-      window.scrollTo(0, 0);
-    }
-  }, [plugin]);
-
-  // Clear banners when component mounts (handles case when user returns via browser back button)
-  useEffect(() => {
-    if (plugin) {
-      // Clear any existing banners when ProductDetail mounts
-      // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
-      setNoticeState((prev) =>
-        (prev.visible && prev.pluginSlug === plugin.slug
-          ? prev
-          : { visible: false, type: null, pluginSlug: null })
-      );
-      setErrorState((prev) =>
-        (prev.visible && prev.pluginSlug === plugin.slug
-          ? prev
-          : { visible: false, type: null, pluginSlug: null })
-      );
-    }
-  }, [plugin.slug, setNoticeState, setErrorState]);
-
-  // Hide banners when user navigates back and returns to the product detail page
-  useEffect(() => {
-    const handlePopState = () => {
-      // Clear notice and error state when navigating via browser back/forward
-      setNoticeState({ visible: false, type: null, pluginSlug: null });
-      setErrorState({ visible: false, type: null, pluginSlug: null });
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [setNoticeState, setErrorState]);
-
   // If not loading and plugin is null, return null
   if (!plugin) return null;
 
@@ -283,7 +283,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
             style={{
               opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
               pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
-              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
+              cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer',
             }}
             disabled={pluginInAction[plugin.slug]}
           >
@@ -312,11 +312,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={`${mainImage} 1x, ${mainImage} 2x`} />
-              <img
-                src={mainImage}
-                srcSet={`${mainImage} 1x, ${mainImage} 2x`}
-                alt={title}
-              />
+              <img src={mainImage} srcSet={`${mainImage} 1x, ${mainImage} 2x`} alt={title} />
             </picture>
           </div>
         </header>

@@ -57,8 +57,8 @@ const initializeMixpanel = () => {
         '$screen_height',
         '$screen_width',
         '$os',
-        '$search_engine'
-      ]
+        '$search_engine',
+      ],
     });
 
     // Set distinct_id if provided
@@ -156,7 +156,7 @@ export const getGlobalProperties = () => {
       hit_type: 'event',
       page: pageParam || window.location.pathname,
       path: window.location.pathname + window.location.search,
-      referrer: document.referrer.split('/').filter(Boolean).pop() || ''
+      referrer: document.referrer.split('/').filter(Boolean).pop() || '',
     };
 
     // Filter out empty values to keep the payload clean
@@ -192,7 +192,7 @@ export const trackEvent = (eventName, eventProperties = {}) => {
     // Merge global properties with event-specific properties
     const properties = {
       ...getGlobalProperties(),
-      ...eventProperties
+      ...eventProperties,
     };
 
     // Track the event
@@ -222,7 +222,7 @@ export const trackPageView = ({
   isContentRendered = true,
   contentReceivedAt = null,
   contentRenderedAt = null,
-  isCached = false
+  isCached = false,
 } = {}) => {
   try {
     const timestamp = Date.now();
@@ -230,7 +230,7 @@ export const trackPageView = ({
     const eventProperties = {
       content_received_at: contentReceivedAt || timestamp,
       is_content_rendered: isContentRendered,
-      is_cached: isCached
+      is_cached: isCached,
     };
 
     // Only add content_rendered_at if content was successfully rendered
@@ -284,7 +284,7 @@ export const trackPluginAction = ({ action, plugin, result = 'initiated' } = {})
       product_name: plugin.name || '',
       item_name: plugin.slug || '',
       result: result,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Add plugin-specific properties
@@ -324,7 +324,7 @@ const extractPluginProperties = (plugin) => {
 
   const properties = {
     product_slug: plugin.slug || '',
-    product_name: plugin.name || ''
+    product_name: plugin.name || '',
     // Note: item_name is NOT included here by default
     // It should be set contextually by the calling function
   };
@@ -367,7 +367,7 @@ export const trackButtonClick = ({
   buttonName,
   buttonAction,
   plugin = null,
-  context = {}
+  context = {},
 } = {}) => {
   try {
     // Start with base properties
@@ -375,7 +375,7 @@ export const trackButtonClick = ({
       button_name: buttonName || '',
       button_action: buttonAction || '',
       item_name: buttonName || '', // item_name should be the button name
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     // Auto-extract plugin properties if plugin object is provided
@@ -409,7 +409,7 @@ export const trackMarketplaceVisit = (
       itemName: 'Catalog Page', // Set item_name to 'Catalog page' for marketplace listing
       contentReceivedAt: contentReceivedAt,
       contentRenderedAt: contentRenderedAt,
-      isCached: isCached
+      isCached: isCached,
     });
   } catch (error) {
     console.error('[MixpanelTracking] Error tracking marketplace visit:', error);
@@ -449,7 +449,7 @@ export const trackPluginDetailVisit = (
       itemName: 'Product Page', // Set item_name to 'Product page' for plugin detail page
       contentReceivedAt: contentReceivedAt,
       contentRenderedAt: contentRenderedAt,
-      isCached: isCached
+      isCached: isCached,
     });
   } catch (error) {
     console.error('[MixpanelTracking] Error tracking plugin detail visit:', error);
@@ -465,5 +465,5 @@ export default {
   trackMarketplaceVisit,
   trackPluginDetailVisit,
   getGlobalProperties,
-  isMixpanelAvailable
+  isMixpanelAvailable,
 };

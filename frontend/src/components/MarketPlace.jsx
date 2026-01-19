@@ -11,7 +11,7 @@ import { formatPluginPrice, getRebatePrice, getFullPrice } from '../utils/priceF
 import {
   trackMarketplaceVisit,
   trackPluginDetailVisit,
-  trackPageView
+  trackPageView,
 } from '../utils/mixpanelTracking';
 
 export default function Marketplace() {
@@ -39,7 +39,7 @@ export default function Marketplace() {
     shouldShowProvision,
     isSpecialPlugin,
     shouldShowPlugin,
-    isWpVersionSupported
+    isWpVersionSupported,
   } = useMarketplace();
 
   // Get active plugin slugs from WordPress config
@@ -148,7 +148,7 @@ export default function Marketplace() {
           // Track page view with content render failure
           trackPageView({
             category: 'marketplace_home',
-            isContentRendered: false
+            isContentRendered: false,
           });
           setCatalogError(true);
           setCatalogLoading(false);
@@ -166,7 +166,7 @@ export default function Marketplace() {
           // Track page view with content render failure
           trackPageView({
             category: 'marketplace_home',
-            isContentRendered: false
+            isContentRendered: false,
           });
           setCatalogError(true);
           setCatalogLoading(false);
@@ -190,7 +190,7 @@ export default function Marketplace() {
         // Track page view with content render failure
         trackPageView({
           category: 'marketplace_home',
-          isContentRendered: false
+          isContentRendered: false,
         });
         setCatalogError(true);
       } finally {
@@ -207,7 +207,7 @@ export default function Marketplace() {
     isSpecialPlugin,
     setCatalogError,
     setCatalogLoading,
-    setUiI18n
+    setUiI18n,
   ]);
 
   // Use useMemo to filter plugins based on rules and activation status

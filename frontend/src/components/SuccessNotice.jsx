@@ -36,8 +36,8 @@ export default function SuccessNotice({ plugin }) {
         product_slug: plugin.slug,
         product_name: plugin.name,
         has_redirect_url: !!(plugin.redirectUrl && plugin.redirectUrl.trim() !== ''),
-        has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== '')
-      }
+        has_onboarding_url: !!(plugin.onboardingUrl && plugin.onboardingUrl.trim() !== ''),
+      },
     });
 
     // Cancel the scheduled reload since user is navigating manually

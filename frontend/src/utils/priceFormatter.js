@@ -7,7 +7,7 @@ const CURRENCY_SYMBOLS = {
   GBP: '£',
   DKK: 'kr',
   NOK: 'kr',
-  SEK: 'kr'
+  SEK: 'kr',
   // Add more currencies here as needed
   // 'JPY': '¥',
 };
