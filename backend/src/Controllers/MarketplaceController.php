@@ -1,19 +1,52 @@
 <?php
+/**
+ * Marketplace Controller file.
+ *
+ * @package Groupone\Marketplace
+ */
+
 namespace Groupone\Marketplace\Controllers;
 
 use Groupone\Marketplace\Models\MarketplaceModel;
 
 use WP_REST_Response;
+
+/**
+ * Controller for handling marketplace logic.
+ */
 class MarketplaceController {
+	/**
+	 * Config options.
+	 *
+	 * @var array $config
+	 */
 	protected $config;
+
+	/**
+	 * Model instance.
+	 *
+	 * @var MarketplaceModel $model
+	 */
 	protected $model;
+
+	/**
+	 * Base path for assets.
+	 *
+	 * @var string $assets_base_path
+	 */
 	protected $assets_base_path;
+
+	/**
+	 * Base URL for assets.
+	 *
+	 * @var string $assets_base_url
+	 */
 	protected $assets_base_url;
 
 	/**
 	 * Create + initialize controller instance.
 	 *
-	 * @param array $config
+	 * @param array $config Configuration options.
 	 * @return self
 	 */
 	public static function boot( array $config = [] ): self {
@@ -22,19 +55,27 @@ class MarketplaceController {
 		return $instance;
 	}
 
+	/**
+	 * Constructor.
+	 *
+	 * @param array $config Configuration options.
+	 */
 	public function __construct( array $config ) {
-		$this->config = wp_parse_args( $config, [
-			'parent_menu_slug' => 'options-general.php',
-			'page_title'       => __( 'Plugin Marketplace', 'text-domain' ),
-			'menu_title'       => __( 'Marketplace', 'text-domain' ),
-			'menu_slug'        => 'plugin-marketplace',
-			'api_url'          => '', // default to empty, React can decide
-			'brand'            => '', // optional brand identifier for marketplace API
-			'css_url'          => '', //  optional additional CSS
-			'css_handle'       => 'marketplace-frontend-style',
-			'assets_path'      => '', //  Optional: explicit path to package root containing frontend/ directory
-			'payload'          => [], //  Optional: key-value array passed as headers for API authentication
-		] );
+		$this->config = wp_parse_args(
+			$config,
+			[
+				'parent_menu_slug' => 'options-general.php',
+				'page_title'       => __( 'Plugin Marketplace', 'text-domain' ),
+				'menu_title'       => __( 'Marketplace', 'text-domain' ),
+				'menu_slug'        => 'plugin-marketplace',
+				'api_url'          => '', // default to empty, React can decide
+				'brand'            => '', // optional brand identifier for marketplace API
+				'css_url'          => '', // optional additional CSS
+				'css_handle'       => 'marketplace-frontend-style',
+				'assets_path'      => '', // Optional: explicit path to package root containing frontend/ directory
+				'payload'          => [], // Optional: key-value array passed as headers for API authentication
+			]
+		);
 
 		// Defer model and asset initialization until needed (optimization for multi-plugin installs)
 		$this->model = null;
@@ -130,9 +171,9 @@ class MarketplaceController {
 	}
 
 	/**
-	 * Convert filesystem path to URL
+	 * Convert filesystem path to URL.
 	 *
-	 * @param string $path Absolute filesystem path
+	 * @param string $path Absolute filesystem path.
 	 * @return string URL
 	 */
 	protected function convert_path_to_url( $path ) {
@@ -170,14 +211,17 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
 			add_action( 'wp_ajax_marketplace_delete_plugin', [ $this, 'ajax_delete_plugin' ] );
 
-			//reset transient for marketplace catalog
-			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
-			add_action('update_option_WPLANG', [$this, 'reset_transient_on_locale_change'], 999, 0);
+			// reset transient for marketplace catalog
+			add_action( 'upgrader_process_complete', [ $this, 'reset_transient_on_core_update' ], 10, 2 );
+			add_action( 'update_option_WPLANG', [ $this, 'reset_transient_on_locale_change' ], 999, 0 );
 		}
 
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
 	}
 
+	/**
+	 * Register marketplace admin menu page.
+	 */
 	public function register_menu() {
 		add_submenu_page(
 			$this->config['parent_menu_slug'],
@@ -191,12 +235,11 @@ class MarketplaceController {
 
 	/**
 	 * Register addons admin menu page with configurable slug.
-	 *
 	 */
 	public function register_addons_menu() {
-		$menu_slug = $this->config['addons_menu_slug']?: 'onecom-marketplace-products';
-		$page_title = $this->config['addons_page_title'] ?: __( 'Marketplace Products', '' );
-		$menu_title = $this->config['addons_menu_title'] ?: __( 'Your add-ons', '' );
+		$menu_slug = $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products';
+		$page_title = $this->config['addons_page_title'] ?: __( 'Marketplace Products', 'onecom-wp' );
+		$menu_title = $this->config['addons_menu_title'] ?: __( 'Your add-ons', 'onecom-wp' );
 		$parent_menu_slug = $this->config['parent_menu_slug'];
 
 		add_submenu_page(
@@ -210,6 +253,7 @@ class MarketplaceController {
 	}
 
 	public function render_addons_page() {
+		$wp_version = get_bloginfo( 'version' );
 		// Lazy-load assets only when this page is actually rendered (optimization)
 		$this->ensure_assets_resolved();
 
@@ -324,21 +368,21 @@ class MarketplaceController {
 			'activePlugins' => $active_plugins,
 			'activeThemeAuthor' => $active_theme_author,
 			'data_consent_status' => $data_consent_status,
-			'labels'=>array(
-				'install' => __('Install', 'onecom-wp'),
-				'installing' => __('Installing', 'onecom-wp'),
-				'activate' => __('Activate', 'onecom-wp'),
-				'deactivate' => __('Deactivate', 'onecom-wp'),
-				'activating' => __('Activating', 'onecom-wp'),
-				'deactivating' => __('Deactivating', 'onecom-wp'),
-				'download' => __('Download', 'onecom-wp'),
-				'downloading' => __('Downloading...', 'onecom-wp'),
-				'learnMore' => __('Learn more', 'onecom-wp'),
-				'all' => __('All', 'onecom-wp'),
-				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
-				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
-				'moreDetails' => __('More details', 'onecom-wp'),
-			),
+			'labels' => [
+				'install' => __( 'Install', 'onecom-wp' ),
+				'installing' => __( 'Installing', 'onecom-wp' ),
+				'activate' => __( 'Activate', 'onecom-wp' ),
+				'deactivate' => __( 'Deactivate', 'onecom-wp' ),
+				'activating' => __( 'Activating', 'onecom-wp' ),
+				'deactivating' => __( 'Deactivating', 'onecom-wp' ),
+				'download' => __( 'Download', 'onecom-wp' ),
+				'downloading' => __( 'Downloading...', 'onecom-wp' ),
+				'learnMore' => __( 'Learn more', 'onecom-wp' ),
+				'all' => __( 'All', 'onecom-wp' ),
+				'recommendedPlugins' => __( 'Recommended plugins', 'onecom-wp' ),
+				'discouraged' => __( 'Discouraged plugins', 'onecom-wp' ),
+				'moreDetails' => __( 'More details', 'onecom-wp' ),
+			],
 			// Always send mixpanel config so it can be used when consent is granted dynamically
 			'mixpanel' => [
 				'token' => $mixpanel_token,
@@ -440,59 +484,59 @@ class MarketplaceController {
 			unset( $global_properties['is_sandbox'] );
 		}
 
- 	// Get distinct_id from config if provided
- 	$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+		// Get distinct_id from config if provided
+		$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
 
- 	// Get data consent status from config
- 	$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
+		// Get data consent status from config
+		$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
 
-	// Get Mixpanel token
-	$mixpanel_token = $this->get_mixpanel_token();
+		// Get Mixpanel token
+		$mixpanel_token = $this->get_mixpanel_token();
 
- 	// Build base localized config
- 	$localized_config = [
- 		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
- 		'apiUrl'     => $this->config['api_url'],
- 		'locale' => $locale,
- 		'brand' => $this->config['brand'],
- 		'useWPHandlers' => true,
- 		'wpConfig' => [
- 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
- 			'adminUrl' => admin_url(),
- 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
- 			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
- 		],
- 		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
- 		'assetsBaseUrl' => $base_url,
- 		'wpVersion' => $wp_version,
- 		'activePlugins' => $active_plugins,
- 		'activeThemeAuthor' => $active_theme_author,
- 		'data_consent_status' => $data_consent_status,
- 		'labels'=>array(
- 			'install' => __('Install', 'onecom-wp'),
- 			'installing' => __('Installing', 'onecom-wp'),
- 			'activate' => __('Activate', 'onecom-wp'),
- 			'deactivate' => __('Deactivate', 'onecom-wp'),
- 			'activating' => __('Activating', 'onecom-wp'),
- 			'deactivating' => __('Deactivating', 'onecom-wp'),
- 			'download' => __('Download', 'onecom-wp'),
- 			'downloading' => __('Downloading...', 'onecom-wp'),
- 			'learnMore' => __('Learn more', 'onecom-wp'),
- 			'all' => __('All', 'onecom-wp'),
- 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
- 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
- 			'moreDetails' => __('More details', 'onecom-wp'),
- 		),
- 		// Always send mixpanel config so it can be used when consent is granted dynamically
- 		'mixpanel' => [
- 			'token' => $mixpanel_token,
- 			'globalProperties' => $global_properties,
- 			'distinctId' => $distinct_id,
- 		],
- 	];
+		// Build base localized config
+		$localized_config = [
+			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+			'apiUrl'     => $this->config['api_url'],
+			'locale' => $locale,
+			'brand' => $this->config['brand'],
+			'useWPHandlers' => true,
+			'wpConfig' => [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
+			],
+			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
+			'assetsBaseUrl' => $base_url,
+			'wpVersion' => $wp_version,
+			'activePlugins' => $active_plugins,
+			'activeThemeAuthor' => $active_theme_author,
+			'data_consent_status' => $data_consent_status,
+			'labels' => [
+				'install' => __( 'Install', 'onecom-wp' ),
+				'installing' => __( 'Installing', 'onecom-wp' ),
+				'activate' => __( 'Activate', 'onecom-wp' ),
+				'deactivate' => __( 'Deactivate', 'onecom-wp' ),
+				'activating' => __( 'Activating', 'onecom-wp' ),
+				'deactivating' => __( 'Deactivating', 'onecom-wp' ),
+				'download' => __( 'Download', 'onecom-wp' ),
+				'downloading' => __( 'Downloading...', 'onecom-wp' ),
+				'learnMore' => __( 'Learn more', 'onecom-wp' ),
+				'all' => __( 'All', 'onecom-wp' ),
+				'recommendedPlugins' => __( 'Recommended plugins', 'onecom-wp' ),
+				'discouraged' => __( 'Discouraged plugins', 'onecom-wp' ),
+				'moreDetails' => __( 'More details', 'onecom-wp' ),
+			],
+			// Always send mixpanel config so it can be used when consent is granted dynamically
+			'mixpanel' => [
+				'token' => $mixpanel_token,
+				'globalProperties' => $global_properties,
+				'distinctId' => $distinct_id,
+			],
+		];
 
- 	// Localize JS with config
- 	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
+		// Localize JS with config
+		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
 
 		echo '<div id="marketplace-root" class="gv-activated"></div>';
 	}
@@ -510,24 +554,47 @@ class MarketplaceController {
 		return $token;
 	}
 
+	/**
+	 * Register REST API routes.
+	 */
 	public function register_rest_routes() {
-		register_rest_route( 'marketplace/v1', '/plugins', [
-			'methods'             => 'GET',
-			'callback'            => [ $this, 'get_plugins' ],
-			'permission_callback' => '__return_true',
-		] );
+		register_rest_route(
+			'marketplace/v1',
+			'/plugins',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_plugins' ],
+				'permission_callback' => '__return_true',
+			]
+		);
 
-		register_rest_route( 'marketplace/v1', '/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)', [
-			'methods'             => 'GET',
-			'callback'            => [ $this, 'check_plugin_activation' ],
-			'permission_callback' => '__return_true',
-		] );
+		register_rest_route(
+			'marketplace/v1',
+			'/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'check_plugin_activation' ],
+				'permission_callback' => '__return_true',
+			]
+		);
 	}
 
+	/**
+	 * Check if a plugin is activated.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The REST response object.
+	 */
 	public function check_plugin_activation( $request ) {
 		$slug = $request->get_param( 'slug' );
 		if ( empty( $slug ) ) {
-			return new WP_REST_Response( [ 'activated' => false, 'error' => 'Missing slug' ], 400 );
+			return new WP_REST_Response(
+				[
+					'activated' => false,
+					'error' => 'Missing slug',
+				],
+				400
+			);
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -535,13 +602,21 @@ class MarketplaceController {
 
 		$activated = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
 
-		return new WP_REST_Response( [
-			'slug'      => $slug,
-			'activated' => $activated,
-		], 200 );
+		return new WP_REST_Response(
+			[
+				'slug'      => $slug,
+				'activated' => $activated,
+			],
+			200
+		);
 	}
 
-
+	/**
+	 * Get plugins from the catalog.
+	 *
+	 * @param \WP_REST_Request $request The REST request object.
+	 * @return WP_REST_Response The REST response object.
+	 */
 	public function get_plugins( $request ) {
 
 		$brand_name = $this->config['brand'];
@@ -553,7 +628,7 @@ class MarketplaceController {
 			! empty( $marketplace_catalog['success'] ) &&
 			isset( $marketplace_catalog['data']['catalog'] ) &&
 			is_array( $marketplace_catalog['data']['catalog'] )
-		){
+		) {
 			error_log( 'Using cached marketplace catalog' );
 			$plugins = $marketplace_catalog;
 			$is_cached = true;
@@ -570,7 +645,7 @@ class MarketplaceController {
 				! empty( $plugins['success'] ) &&
 				isset( $plugins['data']['catalog'] ) &&
 				is_array( $plugins['data']['catalog'] )
-			){
+			) {
 				error_log( 'Caching marketplace catalog' );
 				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 			} else {
@@ -581,7 +656,7 @@ class MarketplaceController {
 		}
 
 		// Attach WP state (installed/activated) for both legacy and new shapes
-		$add_state = function( $plugin ) {
+		$add_state = function ( $plugin ) {
 			if ( empty( $plugin['slug'] ) ) {
 				return $plugin;
 			}
@@ -608,23 +683,23 @@ class MarketplaceController {
 				if ( empty( $section['items'] ) || ! is_array( $section['items'] ) ) {
 					continue;
 				}
-				$plugins['data']['sections'][$si]['items'] = array_map( $add_state, $section['items'] );
+				$plugins['data']['sections'][ $si ]['items'] = array_map( $add_state, $section['items'] );
 			}
 		} elseif ( ! empty( $plugins['sections'] ) && is_array( $plugins['sections'] ) ) {
 			foreach ( $plugins['sections'] as $si => $section ) {
 				if ( empty( $section['items'] ) || ! is_array( $section['items'] ) ) {
 					continue;
 				}
-				$plugins['sections'][$si]['items'] = array_map( $add_state, $section['items'] );
+				$plugins['sections'][ $si ]['items'] = array_map( $add_state, $section['items'] );
 			}
- 	} elseif ( ! empty( $plugins['data']['ui_json'] ) && is_array( $plugins['data']['ui_json'] ) ) {
- 		$plugins['data']['ui_json'] = array_map( $add_state, $plugins['data']['ui_json'] );
- 	}
+		} elseif ( ! empty( $plugins['data']['ui_json'] ) && is_array( $plugins['data']['ui_json'] ) ) {
+			$plugins['data']['ui_json'] = array_map( $add_state, $plugins['data']['ui_json'] );
+		}
 
- 	// Add is_cached flag to response
- 	$plugins['is_cached'] = $is_cached;
+		// Add is_cached flag to response
+		$plugins['is_cached'] = $is_cached;
 
- 	return new WP_REST_Response( $plugins, 200 );
+		return new WP_REST_Response( $plugins, 200 );
 	}
 
 	/**
@@ -634,9 +709,8 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'install_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
 		}
-
 
 		$slug        = sanitize_text_field( $_REQUEST['slug'] ?? '' );
 		$download_url = esc_url_raw( $_REQUEST['download_url'] ?? '' );
@@ -648,7 +722,7 @@ class MarketplaceController {
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
-		$result   = $upgrader->install( $download_url ); //  use URL from React
+		$result   = $upgrader->install( $download_url ); // use URL from React
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
@@ -664,11 +738,13 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
 		}
 
-		wp_send_json_success([
-			'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
-			'installed' => true,
-			'activated' => false,
-		]);
+		wp_send_json_success(
+			[
+				'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
+				'installed' => true,
+				'activated' => false,
+			]
+		);
 	}
 
 	/**
@@ -809,7 +885,7 @@ class MarketplaceController {
 	 * but installed as "seo-by-rank-math-pro/rank-math-pro.php"), the function will scan installed
 	 * plugins to find matches based on the main plugin file name.
 	 *
-	 * @param string $slug
+	 * @param string $slug The plugin slug.
 	 * @return string Plugin file path relative to plugins dir, or empty string if not found.
 	 */
 	private function resolve_plugin_file_by_slug( $slug ): string {
@@ -825,7 +901,7 @@ class MarketplaceController {
 			if ( isset( $plugins[ $slug ] ) ) {
 				return $slug;
 			}
-			// Also try trimming any leading slashes just in case
+			// Also try trimming any leading slashes just in case.
 			$trimmed = ltrim( $slug, '/' );
 			if ( isset( $plugins[ $trimmed ] ) ) {
 				return $trimmed;
@@ -839,27 +915,27 @@ class MarketplaceController {
 			}
 		}
 
-		// Fallback: scan installed plugins for partial matches
+		// Fallback: scan installed plugins for partial matches.
 		// This handles cases like:
-		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
+		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name).
 		foreach ( $plugins as $file => $data ) {
 			$parts = explode( '/', $file );
 			if ( count( $parts ) === 2 ) {
 				$directory = $parts[0];
 				$main_file = $parts[1];
 
-				// Check if directory exactly matches the slug
+				// Check if directory exactly matches the slug.
 				if ( $directory === $slug ) {
 					return $file;
 				}
 
-				// Check if the main plugin file name matches the slug
+				// Check if the main plugin file name matches the slug.
 				$file_slug = str_replace( '.php', '', $main_file );
 				if ( $file_slug === $slug ) {
 					return $file;
 				}
 			} elseif ( count( $parts ) === 1 ) {
-				// Single file plugin
+				// Single file plugin.
 				$file_slug = str_replace( '.php', '', $parts[0] );
 				if ( $file_slug === $slug ) {
 					return $file;
@@ -870,6 +946,9 @@ class MarketplaceController {
 		return '';
 	}
 
+	/**
+	 * Activate plugin via AJAX.
+	 */
 	public function ajax_activate_plugin() {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			wp_send_json_error( [ 'message' => __( 'You do not have permission to activate plugins.', 'text-domain' ) ] );
@@ -883,12 +962,12 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Missing plugin slug.', 'text-domain' ) ] );
 		}
 
-		// Check if plugin is installed first
+		// Check if plugin is installed first.
 		if ( ! $this->is_installed( $slug ) ) {
 			wp_send_json_error( [ 'message' => __( 'Plugin not installed.', 'text-domain' ) ] );
 		}
 
-		// Resolve the plugin file using the enhanced helper function
+		// Resolve the plugin file using the enhanced helper function.
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
 
@@ -897,7 +976,7 @@ class MarketplaceController {
 		}
 
 		if ( $plugin_file === 'seo-by-rank-math-pro/rank-math-pro.php' ) {
-			// Also activate the Free version if it's installed and not active
+			// Also activate the Free version if it's installed and not active.
 			$free_plugin_file = 'seo-by-rank-math/rank-math.php';
 			if ( $this->is_installed( 'seo-by-rank-math' ) && ! is_plugin_active( $free_plugin_file ) ) {
 				activate_plugin( $free_plugin_file );
@@ -910,28 +989,33 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
 
-		wp_send_json_success( [
-			'installed' => true,
-			'activated' => true,
-			'message'   => __( 'Plugin activated successfully.', 'text-domain' ),
-		] );
+		wp_send_json_success(
+			[
+				'installed' => true,
+				'activated' => true,
+				'message'   => __( 'Plugin activated successfully.', 'text-domain' ),
+			]
+		);
 	}
 
+	/**
+	 * Deactivate plugin via AJAX.
+	 */
 	public function ajax_deactivate_plugin() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'activate_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
 		if ( empty( $slug ) ) {
-			wp_send_json_error([ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ]);
+			wp_send_json_error( [ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ] );
 		}
 
 		// Check if plugin is installed first
 		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error([ 'message' => __( 'Plugin not installed', 'onecom-wp' ) ]);
+			wp_send_json_error( [ 'message' => __( 'Plugin not installed', 'onecom-wp' ) ] );
 		}
 
 		// Resolve the plugin file using the enhanced helper function
@@ -946,7 +1030,7 @@ class MarketplaceController {
 		}
 
 		if ( empty( $plugin_file ) ) {
-			wp_send_json_error([ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ]);
+			wp_send_json_error( [ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ] );
 		}
 
 		// Ensure the plugin is loaded so its deactivation hooks are registered.
@@ -958,14 +1042,16 @@ class MarketplaceController {
 		deactivate_plugins( $plugin_file, false, null );
 
 		if ( is_plugin_active( $plugin_file ) ) {
-			wp_send_json_error([ 'message' => __( 'Failed to deactivate plugin', 'onecom-wp' ) ]);
+			wp_send_json_error( [ 'message' => __( 'Failed to deactivate plugin', 'onecom-wp' ) ] );
 		}
 
-		wp_send_json_success([
-			'message'   => __( 'Plugin deactivated successfully', 'onecom-wp' ),
-			'installed' => true,
-			'activated' => false,
-		]);
+		wp_send_json_success(
+			[
+				'message'   => __( 'Plugin deactivated successfully', 'onecom-wp' ),
+				'installed' => true,
+				'activated' => false,
+			]
+		);
 	}
 
 	public function ajax_delete_plugin() {
@@ -1011,24 +1097,26 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Failed to delete plugin', 'onecom-wp' ) ] );
 		}
 
-		wp_send_json_success( [
-			'message'   => __( 'Plugin deleted successfully', 'onecom-wp' ),
-			'installed' => false,
-			'activated' => false,
-		] );
+		wp_send_json_success(
+			[
+				'message'   => __( 'Plugin deleted successfully', 'onecom-wp' ),
+				'installed' => false,
+				'activated' => false,
+			]
+		);
 	}
 
 	/**
 	 * Resets the transient on core update.
+	 *
 	 * @param $upgrader
 	 * @param $hook_extra
 	 * @return void
 	 */
-	public function reset_transient_on_core_update($upgrader, $hook_extra): void
-	{
+	public function reset_transient_on_core_update( $upgrader, $hook_extra ): void {
 		if (
 			empty( $hook_extra['action'] ) || 'update' !== $hook_extra['action'] ||
-			empty( $hook_extra['type'] )   || 'core' !== $hook_extra['type']
+			empty( $hook_extra['type'] ) || 'core' !== $hook_extra['type']
 		) {
 			return;
 		}
@@ -1047,7 +1135,7 @@ class MarketplaceController {
 	 *
 	 * @return void
 	 */
-	public function reset_transient_on_locale_change(){
+	public function reset_transient_on_locale_change() {
 		$brand_name = $this->config['brand'];
 		$transient_name = "{$brand_name}_marketplace_catalog";
 		$deleted = delete_site_transient( $transient_name );
