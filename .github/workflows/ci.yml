@@ -79,6 +79,10 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      - name: Verify @dogado/gravity installation
+        working-directory: frontend
+        run: npm list @dogado/gravity
+
       - name: Run ESLint
         working-directory: frontend
         run: npm run lint
