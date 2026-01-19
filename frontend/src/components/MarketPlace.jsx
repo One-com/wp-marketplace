@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { normalizePlugins } from './normalised-plugins';
-import '@group.one/gravity';
+import '@dogado/gravity';
 import { useTranslation } from 'react-i18next';
 import ProductDetail from './ProductDetail';
 import ProductDetailRankMath from './ProductDetailRankMath';

@@ -5,7 +5,7 @@ import ProductDetail from './ProductDetail';
 import ProductDetailRankMath from './ProductDetailRankMath';
 import ErrorToast from './ErrorToast';
 import SuccessToast from './SuccessToast';
-import '@group.one/gravity';
+import '@dogado/gravity';
 import ErrorState from './ErrorState';
 import WpVersionErrorState from './WpVersionErrorState';
 import { trackButtonClick, trackPageView, trackPluginDetailVisit } from '../utils/mixpanelTracking';
