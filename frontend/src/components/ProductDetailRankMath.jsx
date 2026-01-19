@@ -206,7 +206,7 @@ export default function ProductDetailRankMath({
       },
       {
         threshold: [0, 1],
-        rootMargin: '0px'
+        rootMargin: '0px',
       }
     );
 
@@ -231,7 +231,7 @@ export default function ProductDetailRankMath({
       },
       {
         threshold: [0],
-        rootMargin: '-100px 0px 0px 0px'
+        rootMargin: '-100px 0px 0px 0px',
       }
     );
 
@@ -431,7 +431,7 @@ export default function ProductDetailRankMath({
     const slideWidth = tableSlider.offsetWidth;
     tableSlider.scrollTo({
       left: tableSlider.scrollLeft - slideWidth,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
@@ -442,7 +442,7 @@ export default function ProductDetailRankMath({
     const slideWidth = tableSlider.offsetWidth;
     tableSlider.scrollTo({
       left: tableSlider.scrollLeft + slideWidth,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
@@ -454,7 +454,7 @@ export default function ProductDetailRankMath({
     const slideWidth = tableSlider.offsetWidth;
     tableSlider.scrollTo({
       left: slideWidth * slideIndex,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
