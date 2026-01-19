@@ -199,7 +199,16 @@ export default function Marketplace() {
     }
 
     fetchPlugins();
-  }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
+  }, [
+    apiBaseUrl,
+    isOnecomBrand,
+    fetchSubscriptionStatus,
+    setPlugins,
+    isSpecialPlugin,
+    setCatalogError,
+    setCatalogLoading,
+    setUiI18n
+  ]);
 
   // Use useMemo to filter plugins based on rules and activation status
   const visiblePlugins = React.useMemo(() => {

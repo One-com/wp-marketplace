@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // React 17 or unsupported version
       // For unsupported versions, AddonsApp will still render and show WpVersionErrorState
       // We just need to use the compatible render method
+      /* eslint-disable-next-line react/no-deprecated */
       ReactDOM.render(<AddonsApp {...config} />, el);
     }
   }

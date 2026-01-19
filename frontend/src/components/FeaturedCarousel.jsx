@@ -356,7 +356,7 @@ export default function FeaturedCarousel({ loading = false }) {
                       <img
                         src={mainImage}
                         srcSet={`${mainImage} 1x, ${mainImage} 2x`}
-                        alt={`${title} image`}
+                        alt={title}
                       />
                     </picture>
                   </div>

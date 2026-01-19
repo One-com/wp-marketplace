@@ -58,10 +58,10 @@ export const MarketplaceProvider = ({
   const isOnecomBrand = brand === 'onecom';
 
   // Get active plugin slugs from WordPress config
-  const activePlugins =
+  const activePlugins = React.useMemo(() => 
     typeof window !== 'undefined' && window.marketplaceConfig?.activePlugins
       ? window.marketplaceConfig.activePlugins
-      : [];
+      : [], []);
 
   // Get active theme author from WordPress config
   const activeThemeAuthor =
@@ -164,9 +164,13 @@ export const MarketplaceProvider = ({
       window.removeEventListener('onConsentStatusChanged', handleConsentChange);
       window.removeEventListener('storage', handleStorageChange);
     };
-  }, []); // Empty dependency array - only run on mount/unmount
+  }, [consentStatus]); // Re-run if consentStatus changes to properly update listeners
 
   // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
+  const isSpecialPlugin = useCallback((pluginSlug) => {
+    return pluginSlug === 'wp-rocket' || pluginSlug === 'seo-by-rank-math-pro';
+  }, []);
+
   const fetchSubscriptionStatus = useCallback(
     async (pluginSlug) => {
       if (!isOnecomBrand) return;
@@ -204,21 +208,8 @@ export const MarketplaceProvider = ({
         setIsCheckingSubscription((prev) => ({ ...prev, [pluginSlug]: false }));
       }
     },
-    [isOnecomBrand]
+    [isOnecomBrand, isSpecialPlugin]
   );
-
-  // Function to cancel scheduled reload (called when user clicks "Get Started")
-  const cancelReload = useCallback(() => {
-    if (reloadTimeoutRef.current) {
-      clearTimeout(reloadTimeoutRef.current);
-      reloadTimeoutRef.current = null;
-    }
-    sessionStorage.removeItem('mp_success_notice');
-  }, []);
-
-  const isSpecialPlugin = useCallback((pluginSlug) => {
-    return pluginSlug === 'wp-rocket' || pluginSlug === 'seo-by-rank-math-pro';
-  }, []);
 
   const isWpVersionSupported = useCallback(
     (minVersion) => {
@@ -557,7 +548,7 @@ export const MarketplaceProvider = ({
               setLoadingPlugin('');
             }
 
-            return; // Skip finally block (though finally will still execute, actionSuccessful flag prevents clearing)
+             // Skip finally block (though finally will still execute, actionSuccessful flag prevents clearing)
           } else if (action === 'deactivate' && !result.data.activated) {
             actionSuccessful = true; // Mark action as successful to prevent finally block from clearing pluginInAction
             setSuccessState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
@@ -584,7 +575,7 @@ export const MarketplaceProvider = ({
             // Clear loading state only
             setLoadingAction('');
             setLoadingPlugin('');
-            return;
+            
           }
         } else {
           // Show error toast for activation and installation errors
@@ -692,6 +683,14 @@ export const MarketplaceProvider = ({
     },
     [apiBaseUrl, useWPHandlers, wpConfig, uiI18n]
   );
+
+  const cancelReload = useCallback(() => {
+    if (reloadTimeoutRef.current) {
+      clearTimeout(reloadTimeoutRef.current);
+      reloadTimeoutRef.current = null;
+    }
+    sessionStorage.removeItem('mp_success_notice');
+  }, []);
 
   const value = {
     apiBaseUrl,

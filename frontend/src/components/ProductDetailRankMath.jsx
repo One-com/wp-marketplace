@@ -129,88 +129,6 @@ export default function ProductDetailRankMath({
     return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
   }
 
-  // If not loading and plugin is null, return null
-  if (!plugin) return null;
-
-  // Refs for slider elements
-  const tableSliderRef = useRef(null);
-  const sliderNavRef = useRef(null);
-  const tableRef = useRef(null);
-  const tableHeaderRef = useRef(null);
-  const paginationRef = useRef(null);
-  const dotsRef = useRef([]);
-
-  // State for active slide
-  const [activeSlide, setActiveSlide] = useState(0);
-
-  // Scroll to top when component mounts or plugin changes
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [plugin]);
-
-  // Clear banners when component mounts (handles case when user returns via browser back button)
-  useEffect(() => {
-    // Clear any existing banners when ProductDetail mounts
-    // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
-    setNoticeState((prev) =>
-      prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
-        ? prev
-        : { visible: false, type: null, pluginSlug: null }
-    );
-    setErrorState((prev) =>
-      prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
-        ? prev
-        : { visible: false, type: null, pluginSlug: null }
-    );
-  }, [freePlugin?.slug, proPlugin?.slug, setNoticeState, setErrorState]);
-
-  // Hide banners when user navigates back and returns to the product detail page
-  useEffect(() => {
-    const handlePopState = () => {
-      // Clear notice and error state when navigating via browser back/forward
-      setNoticeState({ visible: false, type: null, pluginSlug: null });
-      setErrorState({ visible: false, type: null, pluginSlug: null });
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, [setNoticeState, setErrorState]);
-
-  // Navigation button click handlers
-  const handlePrevClick = () => {
-    const tableSlider = tableSliderRef.current;
-    if (!tableSlider) return;
-
-    const slideWidth = tableSlider.offsetWidth;
-    tableSlider.scrollTo({
-      left: tableSlider.scrollLeft - slideWidth,
-      behavior: 'smooth'
-    });
-  };
-
-  const handleNextClick = () => {
-    const tableSlider = tableSliderRef.current;
-    if (!tableSlider) return;
-
-    const slideWidth = tableSlider.offsetWidth;
-    tableSlider.scrollTo({
-      left: tableSlider.scrollLeft + slideWidth,
-      behavior: 'smooth'
-    });
-  };
-
-  // Dot click handler
-  const handleDotClick = (slideIndex) => {
-    const tableSlider = tableSliderRef.current;
-    if (!tableSlider) return;
-
-    const slideWidth = tableSlider.offsetWidth;
-    tableSlider.scrollTo({
-      left: slideWidth * slideIndex,
-      behavior: 'smooth'
-    });
-  };
-
   // Slider functionality
   useEffect(() => {
     const tableSlider = tableSliderRef.current;
@@ -452,6 +370,92 @@ export default function ProductDetailRankMath({
     };
   }, []);
 
+  // If not loading and plugin is null, return null
+  if (!plugin) return null;
+
+  // Refs for slider elements
+  const tableSliderRef = useRef(null);
+  const sliderNavRef = useRef(null);
+  const tableRef = useRef(null);
+  const tableHeaderRef = useRef(null);
+  const paginationRef = useRef(null);
+  const dotsRef = useRef([]);
+
+  // State for active slide
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  // Scroll to top when component mounts or plugin changes
+  useEffect(() => {
+    if (plugin) {
+      window.scrollTo(0, 0);
+    }
+  }, [plugin]);
+
+  // Clear banners when component mounts (handles case when user returns via browser back button)
+  useEffect(() => {
+    if (freePlugin || proPlugin) {
+      // Clear any existing banners when ProductDetail mounts
+      // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
+      setNoticeState((prev) =>
+        (prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
+          ? prev
+          : { visible: false, type: null, pluginSlug: null })
+      );
+      setErrorState((prev) =>
+        (prev.visible && (prev.pluginSlug === freePlugin?.slug || prev.pluginSlug === proPlugin?.slug)
+          ? prev
+          : { visible: false, type: null, pluginSlug: null })
+      );
+    }
+  }, [freePlugin, proPlugin, setNoticeState, setErrorState]);
+
+  // Hide banners when user navigates back and returns to the product detail page
+  useEffect(() => {
+    const handlePopState = () => {
+      // Clear notice and error state when navigating via browser back/forward
+      setNoticeState({ visible: false, type: null, pluginSlug: null });
+      setErrorState({ visible: false, type: null, pluginSlug: null });
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [setNoticeState, setErrorState]);
+
+  // Navigation button click handlers
+  const handlePrevClick = () => {
+    const tableSlider = tableSliderRef.current;
+    if (!tableSlider) return;
+
+    const slideWidth = tableSlider.offsetWidth;
+    tableSlider.scrollTo({
+      left: tableSlider.scrollLeft - slideWidth,
+      behavior: 'smooth'
+    });
+  };
+
+  const handleNextClick = () => {
+    const tableSlider = tableSliderRef.current;
+    if (!tableSlider) return;
+
+    const slideWidth = tableSlider.offsetWidth;
+    tableSlider.scrollTo({
+      left: tableSlider.scrollLeft + slideWidth,
+      behavior: 'smooth'
+    });
+  };
+
+  // Dot click handler
+  const handleDotClick = (slideIndex) => {
+    const tableSlider = tableSliderRef.current;
+    if (!tableSlider) return;
+
+    const slideWidth = tableSlider.offsetWidth;
+    tableSlider.scrollTo({
+      left: slideWidth * slideIndex,
+      behavior: 'smooth'
+    });
+  };
+
   // Use the clicked plugin for header/main content, but always use freePlugin for first column
   const imageURL =
     (typeof window.onecomWpVars !== 'undefined' && window.onecomWpVars?.imageURL) || assetBase;
@@ -529,8 +533,8 @@ export default function ProductDetailRankMath({
     <div className="gv-surface-dim">
       <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid gv-p-0">
         <nav className="gv-breadcrumbs gv-area-nav">
-          <a
-            href="#"
+          <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               // Disable back navigation when plugin is being activated and reload is pending
@@ -552,19 +556,18 @@ export default function ProductDetailRankMath({
                 onClose();
               }
             }}
-            className="gv-flex gv-items-center gv-gap-xs"
-            role="button"
+            className="gv-reset-button gv-flex gv-items-center gv-gap-xs"
             aria-label="Go back"
             style={{
               opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
               pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
               cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
             }}
-            aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
+            disabled={pluginInAction[plugin.slug]}
           >
             <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
             <span>{uiI18n.backButton}</span>
-          </a>
+          </button>
           <SuccessNotice
             plugin={noticeState?.pluginSlug === proPlugin?.slug ? proPlugin : freePlugin}
           />
@@ -583,7 +586,7 @@ export default function ProductDetailRankMath({
               <img
                 src={mainImage}
                 srcSet={`${mainImage} 2x, ${mainImage} 1x`}
-                alt="Product image"
+                alt="Rank Math"
               />
             </picture>
           </div>
@@ -710,15 +713,15 @@ export default function ProductDetailRankMath({
             <div className="gv-slider-pagination gv-state-top" ref={paginationRef}>
               <div className="gv-dots" role="tablist">
                 {[0, 1].map((slideIndex) => (
-                  <span
+                  <button
+                    type="button"
                     key={slideIndex}
-                    className={`gv-dot ${activeSlide === slideIndex ? 'gv-active' : ''}`}
+                    className={`gv-reset-button gv-dot ${activeSlide === slideIndex ? 'gv-active' : ''}`}
                     role="tab"
                     aria-selected={activeSlide === slideIndex ? 'true' : 'false'}
                     aria-label={`Go to slide ${slideIndex + 1}`}
                     onClick={() => handleDotClick(slideIndex)}
-                    style={{ cursor: 'pointer' }}
-                  ></span>
+                  ></button>
                 ))}
               </div>
             </div>

@@ -7,6 +7,10 @@ export default function ErrorToast({ plugin: propPlugin }) {
   const plugin = propPlugin || plugins.find((p) => p.slug === errorState.pluginSlug);
   const isVisible = errorState && errorState.visible && errorState.pluginSlug === plugin?.slug;
 
+  const handleClose = React.useCallback(() => {
+    setErrorState({ visible: false, type: null, pluginSlug: null });
+  }, [setErrorState]);
+
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
@@ -15,21 +19,7 @@ export default function ErrorToast({ plugin: propPlugin }) {
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible]);
-
-  if (!isVisible) {
-    return null;
-  }
-
-  const assetBase =
-    assetsBaseUrl ||
-    (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
-    '';
-  const iconBase = assetBase ? `${assetBase}assets/` : '';
-
-  const handleClose = () => {
-    setErrorState({ visible: false, type: null, pluginSlug: null });
-  };
+  }, [isVisible, handleClose]);
 
   const isActivateError = errorState.type === 'activate';
   const isDeactivateError = errorState.type === 'deactivate';
@@ -43,6 +33,12 @@ export default function ErrorToast({ plugin: propPlugin }) {
   };
 
   const pluginName = plugin?.name || '';
+
+  const assetBase =
+    assetsBaseUrl ||
+    (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
+    '';
+  const iconBase = assetBase ? `${assetBase}assets/` : '';
 
   return (
     <div className="gv-toast-container">

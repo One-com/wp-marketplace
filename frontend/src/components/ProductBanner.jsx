@@ -53,7 +53,7 @@ const ProductBanner = ({ loading = false }) => {
           <div className="gv-image">
             <picture>
               <source media="(min-width: 600px)" srcSet={rightBannerUrl} />
-              <img src={rightBannerUrl} alt="Product image" />
+              <img src={rightBannerUrl} alt="Right banner" />
             </picture>
           </div>
         )}

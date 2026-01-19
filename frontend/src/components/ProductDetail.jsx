@@ -135,28 +135,29 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     return usePortal ? createPortal(skeletonContent, document.body) : skeletonContent;
   }
 
-  // If not loading and plugin is null, return null
-  if (!plugin) return null;
-
   // Scroll to top when component mounts or plugin changes
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (plugin) {
+      window.scrollTo(0, 0);
+    }
   }, [plugin]);
 
   // Clear banners when component mounts (handles case when user returns via browser back button)
   useEffect(() => {
-    // Clear any existing banners when ProductDetail mounts
-    // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
-    setNoticeState((prev) =>
-      prev.visible && prev.pluginSlug === plugin.slug
-        ? prev
-        : { visible: false, type: null, pluginSlug: null }
-    );
-    setErrorState((prev) =>
-      prev.visible && prev.pluginSlug === plugin.slug
-        ? prev
-        : { visible: false, type: null, pluginSlug: null }
-    );
+    if (plugin) {
+      // Clear any existing banners when ProductDetail mounts
+      // BUT don't clear them if they are for the current plugin (e.g. just activated and reloaded)
+      setNoticeState((prev) =>
+        (prev.visible && prev.pluginSlug === plugin.slug
+          ? prev
+          : { visible: false, type: null, pluginSlug: null })
+      );
+      setErrorState((prev) =>
+        (prev.visible && prev.pluginSlug === plugin.slug
+          ? prev
+          : { visible: false, type: null, pluginSlug: null })
+      );
+    }
   }, [plugin.slug, setNoticeState, setErrorState]);
 
   // Hide banners when user navigates back and returns to the product detail page
@@ -170,6 +171,9 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [setNoticeState, setErrorState]);
+
+  // If not loading and plugin is null, return null
+  if (!plugin) return null;
 
   const imageURL =
     (typeof window.onecomWpVars !== 'undefined' && window.onecomWpVars?.imageURL) || assetBase;
@@ -251,8 +255,8 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
     <div className={usePortal ? 'gv-surface-dim' : 'gv-surface-dim'}>
       <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
         <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
-          <a
-            href="#"
+          <button
+            type="button"
             onClick={(e) => {
               e.preventDefault();
               // Disable back navigation when plugin is being activated and reload is pending
@@ -274,24 +278,23 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
                 onClose();
               }
             }}
-            className="gv-flex gv-items-center gv-gap-xs"
-            role="button"
+            className="gv-reset-button gv-flex gv-items-center gv-gap-xs"
             aria-label="Go back"
             style={{
               opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
               pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
               cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
             }}
-            aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
+            disabled={pluginInAction[plugin.slug]}
           >
             <img
               style={{ minWidth: '24px' }}
               className="gv-tile"
               src={`${iconBase}arrow_back.svg`}
-              alt="Back to plugins"
+              alt="Back"
             />
             <span>{uiI18n.backButton}</span>
-          </a>
+          </button>
           <SuccessNotice plugin={plugin} />
           <ErrorToast plugin={plugin} />
         </nav>
@@ -312,7 +315,7 @@ export default function ProductDetail({ plugin, onClose, usePortal = true, loadi
               <img
                 src={mainImage}
                 srcSet={`${mainImage} 1x, ${mainImage} 2x`}
-                alt={`${title} image`}
+                alt={title}
               />
             </picture>
           </div>

@@ -8,6 +8,10 @@ export default function SuccessToast({ plugin: propPlugin }) {
   const isVisible =
     successState && successState.visible && successState.pluginSlug === plugin?.slug;
 
+  const handleClose = React.useCallback(() => {
+    setSuccessState({ visible: false, type: null, pluginSlug: null });
+  }, [setSuccessState]);
+
   useEffect(() => {
     if (isVisible) {
       const timer = setTimeout(() => {
@@ -16,21 +20,7 @@ export default function SuccessToast({ plugin: propPlugin }) {
 
       return () => clearTimeout(timer);
     }
-  }, [isVisible]);
-
-  if (!isVisible) {
-    return null;
-  }
-
-  const assetBase =
-    assetsBaseUrl ||
-    (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
-    '';
-  const iconBase = assetBase ? `${assetBase}assets/` : '';
-
-  const handleClose = () => {
-    setSuccessState({ visible: false, type: null, pluginSlug: null });
-  };
+  }, [isVisible, handleClose]);
 
   const isActivated = successState.type === 'activate';
   const isDeactivated = successState.type === 'deactivate';
@@ -43,6 +33,12 @@ export default function SuccessToast({ plugin: propPlugin }) {
   };
 
   const pluginName = plugin?.name || '';
+
+  const assetBase =
+    assetsBaseUrl ||
+    (typeof window.marketplaceConfig !== 'undefined' && window.marketplaceConfig?.assetsBaseUrl) ||
+    '';
+  const iconBase = assetBase ? `${assetBase}assets/` : '';
 
   return (
     <div className="gv-toast-container">

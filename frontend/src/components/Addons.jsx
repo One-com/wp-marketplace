@@ -206,7 +206,17 @@ export default function Addons() {
       .finally(() => {
         setCatalogLoading(false);
       });
-  }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin]);
+  }, [
+    apiBaseUrl,
+    setPlugins,
+    setUiI18n,
+    setCatalogError,
+    setCatalogLoading,
+    shouldShowPlugin,
+    fetchSubscriptionStatus,
+    isOnecomBrand,
+    isSpecialPlugin
+  ]);
 
   // After plugins load, select plugin from query if present
   useEffect(() => {
@@ -557,21 +567,28 @@ export default function Addons() {
                       </td>
                       <td>
                         {isProvisionable ? (
-                          <a href="#" className="gv-action" onClick={handleProvisionClick}>
+                          <button
+                            type="button"
+                            className="gv-reset-button gv-action"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleProvisionClick(e);
+                            }}
+                          >
                             {uiI18n?.installAndActivate || 'Install and activate'}
-                          </a>
+                          </button>
                         ) : (
                           !plugin.activated && (
-                            <a
-                              href="#"
-                              className="gv-action"
+                            <button
+                              type="button"
+                              className="gv-reset-button gv-action"
                               onClick={(e) => {
                                 e.preventDefault();
                                 handlePluginAction('activate', plugin, 'addons');
                               }}
                             >
                               {uiI18n?.activateButton || 'Activate'}
-                            </a>
+                            </button>
                           )
                         )}
                       </td>
@@ -612,9 +629,9 @@ export default function Addons() {
                                 <ul>
                                   {plugin.activated && (
                                     <li className="gv-mb-0">
-                                      <a
-                                        href="#"
-                                        className="gv-menu-item"
+                                      <button
+                                        type="button"
+                                        className="gv-reset-button gv-menu-item"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           setOpenMenuIndex(null);
@@ -626,14 +643,14 @@ export default function Addons() {
                                           src={`${iconBase}settings.svg`}
                                         ></gv-icon>
                                         <span>{uiI18n?.labels?.manage || 'Manage'}</span>
-                                      </a>
+                                      </button>
                                     </li>
                                   )}
                                   {plugin.activated && (
                                     <li className="gv-mb-0">
-                                      <a
-                                        href="#"
-                                        className="gv-menu-item"
+                                      <button
+                                        type="button"
+                                        className="gv-reset-button gv-menu-item"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           setOpenMenuIndex(null);
@@ -645,14 +662,14 @@ export default function Addons() {
                                           src={`${iconBase}cancel.svg`}
                                         ></gv-icon>
                                         <span>{uiI18n?.deactivate || 'Deactivate'}</span>
-                                      </a>
+                                      </button>
                                     </li>
                                   )}
                                   <li className="gv-mb-0">
                                     {!plugin.activated && plugin.installed && (
-                                      <a
-                                        href="#"
-                                        className="gv-menu-item"
+                                      <button
+                                        type="button"
+                                        className="gv-reset-button gv-menu-item"
                                         onClick={(e) => {
                                           e.preventDefault();
                                           setOpenMenuIndex(null);
@@ -664,7 +681,7 @@ export default function Addons() {
                                           src={`${iconBase}cancel.svg`}
                                         ></gv-icon>
                                         <span>{uiI18n?.deleteButton || 'Delete'}</span>
-                                      </a>
+                                      </button>
                                     )}
                                   </li>
                                 </ul>
