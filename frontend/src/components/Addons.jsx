@@ -398,21 +398,21 @@ export default function Addons() {
 
                       return (
                         <div key={plugin.slug}
-                             className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius">
+                             className="gv-card gv-gap-md gv-content-container gv-p-lg gv-grid gv-grid-cols-12 gv-radius ocmp-plugin-cards">
                           <div className="gv-desk-span-2 gv-span-3 gv-tab-span-3">
                             <img
                               className="gv-icon-tile"
                               src={plugin.iconUrl || `${iconBase}add_box.svg`}
                               alt={plugin.name}
-                              style={{maxwidth: "auto"}}
                             />
                           </div>
                           <div className="gv-desk-span-8 gv-tab-span-7 gv-span-7">
-                            <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
-                            <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm">
-                              {plugin.i18n.listingDescription || plugin.i18n.subtitle}
-                            </p>
-                            <span className="gv-caption-lg gv-text-bold">
+                            <div className="gv-flex gv-flex-col gv-justify-between gv-h-full">
+                              <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
+                              <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm gv-flex-1">
+                                {plugin.i18n.listingDescription || plugin.i18n.subtitle}
+                              </p>
+                              <span className="gv-caption-lg gv-text-bold">
                                   <>
                                       {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
                                         ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
@@ -423,7 +423,8 @@ export default function Addons() {
                                         price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
                                         <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                   </>
-                            </span>
+                              </span>
+                            </div>
                           </div>
                           <div className="gv-span-2 gv-content-center gv-text-right">
                             <a
