@@ -1,0 +1,176 @@
+# An .aiignore file follows the same syntax as a .gitignore file.
+# .gitignore documentation: https://git-scm.com/docs/gitignore
+
+# Secrets and environment
+.env
+.env.*
+.envrc
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cert
+*.der
+*.pub
+*.gpg
+*.asc
+*_credentials.*
+*credentials*.json
+secrets.*
+secret.*
+id_rsa*
+id_dsa*
+ssh_config
+.gnupg/
+
+# Brand- and env-specific configs
+envs/
+config/
+config/*.local.*
+*.local.*
+*.dev.*
+*.prod.*
+*.staging.*
+
+
+# Node.js
+node_modules/
+npm-debug.log*
+package-lock.json
+.pnpm-store/
+.pnp.*
+.yarn/*
+.yarn-cache/
+.yarnrc*
+.yarn/*
+.cache/
+.npm/
+.nvmrc
+
+# Logs and runtime artifacts
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+.cache/
+coverage/
+.nyc_output/
+dist/
+build/
+out/
+.tsbuildinfo
+
+# Bundled/static artifacts
+public/
+dashboard/
+static/
+assets/build/
+*.min.js
+*.map
+
+# Test outputs
+junit.xml
+test-results/
+reports/
+coverage-final.json
+lcov.info
+
+# IDE/editor configs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# OS / tooling
+*.bak
+*.tmp
+*.orig
+*.patch
+*.tar
+*.tar.*
+*.zip
+*.7z
+*.gz
+*.bz2
+
+# PHP / Composer
+vendor/
+composer.lock
+phpunit.xml
+phpunit.xml.dist
+.cache/phpunit/*
+.phpunit.result.cache
+
+# WordPress-specific
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+wp-content/upgrade/
+wp-content/backups-*/
+wp-content/advanced-cache.php
+wp-content/object-cache.php
+wp-content/debug.log
+
+# Docker / containers
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+.docker/
+docker/
+compose/
+*.env.docker
+.env.docker*
+
+# CI/CD tokens and artifacts
+.github/
+.gitlab/
+.gitlab-ci.yml
+.github/workflows/
+*.pem.enc
+*.secret
+*.token
+*.vault
+*.vault.json
+
+# Sentry / telemetry
+.sentryclirc
+.sentry-*
+.sentry/*
+
+# Swagger/OpenAPI generated artifacts
+swagger-definitions/*.yml
+swagger-definitions/**/*.yml
+
+# Database dumps
+*.sql
+*.sqlite
+*.sqlite3
+dump/
+backups/
+
+# Screenshots and media
+screenshot-service/**/*.png
+screenshot-service/**/*.jpg
+screenshot-service/**/*.jpeg
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.mp4
+*.mov
+
+# Project-specific services
+plugin-provisioner-service/.env*
+screenshot-service/.env*
+wp-cloud-migrator/.env*
+wp-migrator/.env*
+wp-update-manager/.env*

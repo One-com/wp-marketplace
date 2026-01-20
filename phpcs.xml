@@ -18,9 +18,8 @@
 
     <!-- Use PSR-4 naming conventions for classes -->
     <rule ref="WordPress.Files.FileName">
-        <properties>
-            <property name="strict_class_file_names" value="false"/>
-        </properties>
+        <exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+        <exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
     </rule>
 
     <!-- Check for PHP cross-version compatibility -->
@@ -28,6 +27,35 @@
 
     <!-- Allow short array syntax [] instead of array() -->
     <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+
+    <!-- Disable some annoying documentation rules -->
+    <rule ref="WordPress.PHP.YodaConditions.NotYoda">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Universal.Operators.DisallowShortTernary.Found">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.FunctionComment.MissingParamTag">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.FunctionComment.Missing">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.VariableComment.Missing">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.InlineComment.InvalidEndChar">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.FunctionComment.MissingParamType">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.ClassComment.Missing">
+        <severity>0</severity>
+    </rule>
+    <rule ref="Squiz.Commenting.FileComment.Missing">
+        <severity>0</severity>
+    </rule>
 
     <!-- Show progress and use colors -->
     <arg value="ps"/>
