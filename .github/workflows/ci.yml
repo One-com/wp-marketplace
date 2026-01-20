@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        php-version: ['7.4', '8.0', '8.1', '8.2', '8.3']
+        php-version: ['8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout code
@@ -46,7 +46,7 @@ jobs:
       - name: Install PHPCS and WordPress Coding Standards
         run: |
           composer require --dev squizlabs/php_codesniffer wp-coding-standards/wpcs --no-interaction
-          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs
+          vendor/bin/phpcs --config-set installed_paths vendor/wp-coding-standards/wpcs,vendor/phpcsstandards/phpcsutils,vendor/phpcsstandards/phpcsextra
 
       - name: Run PHPCS
         run: vendor/bin/phpcs
@@ -72,13 +72,16 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Verify @dogado/gravity installation
+        working-directory: frontend
+        run: npm list @dogado/gravity
 
       - name: Run ESLint
         working-directory: frontend
@@ -123,9 +126,8 @@ jobs:
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies
         working-directory: frontend
@@ -169,12 +171,12 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
 
+
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies
         run: |
@@ -229,12 +231,12 @@ jobs:
           php-version: '8.2'
           tools: composer:v2
 
+
       - name: Configure npm authentication
         working-directory: frontend
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > .npmrc
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.DOGADO_TOKEN }}" > .npmrc
+          echo "always-auth=true" >> .npmrc
 
       - name: Install dependencies and build
         run: |
