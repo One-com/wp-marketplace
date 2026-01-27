@@ -263,6 +263,7 @@ export default function FeaturedCarousel({ loading = false }) {
                                     className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start gv-h-full gv-justify-between"
                                   >
                                     <div className="gv-badge gv-badge-info">{plugin?.name}</div>
+                                    <div className="gv-flex gv-flex-col gv-h-full gv-justify-between">
                                     <div style={{
                                       display: '-webkit-box',
                                       WebkitBoxOrient: 'vertical',
@@ -295,6 +296,7 @@ export default function FeaturedCarousel({ loading = false }) {
                                                 {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
                                             </span>
                                         </div>
+                                    </div>
                                     </div>
                                     <div className="gv-image gv-max-mob-pl-md">
                                         <picture>
