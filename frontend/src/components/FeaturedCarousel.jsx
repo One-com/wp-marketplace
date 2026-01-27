@@ -262,7 +262,7 @@ export default function FeaturedCarousel({ loading = false }) {
                                   <div
                                     className="gv-content  gv-stack-space-lg gv-text-sm gv-flex gv-flex-col gv-items-start gv-h-full gv-justify-between"
                                   >
-                                    <div className="gv-badge gv-badge-info">{plugin?.name}</div>
+                                    <div className="gv-badge gv-badge-info gv-flex-none">{plugin?.name}</div>
                                     <div className="gv-flex gv-flex-col gv-h-full gv-justify-between">
                                     <div style={{
                                       display: '-webkit-box',
