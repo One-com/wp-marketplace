@@ -264,7 +264,7 @@ export default function FeaturedCarousel({ loading = false }) {
                                   >
                                     <div className="gv-badge gv-badge-info gv-flex-none">{plugin?.name}</div>
                                     <div className="gv-flex gv-flex-col gv-h-full gv-justify-between">
-                                    <div style={{
+                                    <div className="gv-max-mob-mb-lg gv-max-tab-mb-lg" style={{
                                       display: '-webkit-box',
                                       WebkitBoxOrient: 'vertical',
                                       WebkitLineClamp: 8,
