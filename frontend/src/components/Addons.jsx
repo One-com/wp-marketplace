@@ -29,6 +29,7 @@ export default function Addons() {
         setCatalogError,
         catalogLoading,
         setCatalogLoading,
+        currentPluginSlug,
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
@@ -59,11 +60,6 @@ export default function Addons() {
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
-
-    // Determine if a plugin slug is in the URL
-    const pluginFromQuery = typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("plugin")
-        : null;
 
     // Get marketplace page URL
     const getMarketplaceUrl = (slug) => {
@@ -198,31 +194,15 @@ export default function Addons() {
             });
     }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin]);
 
-    // After plugins load, select plugin from query if present
+    // After plugins load, select plugin from URL if present
     useEffect(() => {
-        if (pluginFromQuery && plugins.length) {
-            const match = plugins.find(p => p.slug === pluginFromQuery);
+        if (currentPluginSlug && plugins.length) {
+            const match = plugins.find(p => p.slug === currentPluginSlug);
             if (match) setSelectedPlugin(match);
-        } else if (!pluginFromQuery) {
+        } else if (!currentPluginSlug) {
             setSelectedPlugin(null);
         }
-    }, [pluginFromQuery, plugins]);
-
-    // Listen for browser back/forward navigation
-    useEffect(() => {
-        const handlePopState = () => {
-            const currentPluginParam = new URLSearchParams(window.location.search).get("plugin");
-            if (!currentPluginParam) {
-                setSelectedPlugin(null);
-            } else if (plugins.length) {
-                const match = plugins.find(p => p.slug === currentPluginParam);
-                if (match) setSelectedPlugin(match);
-            }
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [plugins]);
+    }, [currentPluginSlug, plugins]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -244,7 +224,7 @@ export default function Addons() {
 
     // Track addons page visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
-        if (!catalogLoading && !catalogError && plugins.length > 0 && !pluginFromQuery && !hasTrackedAddonsVisit.current) {
+        if (!catalogLoading && !catalogError && plugins.length > 0 && !currentPluginSlug && !hasTrackedAddonsVisit.current) {
             // Capture timestamp when content is rendered to the page
             contentRenderTimestamp.current = Date.now();
 
@@ -266,7 +246,7 @@ export default function Addons() {
 
             hasTrackedAddonsVisit.current = true;
         }
-    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery]);
+    }, [catalogLoading, catalogError, plugins.length, currentPluginSlug]);
 
 
     // Determine which detail component to use
@@ -621,7 +601,7 @@ export default function Addons() {
           <SuccessToast />
 
           {/* Render detail overlay when plugin is selected */}
-          {selectedPlugin && !pluginFromQuery && (() => {
+          {selectedPlugin && !currentPluginSlug && (() => {
             const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
             return (
               <DetailComponent
