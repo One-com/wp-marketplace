@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
+import Breadcrumbs from "./Breadcrumbs";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getFullPrice, getRebatePrice } from "../utils/priceFormatter";
 
@@ -17,8 +18,6 @@ export default function ProductDetail({
         useWPHandlers,
         pluginInAction,
         uiI18n,
-        subscriptionStatus,
-        isCheckingSubscription,
         setNoticeState,
         setErrorState
     } = useMarketplace();
@@ -224,47 +223,16 @@ export default function ProductDetail({
     const content = (
         <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
             <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
-                <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
-                    <a
-                        href="#"
-                        onClick={e => {
-                            e.preventDefault();
-                            // Disable back navigation when plugin is being activated and reload is pending
-                            if (pluginInAction[plugin.slug]) {
-                                return;
-                            }
-                            // First check if history is available and has navigable records
-                            if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-                                try {
-                                    window.history.back();
-                                } catch (error) {
-                                    // If history.back() fails, fallback to onClose
-                                    if (onClose) {
-                                        onClose();
-                                    }
-                                }
-                            } else if (onClose) {
-                                // Fallback to onClose if history is not available or empty
-                                onClose();
-                            }
-                        }}
-                        className="gv-flex gv-items-center gv-gap-xs"
-                        role="button"
-                        aria-label="Go back"
-                        style={{
-                            opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
-                            pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
-                            cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
-                        }}
-                        aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
-                    >
-                        <img style={{ minWidth: "24px" }} className="gv-tile" src={`${iconBase}arrow_back.svg`}
-                                        alt="Back to plugins" />
-                        <span>{uiI18n.backButton}</span>
-                    </a>
+                <Breadcrumbs
+                    iconBase={iconBase}
+                    label={uiI18n.backButton}
+                    onClose={onClose}
+                    disabled={pluginInAction[plugin.slug]}
+                    className="gv-flex-col gv-items-start"
+                >
                     <SuccessNotice plugin={plugin} />
                     <ErrorToast plugin={plugin} />
-                </nav>
+                </Breadcrumbs>
 
 
 
@@ -272,11 +240,6 @@ export default function ProductDetail({
                     <div className="gv-content gv-stack-space-md gv-text-sm">
                         <h3 className="gv-title gv-header-lg">{title}</h3>
                         <p className="gv-text-sm">{description}</p>
-                        {/*{plugin.author && (*/}
-                        {/*    <p className="gv-text-xs gv-mt-sm">*/}
-                        {/*        Author: {plugin.authorUrl ? <a href={plugin.authorUrl}>{plugin.author}</a> : plugin.author}*/}
-                        {/*    </p>*/}
-                        {/*)}*/}
                     </div>
                     <div className="gv-image">
                         <picture>

@@ -32,6 +32,7 @@ export default function Marketplace() {
         setCatalogError,
         catalogLoading,
         setCatalogLoading,
+        currentPluginSlug,
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
@@ -71,48 +72,16 @@ export default function Marketplace() {
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
 
-    // Determine if a plugin slug is in the URL
-    const pluginFromQuery = typeof window !== "undefined"
-        ? new URLSearchParams(window.location.search).get("plugin")
-        : null;
-
-    // Get base page URL (without plugin parameter)
-    const getBaseUrl = () => {
-        if (typeof window === "undefined") return "";
-        const url = new URL(window.location.href);
-        url.searchParams.delete("plugin");
-        return url.toString();
-    };
-
-
-    // After plugins load, select plugin from query if present
+    // After plugins load, select plugin from currentPluginSlug if present
     useEffect(() => {
-        if (pluginFromQuery && plugins.length) {
-            const match = plugins.find(p => p.slug === pluginFromQuery);
+        if (currentPluginSlug && plugins.length) {
+            const match = plugins.find(p => p.slug === currentPluginSlug);
             if (match) setSelectedPlugin(match);
-        } else if (!pluginFromQuery) {
+        } else if (!currentPluginSlug) {
             // Clear selectedPlugin when no plugin parameter in URL
             setSelectedPlugin(null);
         }
-    }, [pluginFromQuery, plugins]);
-
-    // Listen for browser back/forward navigation
-    useEffect(() => {
-        const handlePopState = () => {
-            const currentPluginParam = new URLSearchParams(window.location.search).get("plugin");
-            if (!currentPluginParam) {
-                // URL no longer has plugin parameter, clear selection
-                setSelectedPlugin(null);
-            } else if (plugins.length) {
-                // URL has plugin parameter, update selection
-                const match = plugins.find(p => p.slug === currentPluginParam);
-                if (match) setSelectedPlugin(match);
-            }
-        };
-
-        window.addEventListener('popstate', handlePopState);
-        return () => window.removeEventListener('popstate', handlePopState);
-    }, [plugins]);
+    }, [currentPluginSlug, plugins]);
 
     const {t} = useTranslation();
 
@@ -240,7 +209,7 @@ export default function Marketplace() {
 
     // Track marketplace visit when plugins are loaded and no plugin detail is shown
     useEffect(() => {
-        if (!catalogLoading && !catalogError && plugins.length > 0 && !pluginFromQuery && !hasTrackedMarketplaceVisit.current) {
+        if (!catalogLoading && !catalogError && plugins.length > 0 && !currentPluginSlug && !hasTrackedMarketplaceVisit.current) {
             // Capture timestamp when content is rendered to the page
             contentRenderTimestamp.current = Date.now();
 
@@ -255,11 +224,11 @@ export default function Marketplace() {
             }
             hasTrackedMarketplaceVisit.current = true;
         }
-    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery]);
+    }, [catalogLoading, catalogError, plugins.length, currentPluginSlug]);
 
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
-        if (selectedPlugin && pluginFromQuery && lastTrackedPluginSlug.current !== selectedPlugin.slug) {
+        if (selectedPlugin && currentPluginSlug && lastTrackedPluginSlug.current !== selectedPlugin.slug) {
             // Capture timestamp when content is rendered to the page
             contentRenderTimestamp.current = Date.now();
 
@@ -275,10 +244,10 @@ export default function Marketplace() {
             lastTrackedPluginSlug.current = selectedPlugin.slug;
         }
         // Reset when returning to marketplace list
-        if (!pluginFromQuery) {
+        if (!currentPluginSlug) {
             lastTrackedPluginSlug.current = null;
         }
-    }, [selectedPlugin, pluginFromQuery]);
+    }, [selectedPlugin, currentPluginSlug]);
 
     const handleDownloadClick = (e, plugin) => {
         e.stopPropagation();
@@ -313,11 +282,11 @@ export default function Marketplace() {
 
     if (catalogLoading) {
         // If there's a plugin parameter in the URL, show appropriate skeleton based on plugin type
-        if (pluginFromQuery) {
+        if (currentPluginSlug) {
             // Determine if we should use RankMath detail component based on slug
             const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
             const isOnecomBrand = brand === "onecom";
-            const isRankMathPlugin = pluginFromQuery === "seo-by-rank-math-pro" || pluginFromQuery === "seo-by-rank-math";
+            const isRankMathPlugin = currentPluginSlug === "seo-by-rank-math-pro" || currentPluginSlug === "seo-by-rank-math";
             const DetailComponent = (isOnecomBrand && isRankMathPlugin) ? ProductDetailRankMath : ProductDetail;
             return (
                 <DetailComponent
@@ -393,7 +362,7 @@ export default function Marketplace() {
   }
 
     // Early return: show full page detail instead of list
-    if (selectedPlugin && pluginFromQuery) {
+    if (selectedPlugin && currentPluginSlug) {
         const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
         return (
             <DetailComponent
@@ -523,7 +492,7 @@ export default function Marketplace() {
                 </section>
             ))}
             {/* Remove overlay render (keep for non-query usage) */}
-            {selectedPlugin && !pluginFromQuery && (() => {
+            {selectedPlugin && !currentPluginSlug && (() => {
                 const DetailComponent = shouldUseRankMathDetail(selectedPlugin) ? ProductDetailRankMath : ProductDetail;
                 return (
                     <DetailComponent
