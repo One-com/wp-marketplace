@@ -432,7 +432,7 @@ export default function ProductDetailRankMath({
     // Use the clicked plugin for header/main content, but always use freePlugin for first column
     const imageURL = (typeof window.onecomWpVars !== "undefined" && window.onecomWpVars?.imageURL) || assetBase;
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
-    const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
+    const mainImage = proPlugin.detailsBannerUrl || proPlugin.bannerUrl;
 
     // Extract data with fallbacks for free version (first column - always seo-by-rank-math)
     const title = freePlugin?.name || plugin.name || 'Product';
