@@ -238,7 +238,7 @@ export default function Marketplace() {
             }
             hasTrackedMarketplaceVisit.current = true;
         }
-    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery, visibleConditionalPlugins]);
+    }, [catalogLoading, catalogError, plugins.length, currentPluginSlug, visibleConditionalPlugins]);
 
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
