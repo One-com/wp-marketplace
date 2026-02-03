@@ -214,9 +214,9 @@ export const trackEvent = (eventName, eventProperties = {}) => {
  * @param {number} options.contentReceivedAt - Timestamp when API content was received
  * @param {number} options.contentRenderedAt - Timestamp when content was rendered to page
  * @param {boolean} options.isCached - Whether the response was served from cache (default: false)
- * @param {Array} options.hiddenProducts - Array of hidden plugin slugs
+ * @param {Array} options.visibleConditionalProducts - Array of plugin slugs that have must-have rules and are visible
  */
-export const trackPageView = ({ pluginSlug, pluginName, category, itemName, isContentRendered = true, contentReceivedAt = null, contentRenderedAt = null, isCached = false, hiddenProducts = [] } = {}) => {
+export const trackPageView = ({ pluginSlug, pluginName, category, itemName, isContentRendered = true, contentReceivedAt = null, contentRenderedAt = null, isCached = false, visibleConditionalProducts = [] } = {}) => {
     try {
         const timestamp = Date.now();
 
@@ -226,8 +226,8 @@ export const trackPageView = ({ pluginSlug, pluginName, category, itemName, isCo
             is_cached: isCached,
         };
 
-        if (hiddenProducts && hiddenProducts.length > 0) {
-            eventProperties.hidden_products = hiddenProducts;
+        if (visibleConditionalProducts && visibleConditionalProducts.length > 0) {
+            eventProperties.visible_conditional_products = visibleConditionalProducts;
         }
 
         // Only add content_rendered_at if content was successfully rendered
@@ -387,9 +387,9 @@ export const trackButtonClick = ({ buttonName, buttonAction, plugin = null, cont
  * @param {number} contentReceivedAt - Timestamp when API content was received
  * @param {number} contentRenderedAt - Timestamp when content was rendered to page
  * @param {boolean} isCached - Whether the response was served from cache
- * @param {Array} hiddenProducts - Array of hidden plugin slugs
+ * @param {Array} visibleConditionalProducts - Array of plugin slugs that have must-have rules and are visible
  */
-export const trackMarketplaceVisit = (contentReceivedAt = null, contentRenderedAt = null, isCached = false, hiddenProducts = []) => {
+export const trackMarketplaceVisit = (contentReceivedAt = null, contentRenderedAt = null, isCached = false, visibleConditionalProducts = []) => {
     try {
         trackPageView({
             category: 'marketplace_home',
@@ -397,7 +397,7 @@ export const trackMarketplaceVisit = (contentReceivedAt = null, contentRenderedA
             contentReceivedAt: contentReceivedAt,
             contentRenderedAt: contentRenderedAt,
             isCached: isCached,
-            hiddenProducts: hiddenProducts,
+            visibleConditionalProducts: visibleConditionalProducts,
         });
     } catch (error) {
         console.error('[MixpanelTracking] Error tracking marketplace visit:', error);
