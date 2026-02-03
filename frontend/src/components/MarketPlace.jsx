@@ -177,6 +177,7 @@ export default function Marketplace() {
                 trackPageView({
                     category: 'marketplace_home',
                     isContentRendered: false,
+                    visibleConditionalProducts: [],
                 });
                 setCatalogError(true);
             } finally {
@@ -188,10 +189,11 @@ export default function Marketplace() {
     }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
 
     // Use useMemo to filter plugins based on rules and activation status
-    const visiblePlugins = React.useMemo(() => {
-        if (!plugins.length) return [];
+    const { visiblePlugins, visibleConditionalPlugins } = React.useMemo(() => {
+        if (!plugins.length) return { visiblePlugins: [], visibleConditionalPlugins: [] };
 
         const bySlug = new Map();
+        const conditionalSlugs = [];
 
         // Check activation status of Rank Math plugins
         const rankMathActivated = plugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
@@ -203,7 +205,7 @@ export default function Marketplace() {
                 return;
             }
 
-            // Handle Rank Math plugin visibility
+            // Handle Rank Math plugin visibility for the Catalog display
             if (p.slug === "seo-by-rank-math") {
                 // Show seo-by-rank-math only if BOTH plugins are NOT activated
                 if (!rankMathActivated && !rankMathProActivated && shouldShowPlugin(p)) {
@@ -220,13 +222,25 @@ export default function Marketplace() {
                 return;
             }
 
-            // Apply filtering based on rules
+            // Apply filtering based on rules for other plugins
             if (shouldShowPlugin(p)) {
                 bySlug.set(p.slug, p);
             }
         });
 
-        return Array.from(bySlug.values());
+        // Identify plugins that are visible AND have rules (conditional)
+        bySlug.forEach((plugin, slug) => {
+            const hasRules = plugin.rules && Object.keys(plugin.rules).length > 0;
+
+            if (hasRules && shouldShowPlugin(plugin)) {
+                conditionalSlugs.push(slug);
+            }
+        });
+
+        return {
+            visiblePlugins: Array.from(bySlug.values()),
+            visibleConditionalPlugins: conditionalSlugs
+        };
     }, [plugins, shouldShowPlugin]);
 
     // Update allPluginsActivated in context whenever plugins change
@@ -251,11 +265,11 @@ export default function Marketplace() {
                 sessionStorage.removeItem('mp_skip_page_view');
             } else {
                 // Normal page load, track the visit
-                trackMarketplaceVisit(contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current);
+                trackMarketplaceVisit(contentReceivedTimestamp.current, contentRenderTimestamp.current, isCachedRef.current, visibleConditionalPlugins);
             }
             hasTrackedMarketplaceVisit.current = true;
         }
-    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery]);
+    }, [catalogLoading, catalogError, plugins.length, pluginFromQuery, visibleConditionalPlugins]);
 
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
