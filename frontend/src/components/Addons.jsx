@@ -5,6 +5,7 @@ import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorToast from "./ErrorToast";
 import SuccessToast from "./SuccessToast";
+import DeleteModal from "./DeleteModal";
 import "@group.one/gravity";
 import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
@@ -37,6 +38,8 @@ export default function Addons() {
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [pluginToDelete, setPluginToDelete] = useState(null);
     const [featuredPlugins, setFeaturedPlugins] = useState([]);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const menuRef = useRef(null);
@@ -87,6 +90,24 @@ export default function Addons() {
 
         const redirectUrl = getPluginRedirectUrl(plugin, false);
         navigateToPluginUrl(redirectUrl);
+    };
+
+    // Handle Delete confirmation
+    const openDeleteModal = (plugin) => {
+        setPluginToDelete(plugin);
+        setIsDeleteModalOpen(true);
+    };
+
+    const closeDeleteModal = () => {
+        setIsDeleteModalOpen(false);
+        setPluginToDelete(null);
+    };
+
+    const handleConfirmDelete = () => {
+        if (pluginToDelete) {
+            handlePluginAction('delete', pluginToDelete, 'addons');
+        }
+        closeDeleteModal();
     };
 
     // Fetch plugins from API
@@ -574,7 +595,7 @@ export default function Addons() {
                                           onClick={(e) => {
                                             e.preventDefault();
                                             setOpenMenuIndex(null);
-                                            handlePluginAction('delete', plugin, 'addons');
+                                            openDeleteModal(plugin);
                                           }}
                                         >
                                           <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
@@ -599,6 +620,16 @@ export default function Addons() {
 
           <ErrorToast />
           <SuccessToast />
+
+          <DeleteModal
+            isOpen={isDeleteModalOpen}
+            onClose={closeDeleteModal}
+            onConfirm={handleConfirmDelete}
+            pluginName={pluginToDelete?.name}
+            uiI18n={uiI18n}
+            iconBase={iconBase}
+            licenseType={pluginToDelete?.licenseType}
+          />
 
           {/* Render detail overlay when plugin is selected */}
           {selectedPlugin && !currentPluginSlug && (() => {
