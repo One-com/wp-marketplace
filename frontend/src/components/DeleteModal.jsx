@@ -41,7 +41,7 @@ const DeleteModal = () => {
     closeDeleteModal();
   };
 
-  const isPremium = plugin.licenseType !== "free";
+  const isPremium = plugin.licenseType === "premium";
   const pluginName = plugin.name;
 
   return (
