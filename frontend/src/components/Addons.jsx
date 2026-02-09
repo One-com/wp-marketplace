@@ -33,7 +33,8 @@ export default function Addons() {
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
-        isWpVersionSupported
+        isWpVersionSupported,
+        openDeleteModal
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
@@ -574,10 +575,10 @@ export default function Addons() {
                                           onClick={(e) => {
                                             e.preventDefault();
                                             setOpenMenuIndex(null);
-                                            handlePluginAction('delete', plugin, 'addons');
+                                            openDeleteModal(plugin);
                                           }}
                                         >
-                                          <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                          <gv-icon aria-hidden="true" src={`${iconBase}delete.svg`}></gv-icon>
                                           <span>{uiI18n?.deleteButton || 'Delete'}</span>
                                         </a>
                                       )}
