@@ -1,9 +1,5 @@
 export function normalizePlugins(rawResponse) {
-  // Support the new response shape:
-  // { error: null, success: true, data: { catalog: [...], locale: "...", uiI18n: {...} } }
-
   if (!rawResponse || !rawResponse.data || !Array.isArray(rawResponse.data.catalog)) {
-    // Log a clear error when the response is not supported
     // Keeping a minimal, non-crashing fallback of returning an empty object
     console.error("Unsupported marketplace response shape. Expected { data: { catalog: [...] } }.", rawResponse);
     return { plugins: [], uiI18n: {}, locale: null };

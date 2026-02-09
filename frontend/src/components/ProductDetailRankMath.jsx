@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
+import Breadcrumbs from "./Breadcrumbs";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getFullPrice } from "../utils/priceFormatter";
 
@@ -18,8 +19,6 @@ export default function ProductDetailRankMath({
         pluginInAction,
         plugins,
         uiI18n,
-        subscriptionStatus,
-        isCheckingSubscription,
         noticeState,
         setNoticeState,
         setErrorState
@@ -497,47 +496,16 @@ export default function ProductDetailRankMath({
     const content = (
         <div className="gv-surface-dim">
             <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid gv-p-0">
-                <nav className="gv-breadcrumbs gv-area-nav">
-                    <a
-                        href="#"
-                        onClick={e => {
-                            e.preventDefault();
-                            // Disable back navigation when plugin is being activated and reload is pending
-                            if (pluginInAction[plugin.slug]) {
-                                return;
-                            }
-                            // First check if history is available and has navigable records
-                            if (typeof window !== "undefined" && window.history && window.history.length > 1) {
-                                try {
-                                    window.history.back();
-                                } catch (error) {
-                                    // If history.back() fails, fallback to onClose
-                                    if (onClose) {
-                                        onClose();
-                                    }
-                                }
-                            } else if (onClose) {
-                                // Fallback to onClose if history is not available or empty
-                                onClose();
-                            }
-                        }}
-                        className="gv-flex gv-items-center gv-gap-xs"
-                        role="button"
-                        aria-label="Go back"
-                        style={{
-                            opacity: pluginInAction[plugin.slug] ? 0.5 : 1,
-                            pointerEvents: pluginInAction[plugin.slug] ? 'none' : 'auto',
-                            cursor: pluginInAction[plugin.slug] ? 'not-allowed' : 'pointer'
-                        }}
-                        aria-disabled={pluginInAction[plugin.slug] ? 'true' : 'false'}
-                    >
-                        <gv-icon aria-hidden="true" src={`${iconBase}arrow_back.svg`}></gv-icon>
-                        <span>{uiI18n.backButton}</span>
-                    </a>
-                <SuccessNotice plugin={noticeState?.pluginSlug === proPlugin?.slug ? proPlugin : freePlugin} />
-                <ErrorToast plugin={freePlugin} />
-                <ErrorToast plugin={proPlugin} />
-                </nav>
+                <Breadcrumbs
+                    iconBase={iconBase}
+                    label={uiI18n.backButton}
+                    onClose={onClose}
+                    disabled={pluginInAction[plugin.slug]}
+                >
+                    <SuccessNotice plugin={noticeState?.pluginSlug === proPlugin?.slug ? proPlugin : freePlugin} />
+                    <ErrorToast plugin={freePlugin} />
+                    <ErrorToast plugin={proPlugin} />
+                </Breadcrumbs>
 
 
                 <header className="gv-product-header gv-area-header">

@@ -1,6 +1,6 @@
 import React from "react";
 import Addons from "./components/Addons";
-import LoadingOverlay from "./components/LoadingOverlay";
+import MarketplaceLayout from "./components/MarketplaceLayout";
 import { MarketplaceProvider } from "./context/MarketplaceContext";
 
 const AddonsApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, assetsBaseUrl }) => {
@@ -12,12 +12,9 @@ const AddonsApp = ({ apiBaseUrl, useWPHandlers, wpConfig, enableDefaultStyles, a
             enableDefaultStyles={enableDefaultStyles}
             assetsBaseUrl={assetsBaseUrl}
         >
-            <LoadingOverlay />
-            <div className="gv-activated">
-                <div className="marketplace-container gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid">
-                    <Addons />
-                </div>
-            </div>
+            <MarketplaceLayout>
+                <Addons />
+            </MarketplaceLayout>
         </MarketplaceProvider>
     );
 };

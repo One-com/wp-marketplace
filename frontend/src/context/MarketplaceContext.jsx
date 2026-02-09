@@ -1,8 +1,37 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
 import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
+import { handleImagifyActivation } from '../utils/imagifyHandler';
 
 const MarketplaceContext = createContext(null);
+
+/**
+ * Helper to construct localized loading messages for plugin actions
+ */
+const getLoadingMessage = (action, pluginName, uiI18n) => {
+    let message = '';
+    const notifications = uiI18n?.notifications || {};
+
+    switch (action) {
+        case 'activate':
+            message = notifications.activating || 'Activating {0}';
+            break;
+        case 'deactivate':
+            message = notifications.deactivating || 'Deactivating {0}';
+            break;
+        case 'install':
+            message = notifications.installing || 'Installing {0}';
+            break;
+        case 'delete':
+            message = notifications.deleting || 'Deleting {0}';
+            break;
+        default:
+            const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
+            return `${actionText} ${pluginName}`;
+    }
+
+    return message.replace('{0}', pluginName) + '...';
+};
 
 export const MarketplaceProvider = ({
     children,
@@ -25,6 +54,38 @@ export const MarketplaceProvider = ({
     const [allPluginsActivated, setAllPluginsActivated] = useState(false);
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
+    const [deleteModalState, setDeleteModalState] = useState({ isOpen: false, plugin: null });
+    const [currentPluginSlug, setCurrentPluginSlug] = useState(() => {
+        return typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
+    });
+
+    // Track URL changes to keep currentPluginSlug in sync
+    useEffect(() => {
+        const handleUrlChange = () => {
+            const slug = new URLSearchParams(window.location.search).get("plugin");
+            setCurrentPluginSlug(slug);
+        };
+
+        window.addEventListener('popstate', handleUrlChange);
+
+        const originalPushState = window.history.pushState;
+        window.history.pushState = function(...args) {
+            originalPushState.apply(this, args);
+            handleUrlChange();
+        };
+
+        const originalReplaceState = window.history.replaceState;
+        window.history.replaceState = function(...args) {
+            originalReplaceState.apply(this, args);
+            handleUrlChange();
+        };
+
+        return () => {
+            window.removeEventListener('popstate', handleUrlChange);
+            window.history.pushState = originalPushState;
+            window.history.replaceState = originalReplaceState;
+        };
+    }, []);
 
     // State for tracking consent status
     const [consentStatus, setConsentStatus] = useState(() => {
@@ -201,6 +262,14 @@ export const MarketplaceProvider = ({
         return isWpVersionSupportedHelper(wpVersion, minVersion);
     }, [wpVersion]);
 
+    const openDeleteModal = useCallback((plugin) => {
+        setDeleteModalState({ isOpen: true, plugin });
+    }, []);
+
+    const closeDeleteModal = useCallback(() => {
+        setDeleteModalState({ isOpen: false, plugin: null });
+    }, []);
+
     const shouldShowProvision = useCallback((plugin) => {
         if (!plugin || !isOnecomBrand) return false;
         return isSpecialPlugin(plugin.slug) && !plugin.installed && subscriptionStatus[plugin.slug] === true;
@@ -257,136 +326,28 @@ export const MarketplaceProvider = ({
 
         // Set loading state for overlay using API response keys
         const pluginName = plugin.name || plugin.slug;
-        let loadingMessage = '';
-
-        if (action === 'activate') {
-            const activatingMsg = uiI18n?.notifications?.activating || 'Activating {0}';
-            loadingMessage = activatingMsg.replace('{0}', pluginName) + '...';
-        } else if (action === 'deactivate') {
-            const deactivatingMsg = uiI18n?.notifications?.deactivating || 'Deactivating {0}';
-            loadingMessage = deactivatingMsg.replace('{0}', pluginName) + '...';
-        } else if (action === 'install') {
-            const installingMsg = uiI18n?.notifications?.installing || 'Installing {0}';
-            loadingMessage = installingMsg.replace('{0}', pluginName) + '...';
-        } else if (action === 'delete') {
-            const deletingMsg = uiI18n?.notifications?.deleting || 'Deleting {0}';
-            loadingMessage = deletingMsg.replace('{0}', pluginName) + '...';
-        } else {
-            // Fallback for other actions
-            const actionText = action.charAt(0).toUpperCase() + (action.endsWith('e') ? action.slice(1, -1) : action.slice(1)) + 'ing';
-            loadingMessage = `${actionText} ${pluginName}`;
-        }
+        const loadingMessage = getLoadingMessage(action, pluginName, uiI18n);
 
         setLoadingAction(loadingMessage);
         setLoadingPlugin('');
 
-        // For Imagify, use setTimeout to allow React to render the loading overlay first
+        // For Imagify, use the specialized handler
         if (isImagifyActivation) {
-            // Build URL for activation
-            let url = `${apiBaseUrl}${action}/${plugin.slug}`;
-            const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
-
-            if (useWPHandlers) {
-                url = `${wpConfig.ajaxUrl}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
-            } else {
-                url = url + (url.includes('?') ? '&' : '?') + downloadParam;
-            }
-
-            // Allow React to render loading overlay, then execute Imagify flow
-            setTimeout(async () => {
-                // Initiate the activation request (don't wait for response due to 302 redirect)
-                try {
-                    await fetch(url, { method: "POST" });
-                } catch (err) {
-                    console.log("Imagify activation request initiated");
-                }
-
-                // Poll for activation status
-                let attempts = 0;
-                const maxAttempts = 6;
-                const checkActivation = async () => {
-                    try {
-                        const checkUrl = `${apiBaseUrl}active/${plugin.slug}`;
-                        const response = await fetch(checkUrl);
-                        const data = await response.json();
-
-                        if (data && data.activated) {
-                            // Track successful Imagify activation
-                            trackButtonClick({
-                                buttonName: 'Activate',
-                                buttonAction: 'product_activate',
-                                plugin: plugin,
-                                context: {
-                                    action: action,
-                                    result: 'success',
-                                    special_case: 'imagify_redirect',
-                                }
-                            });
-
-                            if (source === 'product_detail') {
-                                // Set flag to skip page view tracking on reload
-                                sessionStorage.setItem('mp_skip_page_view', 'true');
-                                sessionStorage.setItem('mp_success_notice', JSON.stringify({
-                                    visible: true,
-                                    type: 'activated',
-                                    pluginSlug: plugin.slug,
-                                    successType: 'activate'
-                                }));
-
-                                // Schedule reload
-                                reloadTimeoutRef.current = setTimeout(() => {
-                                    window.location.reload();
-                                }, 500);
-                            } else {
-                                // Old flow for addons page
-                                setSuccessState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
-
-                                // Schedule reload after a while
-                                reloadTimeoutRef.current = setTimeout(() => {
-                                    sessionStorage.setItem('mp_skip_page_view', 'true');
-                                    window.location.reload();
-                                }, 3000);
-
-                                // Clear loading state only
-                                setLoadingAction('');
-                                setLoadingPlugin('');
-                                actionSuccessful = true;
-                            }
-                            return;
-                        }
-                    } catch (e) {
-                        console.error("Error checking activation status", e);
-                    }
-
-                    attempts++;
-                    if (attempts < maxAttempts) {
-                        setTimeout(checkActivation, 1000);
-                    } else {
-                        // If we reached max attempts and still not activated, show error
-                        setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
-
-                        // Track activation error
-                        trackButtonClick({
-                            buttonName: 'Activate',
-                            buttonAction: 'product_activate',
-                            plugin: plugin,
-                            context: {
-                                action: action,
-                                result: 'error',
-                                error_message: 'Imagify activation timeout after polling',
-                            }
-                        });
-
-                        // Clear loading state
-                        setLoadingAction('');
-                        setLoadingPlugin('');
-                        setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
-                    }
-                };
-
-                // Start checking
-                setTimeout(checkActivation, 1000);
-            }, 100);
+            handleImagifyActivation({
+                plugin,
+                apiBaseUrl,
+                useWPHandlers,
+                wpConfig,
+                source,
+                uiI18n,
+                setLoadingAction,
+                setLoadingPlugin,
+                setPluginInAction,
+                setSuccessState,
+                setErrorState,
+                reloadTimeoutRef,
+                trackButtonClick
+            });
             return;
         }
 
@@ -651,6 +612,11 @@ export const MarketplaceProvider = ({
         setCatalogError,
         catalogLoading,
         setCatalogLoading,
+        currentPluginSlug,
+        setCurrentPluginSlug,
+        deleteModalState,
+        openDeleteModal,
+        closeDeleteModal,
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
