@@ -578,7 +578,7 @@ export default function Addons() {
                                             openDeleteModal(plugin);
                                           }}
                                         >
-                                          <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                          <gv-icon aria-hidden="true" src={`${iconBase}delete.svg`}></gv-icon>
                                           <span>{uiI18n?.deleteButton || 'Delete'}</span>
                                         </a>
                                       )}
