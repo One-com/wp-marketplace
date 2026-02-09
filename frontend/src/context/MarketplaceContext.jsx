@@ -54,6 +54,7 @@ export const MarketplaceProvider = ({
     const [allPluginsActivated, setAllPluginsActivated] = useState(false);
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
+    const [deleteModalState, setDeleteModalState] = useState({ isOpen: false, plugin: null });
     const [currentPluginSlug, setCurrentPluginSlug] = useState(() => {
         return typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
     });
@@ -260,6 +261,14 @@ export const MarketplaceProvider = ({
     const isWpVersionSupported = useCallback((minVersion) => {
         return isWpVersionSupportedHelper(wpVersion, minVersion);
     }, [wpVersion]);
+
+    const openDeleteModal = useCallback((plugin) => {
+        setDeleteModalState({ isOpen: true, plugin });
+    }, []);
+
+    const closeDeleteModal = useCallback(() => {
+        setDeleteModalState({ isOpen: false, plugin: null });
+    }, []);
 
     const shouldShowProvision = useCallback((plugin) => {
         if (!plugin || !isOnecomBrand) return false;
@@ -605,6 +614,9 @@ export const MarketplaceProvider = ({
         setCatalogLoading,
         currentPluginSlug,
         setCurrentPluginSlug,
+        deleteModalState,
+        openDeleteModal,
+        closeDeleteModal,
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
