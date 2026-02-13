@@ -72,6 +72,14 @@ export default function PluginActions({ plugin }) {
         document.dispatchEvent(event);
     };
 
+    const handleBuyNowClick = () => {
+        trackButtonClick({
+            buttonName: 'Buy now',
+            buttonAction: 'buy_now',
+            plugin: plugin,
+        });
+    };
+
     const handleManage = () => {
         // Track the manage button click
         trackButtonClick({
@@ -104,6 +112,9 @@ export default function PluginActions({ plugin }) {
     // Show skeleton if: checking OR status is undefined (not yet fetched)
     const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin(plugin.slug) && !plugin.installed &&
         (pluginIsCheckingSubscription || pluginSubscriptionStatus === undefined);
+
+    // Check if we should show "Buy now" button for premium plugins on non-onecom brands
+    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed;
 
     return (
         <div className="plugin-actions gv-mt-md">
@@ -139,6 +150,14 @@ export default function PluginActions({ plugin }) {
                             : (uiI18n?.activateButton || plugin.i18n?.activateButton || 'Activate')}
                     </button>
                 )
+            ) : shouldShowBuyNow ? (
+                <button
+                    type="button"
+                    className="gv-button gv-button-primary"
+                    onClick={handleBuyNowClick}
+                >
+                    {uiI18n?.buyNowButton || 'Buy now'}
+                </button>
             ) : (
                 <button
                     className={`gv-button ${plugin.slug === "seo-by-rank-math" ? "gv-button-secondary" : "gv-button-primary"}`}
