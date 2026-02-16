@@ -3,6 +3,36 @@ import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 
+/**
+ * Extracts price data from a plugin object for the subscription API.
+ * Supports both new prices array format and legacy priceAmount/priceCurrency.
+ */
+const getPluginPriceData = (plugin) => {
+    // New format: prices array
+    if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
+        // Prefer full price type, then any active price, then first price
+        let price = plugin.prices.find(p => p.priceType === 'full' && (p.isActive === true || p.isActive === undefined));
+        if (!price) {
+            price = plugin.prices.find(p => p.isActive === true);
+        }
+        if (!price) {
+            price = plugin.prices[0];
+        }
+        return {
+            amount: price.amount,
+            currency: price.currency,
+            period: price.period || 'month',
+        };
+    }
+
+    // Legacy format
+    return {
+        amount: plugin.priceAmount,
+        currency: plugin.priceCurrency,
+        period: 'month',
+    };
+};
+
 export default function PluginActions({ plugin }) {
     const {
         assetsBaseUrl,
@@ -14,6 +44,8 @@ export default function PluginActions({ plugin }) {
         uiI18n,
         isSpecialPlugin
     } = useMarketplace();
+
+    const [buyNowLoading, setBuyNowLoading] = useState(false);
 
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
@@ -72,12 +104,64 @@ export default function PluginActions({ plugin }) {
         document.dispatchEvent(event);
     };
 
-    const handleBuyNowClick = () => {
+    const handleBuyNowClick = async () => {
         trackButtonClick({
             buttonName: 'Buy now',
             buttonAction: 'buy_now',
             plugin: plugin,
         });
+
+        setBuyNowLoading(true);
+
+        const priceData = getPluginPriceData(plugin);
+
+        // TODO: Replace staging URL with config api_url when ready
+        const subscriptionUrl = 'https://wp-marketplace-staging.g1i.one/api/v1.0/subscriptions';
+
+        try {
+            const response = await fetch(subscriptionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    partnersCustomersId: 'grn:groupone:rankmath:rankmath.com:user:1857972',
+                    productId: plugin.productId,
+                    priceAmount: priceData.amount,
+                    priceCurrency: priceData.currency,
+                    pricePeriod: priceData.period,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.redirectUrl) {
+                window.location.href = result.redirectUrl;
+            }
+
+            trackButtonClick({
+                buttonName: 'Buy now',
+                buttonAction: 'buy_now',
+                plugin: plugin,
+                context: {
+                    result: response.ok ? 'success' : 'error',
+                },
+            });
+        } catch (error) {
+            console.error('Buy now subscription request failed', error);
+
+            trackButtonClick({
+                buttonName: 'Buy now',
+                buttonAction: 'buy_now',
+                plugin: plugin,
+                context: {
+                    result: 'error',
+                    error_message: error.message || 'Network error',
+                },
+            });
+        } finally {
+            setBuyNowLoading(false);
+        }
     };
 
     const handleManage = () => {
@@ -154,9 +238,10 @@ export default function PluginActions({ plugin }) {
                 <button
                     type="button"
                     className="gv-button gv-button-primary"
+                    disabled={buyNowLoading}
                     onClick={handleBuyNowClick}
                 >
-                    {uiI18n?.buyNowButton || 'Buy now'}
+                    {buyNowLoading ? (uiI18n?.notifications?.processing || 'Processing...') : (uiI18n?.buyNowButton || 'Buy now')}
                 </button>
             ) : (
                 <button
