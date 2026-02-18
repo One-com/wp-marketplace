@@ -42,7 +42,13 @@ export default function PluginActions({ plugin }) {
         isOnecomBrand,
         handlePluginAction,
         uiI18n,
-        isSpecialPlugin
+        isSpecialPlugin,
+        setErrorState,
+        wpConfig,
+        pendingProcurements,
+        setPendingProcurements,
+        setLoadingAction,
+        setLoadingPlugin
     } = useMarketplace();
 
     const [buyNowLoading, setBuyNowLoading] = useState(false);
@@ -112,55 +118,111 @@ export default function PluginActions({ plugin }) {
         });
 
         setBuyNowLoading(true);
+        setLoadingAction(formatMessage(uiI18n?.notifications?.processing || 'Processing {0}...', pluginName));
+        setLoadingPlugin('');
 
         const priceData = getPluginPriceData(plugin);
 
-        // TODO: Replace staging URL with config api_url when ready
-        const subscriptionUrl = 'https://wp-marketplace-staging.g1i.one/api/v1.0/subscriptions';
+        // Proxy through WordPress AJAX to avoid CORS and keep API key server-side
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl) {
+            setBuyNowLoading(false);
+            setLoadingAction('');
+            return;
+        }
 
         try {
-            const response = await fetch(subscriptionUrl, {
+            const formData = new URLSearchParams({
+                action: 'marketplace_create_subscription',
+                nonce: wpConfig.nonce,
+                partnersCustomersId: 'grn:groupone:rankmath:rankmath.com:user:1857972',
+                productId: plugin.productId || '',
+                priceAmount: priceData.amount || '',
+                priceCurrency: priceData.currency || '',
+                pricePeriod: priceData.period || '',
+            });
+
+            const response = await fetch(ajaxUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    partnersCustomersId: 'grn:groupone:rankmath:rankmath.com:user:1857972',
-                    productId: plugin.productId,
-                    priceAmount: priceData.amount,
-                    priceCurrency: priceData.currency,
-                    pricePeriod: priceData.period,
-                }),
+                body: formData,
             });
 
             const result = await response.json();
 
-            if (result.redirectUrl) {
-                window.location.href = result.redirectUrl;
+            // Scenario 3: API-level error (WP AJAX wraps in {success, data})
+            if (!result.success) {
+                trackButtonClick({
+                    buttonName: 'Buy now',
+                    buttonAction: 'buy_now',
+                    plugin: plugin,
+                    context: { result: 'error', error_message: result.data?.message || 'Procurement failed' },
+                });
+                setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug });
+                setBuyNowLoading(false);
+                setLoadingAction('');
+                return;
             }
 
-            trackButtonClick({
-                buttonName: 'Buy now',
-                buttonAction: 'buy_now',
-                plugin: plugin,
-                context: {
-                    result: response.ok ? 'success' : 'error',
-                },
-            });
-        } catch (error) {
-            console.error('Buy now subscription request failed', error);
+            // result.data contains the external API response
+            const apiData = result.data;
+            const accessUrl = apiData?.data?.subscriptionDetails?.accessUrl;
 
             trackButtonClick({
                 buttonName: 'Buy now',
                 buttonAction: 'buy_now',
                 plugin: plugin,
                 context: {
-                    result: 'error',
-                    error_message: error.message || 'Network error',
+                    result: accessUrl ? 'procurement_success' : 'procurement_pending',
+                    procurement_id: apiData?.data?.procurement_id,
+                    has_access_url: !!accessUrl,
                 },
             });
-        } finally {
+
+            if (accessUrl) {
+                // Scenario 1: accessUrl present — trigger install via existing flow
+                // handlePluginAction sets its own overlay message, so clear ours
+                setBuyNowLoading(false);
+                setLoadingAction('');
+                await handlePluginAction(
+                    "install",
+                    { ...plugin, download: accessUrl },
+                    'product_detail'
+                );
+            } else {
+                // Scenario 2: No accessUrl — procurement pending, persist to DB
+                const saveProcurementData = new URLSearchParams({
+                    action: 'marketplace_save_pending_procurement',
+                    nonce: wpConfig.nonce,
+                    slug: plugin.slug,
+                    procurement_id: apiData?.data?.procurement_id || '',
+                    product_id: plugin.productId || '',
+                });
+                // Fire and forget — UI updates immediately via local state
+                fetch(ajaxUrl, { method: 'POST', body: saveProcurementData });
+
+                setPendingProcurements(prev => ({
+                    ...prev,
+                    [plugin.slug]: {
+                        procurement_id: apiData?.data?.procurement_id,
+                        product_id: plugin.productId,
+                        timestamp: Math.floor(Date.now() / 1000),
+                    },
+                }));
+                setBuyNowLoading(false);
+                setLoadingAction('');
+            }
+        } catch (error) {
+            // Scenario 3: Network/exception error
+            console.error('Buy now subscription request failed', error);
+            trackButtonClick({
+                buttonName: 'Buy now',
+                buttonAction: 'buy_now',
+                plugin: plugin,
+                context: { result: 'error', error_message: error.message || 'Network error' },
+            });
+            setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug });
             setBuyNowLoading(false);
+            setLoadingAction('');
         }
     };
 
@@ -200,6 +262,9 @@ export default function PluginActions({ plugin }) {
     // Check if we should show "Buy now" button for premium plugins on non-onecom brands
     const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed;
 
+    // Check if there's a pending procurement for this plugin (persisted across page loads)
+    const isPendingProcurement = !!pendingProcurements?.[plugin.slug];
+
     return (
         <div className="plugin-actions gv-mt-md">
             {shouldShowSkeleton ? (
@@ -235,14 +300,21 @@ export default function PluginActions({ plugin }) {
                     </button>
                 )
             ) : shouldShowBuyNow ? (
-                <button
-                    type="button"
-                    className="gv-button gv-button-primary"
-                    disabled={buyNowLoading}
-                    onClick={handleBuyNowClick}
-                >
-                    {buyNowLoading ? (uiI18n?.notifications?.processing || 'Processing...') : (uiI18n?.buyNowButton || 'Buy now')}
-                </button>
+                <>
+                    <button
+                        type="button"
+                        className="gv-button gv-button-primary"
+                        disabled={buyNowLoading || pluginInAction[plugin.slug] || isPendingProcurement}
+                        onClick={handleBuyNowClick}
+                    >
+                        {uiI18n?.buyNowButton || 'Buy now'}
+                    </button>
+                    {isPendingProcurement && (
+                        <p className="gv-text-sm gv-mt-sm">
+                            {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
+                        </p>
+                    )}
+                </>
             ) : (
                 <button
                     className={`gv-button ${plugin.slug === "seo-by-rank-math" ? "gv-button-secondary" : "gv-button-primary"}`}

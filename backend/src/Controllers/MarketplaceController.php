@@ -169,6 +169,9 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_activate_plugin', [ $this, 'ajax_activate_plugin' ] );
 			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
 			add_action( 'wp_ajax_marketplace_delete_plugin', [ $this, 'ajax_delete_plugin' ] );
+			add_action( 'wp_ajax_marketplace_save_pending_procurement', [ $this, 'ajax_save_pending_procurement' ] );
+			add_action( 'wp_ajax_marketplace_clear_pending_procurement', [ $this, 'ajax_clear_pending_procurement' ] );
+			add_action( 'wp_ajax_marketplace_create_subscription', [ $this, 'ajax_create_subscription' ] );
 
 			//reset transient for marketplace catalog
 			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
@@ -345,6 +348,7 @@ class MarketplaceController {
 				'globalProperties' => $global_properties,
 				'distinctId' => $distinct_id,
 			],
+			'pendingProcurements' => get_option( 'marketplace_pending_procurements', [] ),
 		];
 
 		// Localize JS with config
@@ -489,6 +493,7 @@ class MarketplaceController {
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
  		],
+ 		'pendingProcurements' => get_option( 'marketplace_pending_procurements', [] ),
  	];
 
  	// Localize JS with config
@@ -1055,5 +1060,109 @@ class MarketplaceController {
 		if ( $deleted ) {
 			error_log( 'Reset marketplace catalog transient on locale change' );
 		}
+	}
+
+	/**
+	 * Save a pending procurement entry for a plugin.
+	 * Called when subscription API returns success but no accessUrl yet.
+	 */
+	public function ajax_save_pending_procurement() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug           = sanitize_text_field( $_POST['slug'] ?? '' );
+		$procurement_id = sanitize_text_field( $_POST['procurement_id'] ?? '' );
+		$product_id     = sanitize_text_field( $_POST['product_id'] ?? '' );
+
+		if ( empty( $slug ) || empty( $procurement_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		$pending = get_option( 'marketplace_pending_procurements', [] );
+
+		$pending[ $slug ] = [
+			'procurement_id' => $procurement_id,
+			'product_id'     => $product_id,
+			'timestamp'      => time(),
+		];
+
+		update_option( 'marketplace_pending_procurements', $pending, false );
+
+		wp_send_json_success( [ 'message' => 'Pending procurement saved.' ] );
+	}
+
+	/**
+	 * Proxy a subscription creation request to the external marketplace API.
+	 * Avoids CORS issues by making the request server-side and keeps the API key out of the browser.
+	 */
+	public function ajax_create_subscription() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$partners_customer_id = sanitize_text_field( $_POST['partnersCustomersId'] ?? '' );
+		$product_id           = sanitize_text_field( $_POST['productId'] ?? '' );
+		$price_amount         = floatval( $_POST['priceAmount'] ?? 0 );
+		$price_currency       = sanitize_text_field( $_POST['priceCurrency'] ?? '' );
+		$price_period         = sanitize_text_field( $_POST['pricePeriod'] ?? '' );
+
+		if ( empty( $partners_customer_id ) || empty( $product_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		// TODO: Replace staging URL with $this->config['api_url'] when ready
+		$api_url = '';
+		// TODO: Move API key to config
+		$api_key = '';
+
+		$response = wp_remote_post( $api_url, [
+			'headers' => [
+				'Content-Type' => 'application/json',
+				'Accept'       => 'application/json',
+				'x-api-key'    => $api_key,
+			],
+			'body'    => wp_json_encode( [
+				'partnersCustomersId' => $partners_customer_id,
+				'productId'           => $product_id,
+				'priceAmount'         => $price_amount,
+				'priceCurrency'       => $price_currency,
+				'pricePeriod'         => $price_period,
+			] ),
+			'timeout' => 30,
+		] );
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( [ 'message' => $response->get_error_message() ] );
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$data        = json_decode( $body, true );
+
+		if ( $status_code >= 400 || ( isset( $data['error'] ) && $data['error'] ) ) {
+			wp_send_json_error( $data ?: [ 'message' => 'Subscription request failed.' ] );
+		}
+
+		wp_send_json_success( $data );
+	}
+
+	/**
+	 * Clear a pending procurement entry for a plugin.
+	 * Called when procurement completes and plugin is installed, or on manual cleanup.
+	 */
+	public function ajax_clear_pending_procurement() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug = sanitize_text_field( $_POST['slug'] ?? '' );
+
+		if ( empty( $slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing slug.' ] );
+		}
+
+		$pending = get_option( 'marketplace_pending_procurements', [] );
+
+		if ( isset( $pending[ $slug ] ) ) {
+			unset( $pending[ $slug ] );
+			update_option( 'marketplace_pending_procurements', $pending, false );
+		}
+
+		wp_send_json_success( [ 'message' => 'Pending procurement cleared.' ] );
 	}
 }

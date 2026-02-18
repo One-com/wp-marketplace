@@ -38,6 +38,7 @@ export default function ErrorToast({ plugin: propPlugin }) {
     const isDeactivateError = errorState.type === 'deactivate';
     const isInstallError = errorState.type === 'install';
     const isDeleteError = errorState.type === 'delete';
+    const isBuyNowError = errorState.type === 'buy_now';
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -60,6 +61,7 @@ export default function ErrorToast({ plugin: propPlugin }) {
                     {isDeactivateError && formatMessage(uiI18n?.notifications?.pluginDeactivationFailed || "Couldn't deactivate plugin.", pluginName)}
                     {isInstallError && formatMessage(uiI18n?.notifications?.pluginInstallationFailed || "Couldn't install plugin.", pluginName)}
                     {isDeleteError && formatMessage(uiI18n?.notifications?.pluginDeletionFailed || "Couldn't delete plugin.", pluginName)}
+                    {isBuyNowError && (uiI18n?.notifications?.procurementFailed || "Couldn't complete the purchase. Please try again.")}
                 </div>
                 <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>

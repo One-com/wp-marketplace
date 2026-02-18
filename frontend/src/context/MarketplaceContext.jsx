@@ -55,6 +55,11 @@ export const MarketplaceProvider = ({
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
     const [deleteModalState, setDeleteModalState] = useState({ isOpen: false, plugin: null });
+    const [pendingProcurements, setPendingProcurements] = useState(() => {
+        return typeof window !== "undefined" && window.marketplaceConfig?.pendingProcurements
+            ? window.marketplaceConfig.pendingProcurements
+            : {};
+    });
     const [currentPluginSlug, setCurrentPluginSlug] = useState(() => {
         return typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
     });
@@ -313,6 +318,15 @@ export const MarketplaceProvider = ({
         // For now, if all rules pass (or don't exist), show the plugin
         return true;
     }, [activePlugins, activeThemeAuthor]);
+
+    // TODO: Polling for pending procurements (next iteration)
+    // When a polling endpoint is available, add a useEffect here that:
+    // 1. Iterates over pendingProcurements entries
+    // 2. Polls the procurement status endpoint for each
+    // 3. On success (accessUrl returned): calls handlePluginAction("install", {...plugin, download: accessUrl})
+    //    and then clears the entry via marketplace_clear_pending_procurement AJAX + setPendingProcurements
+    // 4. On still-pending: no action
+    // 5. On error/expired: clears the entry and shows error toast
 
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin, source = '') => {
@@ -599,7 +613,9 @@ export const MarketplaceProvider = ({
         handlePluginAction,
         cancelReload,
         loadingAction,
+        setLoadingAction,
         loadingPlugin,
+        setLoadingPlugin,
         noticeState,
         setNoticeState,
         errorState,
@@ -623,7 +639,9 @@ export const MarketplaceProvider = ({
         isWpVersionSupported,
         wpVersion,
         activePlugins,
-        activeThemeAuthor
+        activeThemeAuthor,
+        pendingProcurements,
+        setPendingProcurements
     };
 
     return (
