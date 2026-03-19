@@ -174,6 +174,8 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_subscribe', [ $this, 'ajax_subscribe' ] );
 			add_action( 'wp_ajax_marketplace_track_status', [ $this, 'ajax_track_status' ] );
 
+			add_action( 'wp_ajax_marketplace_get_subscriptions_list', [ $this, 'get_subscriptions_list' ] );
+
 			//reset transient for marketplace catalog
 			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
 			add_action('update_option_WPLANG', [$this, 'reset_transient_on_locale_change'], 999, 0);
@@ -1119,41 +1121,6 @@ class MarketplaceController {
 					'currency'  => $price_currency,
 					'interval'  => $price_period,
 				] ),
-			]
-		);
-
-		$result = $this->get_model()->request( $payload, 'POST' );
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
-		}
-
-		if ( isset( $result['error'] ) && $result['error'] ) {
-			wp_send_json_error( $result );
-		}
-
-		wp_send_json_success( $result );
-	}
-
-	/**
-	 * Poll the external API to track subscription/procurement status.
-	 * Proxies wp-marketplace-track-status calls server-side to keep credentials out of browser.
-	 */
-	public function ajax_track_status() {
-		check_ajax_referer( 'marketplace_nonce', 'nonce' );
-
-		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
-
-		if ( empty( $subscription_id ) ) {
-			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
-		}
-
-		$payload = array_merge(
-			$this->config['payload'] ?? [],
-			[
-				'action'        => 'wp-marketplace-track-status',
-				'resource_type' => 'procurement',
-				'resource_id'   => $subscription_id,
 			]
 		);
 

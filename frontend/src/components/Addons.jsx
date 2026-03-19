@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef, useMemo} from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getRebatePrice, getFullPrice } from "../utils/priceFormatter";
 import ProductDetail from "./ProductDetail";
@@ -58,6 +58,8 @@ export default function Addons() {
     // Use ref to store is_cached flag from API response
     const isCachedRef = useRef(false);
 
+    const [subscriptionsList, setSubscriptionsList] = useState([]);
+
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -89,6 +91,76 @@ export default function Addons() {
         const redirectUrl = getPluginRedirectUrl(plugin, false);
         navigateToPluginUrl(redirectUrl);
     };
+
+    //Get a subscription list
+  useEffect(() => {
+    const fetchSubscriptions = async () => {
+      try {
+        debugger;
+        const formData = new URLSearchParams({
+          action: 'marketplace_get_subscriptions_list',
+          nonce: window.marketplaceConfig?.wpConfig?.nonce
+        });
+
+        const ajaxUrl = window.marketplaceConfig?.wpConfig?.ajaxUrl;
+
+        if (!ajaxUrl) {
+          console.error('ajaxUrl is missing');
+          return;
+        }
+
+        const response = await fetch(ajaxUrl, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          setSubscriptionsList([]);
+          return;
+        }
+
+        const subscriptionLists = result?.data?.data?.subscriptions || [];
+        setSubscriptionsList(subscriptionLists);
+
+      } catch (error) {
+        console.error('Error during fetch subscription list', error);
+        setSubscriptionsList([]);
+        return;
+      }
+    };
+
+    fetchSubscriptions();
+  }, []);
+
+  /*const mergedPlugins = useMemo(() => {
+    // ✅ Ensure arrays (prevents crashes)
+    const safeSubscriptions = Array.isArray(subscriptionsList) ? subscriptionsList : [];
+    const safePlugins = Array.isArray(installedPlugins) ? installedPlugins : [];
+
+    // ✅ If no subscriptions, return plugins as-is
+    if (!safeSubscriptions.length) return safePlugins;
+
+    // ✅ Create fast lookup map (O(1))
+    const subMap = new Map(
+      safeSubscriptions.map(sub => [sub?.slug, sub]) // ⚠️ adjust key if needed
+    );
+
+    // ✅ Merge data
+    return safePlugins.map(plugin => {
+      const subscription = subMap.get(plugin?.slug);
+
+      return {
+        ...plugin,
+        subscription,                 // full subscription object
+        hasSubscription: !!subscription,
+        subscriptionStatus: subscription?.status || null,
+        subscriptionExpiry: subscription?.expiry_date || null,
+      };
+    });
+
+  }, [installedPlugins, subscriptionsList]);*/
 
     // Fetch plugins from API
     useEffect(() => {
@@ -433,6 +505,7 @@ export default function Addons() {
               </section>
           )}
 
+          {/* Entry point for addons list */}
           {installedPlugins.length > 0 && (
             <section className="addons-section gv-mt-fluid">
               <div className="gv-data-table gv-mt-lg gv-addons-table">
