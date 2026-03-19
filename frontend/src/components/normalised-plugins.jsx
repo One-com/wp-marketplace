@@ -40,6 +40,9 @@ export function normalizePlugins(rawResponse) {
       ? plugin.price.currency
       : undefined;
 
+    // Normalize licenseType — handle both camelCase and snake_case from API
+    const licenseType = plugin?.licenseType || plugin?.license_type || '';
+
     return {
       ...plugin,
       name: plugin?.name || "Unknown",
@@ -51,6 +54,7 @@ export function normalizePlugins(rawResponse) {
       authorUrl,
       priceAmount,
       priceCurrency,
+      licenseType,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
       i18n: plugin?.i18n || {},

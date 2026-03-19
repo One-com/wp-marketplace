@@ -133,9 +133,8 @@ export default function PluginActions({ plugin }) {
 
         try {
             const formData = new URLSearchParams({
-                action: 'marketplace_create_subscription',
+                action: 'marketplace_subscribe',
                 nonce: wpConfig.nonce,
-                partnersCustomersId: 'grn:groupone:rankmath:rankmath.com:user:1857972',
                 productId: plugin.productId || '',
                 priceAmount: priceData.amount || '',
                 priceCurrency: priceData.currency || '',
