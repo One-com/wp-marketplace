@@ -1138,6 +1138,36 @@ class MarketplaceController {
 	}
 
 	/**
+	 *
+	 * @return void
+	 */
+	public function get_subscriptions_list() {
+
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action' => 'wp-marketplace-subscription-list',
+				'username' => 'test-6202', //TODO: remove this after testing
+				'api_key'  => 'd05fbebee53d13108a3c96747901f58f', //TODO: remove this after testing
+			]
+		);
+
+		$result = $this->get_model()->request( $payload, 'GET' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		wp_send_json_success( $result['data']["subscriptions"] );
+	}
+
+	/**
 	 * Clear a pending procurement entry for a plugin.
 	 * Called when procurement completes and plugin is installed, or on manual cleanup.
 	 */
