@@ -59,6 +59,7 @@ export default function Addons() {
     const isCachedRef = useRef(false);
 
     const [subscriptionsList, setSubscriptionsList] = useState([]);
+    const [mergedPlugins, setMergedPlugins] = useState([]);
 
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
@@ -121,7 +122,7 @@ export default function Addons() {
           return;
         }
 
-        const subscriptionLists = result?.data?.data?.subscriptions || [];
+        const subscriptionLists = result?.data || [];
         setSubscriptionsList(subscriptionLists);
 
       } catch (error) {
@@ -134,33 +135,37 @@ export default function Addons() {
     fetchSubscriptions();
   }, []);
 
-  /*const mergedPlugins = useMemo(() => {
-    // ✅ Ensure arrays (prevents crashes)
-    const safeSubscriptions = Array.isArray(subscriptionsList) ? subscriptionsList : [];
-    const safePlugins = Array.isArray(installedPlugins) ? installedPlugins : [];
+  const mergePluginsWithSubscriptions = (installedPlugins, subscriptions) => {
+    // Step 1: Group subscriptions by productId
+    const subscriptionMap = subscriptions.reduce((acc, sub) => {
+      if (!acc[sub.productId]) {
+        acc[sub.productId] = [];
+      }
+      acc[sub.productId].push(sub);
+      return acc;
+    }, {});
 
-    // ✅ If no subscriptions, return plugins as-is
-    if (!safeSubscriptions.length) return safePlugins;
-
-    // ✅ Create fast lookup map (O(1))
-    const subMap = new Map(
-      safeSubscriptions.map(sub => [sub?.slug, sub]) // ⚠️ adjust key if needed
-    );
-
-    // ✅ Merge data
-    return safePlugins.map(plugin => {
-      const subscription = subMap.get(plugin?.slug);
-
+    // Step 2: Merge into plugins
+    const merged = installedPlugins.map((plugin) => {
       return {
         ...plugin,
-        subscription,                 // full subscription object
-        hasSubscription: !!subscription,
-        subscriptionStatus: subscription?.status || null,
-        subscriptionExpiry: subscription?.expiry_date || null,
+        subscriptions: subscriptionMap[plugin.productId] || [], // attach subscriptions
+        hasSubscription: !!subscriptionMap[plugin.productId]?.length // optional helper flag
       };
     });
 
-  }, [installedPlugins, subscriptionsList]);*/
+    return merged;
+  };
+
+  useEffect(() => {
+    if (plugins?.length && subscriptionsList?.length) {
+      const merged = mergePluginsWithSubscriptions(
+        plugins,
+        subscriptionsList
+      );
+      setMergedPlugins(merged);
+    }
+  }, [plugins, subscriptionsList]);
 
     // Fetch plugins from API
     useEffect(() => {
@@ -405,9 +410,13 @@ export default function Addons() {
     );
   }
 
+    //const installedPlugins = [...plugins, ...subscriptionsList];
+    console.log("plugins addons", plugins);
+    console.log("subscriptions addons", subscriptionsList);
+    console.log("Merged plugins", mergedPlugins);
 
     // Filter plugins for the table: installed OR special plugins with subscription
-    const installedPlugins = plugins.filter(p => p.installed || shouldShowProvision(p));
+    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription);
 
     return (
         <div className="marketplace-container gv-flex gv-flex-col">
