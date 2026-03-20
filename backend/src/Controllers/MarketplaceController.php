@@ -446,60 +446,60 @@ class MarketplaceController {
 			unset( $global_properties['is_sandbox'] );
 		}
 
- 	// Get distinct_id from config if provided
- 	$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+		// Get distinct_id from config if provided
+		$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
 
- 	// Get data consent status from config
- 	$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
+		// Get data consent status from config
+		$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
 
-	// Get Mixpanel token
-	$mixpanel_token = $this->get_mixpanel_token();
+		// Get Mixpanel token
+		$mixpanel_token = $this->get_mixpanel_token();
 
- 	// Build base localized config
- 	$localized_config = [
- 		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
- 		'apiUrl'     => $this->config['api_url'],
- 		'locale' => $locale,
- 		'brand' => $this->config['brand'],
- 		'useWPHandlers' => true,
- 		'wpConfig' => [
- 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
- 			'adminUrl' => admin_url(),
- 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
- 			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
- 		],
- 		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
- 		'assetsBaseUrl' => $base_url,
- 		'wpVersion' => $wp_version,
- 		'activePlugins' => $active_plugins,
- 		'activeThemeAuthor' => $active_theme_author,
- 		'data_consent_status' => $data_consent_status,
- 		'labels'=>array(
- 			'install' => __('Install', 'onecom-wp'),
- 			'installing' => __('Installing', 'onecom-wp'),
- 			'activate' => __('Activate', 'onecom-wp'),
- 			'deactivate' => __('Deactivate', 'onecom-wp'),
- 			'activating' => __('Activating', 'onecom-wp'),
- 			'deactivating' => __('Deactivating', 'onecom-wp'),
- 			'download' => __('Download', 'onecom-wp'),
- 			'downloading' => __('Downloading...', 'onecom-wp'),
- 			'learnMore' => __('Learn more', 'onecom-wp'),
- 			'all' => __('All', 'onecom-wp'),
- 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
- 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
- 			'moreDetails' => __('More details', 'onecom-wp'),
- 		),
- 		// Always send mixpanel config so it can be used when consent is granted dynamically
- 		'mixpanel' => [
- 			'token' => $mixpanel_token,
- 			'globalProperties' => $global_properties,
- 			'distinctId' => $distinct_id,
- 		],
- 		'pendingProcurements' => get_option( 'marketplace_pending_procurements', [] ),
- 	];
+		// Build base localized config
+		$localized_config = [
+			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+			'apiUrl'     => $this->config['api_url'],
+			'locale' => $locale,
+			'brand' => $this->config['brand'],
+			'useWPHandlers' => true,
+			'wpConfig' => [
+				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+				'adminUrl' => admin_url(),
+				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
+			],
+			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
+			'assetsBaseUrl' => $base_url,
+			'wpVersion' => $wp_version,
+			'activePlugins' => $active_plugins,
+			'activeThemeAuthor' => $active_theme_author,
+			'data_consent_status' => $data_consent_status,
+			'labels'=>array(
+				'install' => __('Install', 'onecom-wp'),
+				'installing' => __('Installing', 'onecom-wp'),
+				'activate' => __('Activate', 'onecom-wp'),
+				'deactivate' => __('Deactivate', 'onecom-wp'),
+				'activating' => __('Activating', 'onecom-wp'),
+				'deactivating' => __('Deactivating', 'onecom-wp'),
+				'download' => __('Download', 'onecom-wp'),
+				'downloading' => __('Downloading...', 'onecom-wp'),
+				'learnMore' => __('Learn more', 'onecom-wp'),
+				'all' => __('All', 'onecom-wp'),
+				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
+				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
+				'moreDetails' => __('More details', 'onecom-wp'),
+			),
+			// Always send mixpanel config so it can be used when consent is granted dynamically
+			'mixpanel' => [
+				'token' => $mixpanel_token,
+				'globalProperties' => $global_properties,
+				'distinctId' => $distinct_id,
+			],
+			'pendingProcurements' => get_option( 'marketplace_pending_procurements', [] ),
+		];
 
- 	// Localize JS with config
- 	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
+		// Localize JS with config
+		wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
 
 		echo '<div id="marketplace-root" class="gv-activated"></div>';
 	}
@@ -624,14 +624,14 @@ class MarketplaceController {
 				}
 				$plugins['sections'][$si]['items'] = array_map( $add_state, $section['items'] );
 			}
- 	} elseif ( ! empty( $plugins['data']['ui_json'] ) && is_array( $plugins['data']['ui_json'] ) ) {
- 		$plugins['data']['ui_json'] = array_map( $add_state, $plugins['data']['ui_json'] );
- 	}
+		} elseif ( ! empty( $plugins['data']['ui_json'] ) && is_array( $plugins['data']['ui_json'] ) ) {
+			$plugins['data']['ui_json'] = array_map( $add_state, $plugins['data']['ui_json'] );
+		}
 
- 	// Add is_cached flag to response
- 	$plugins['is_cached'] = $is_cached;
+		// Add is_cached flag to response
+		$plugins['is_cached'] = $is_cached;
 
- 	return new WP_REST_Response( $plugins, 200 );
+		return new WP_REST_Response( $plugins, 200 );
 	}
 
 	/**
@@ -1140,8 +1140,8 @@ class MarketplaceController {
 	 *
 	 * @return void
 	 */
-	public function get_subscriptions_list() {
-
+	public function get_subscriptions_list(): void
+	{
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		$payload = array_merge(
@@ -1153,7 +1153,8 @@ class MarketplaceController {
 			]
 		);
 
-		$result = $this->get_model()->request( $payload, 'GET' );
+		//The default method is GET
+		$result = $this->get_model()->request( $payload);
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
@@ -1163,7 +1164,7 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
-		wp_send_json_success( $result );
+		wp_send_json_success( $result['data']["subscriptions"] );
 	}
 
 	/**
