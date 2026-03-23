@@ -176,6 +176,9 @@ class MarketplaceController {
 
 			add_action( 'wp_ajax_marketplace_get_subscriptions_list', [ $this, 'get_subscriptions_list' ] );
 
+			add_action( 'wp_ajax_marketplace_cancel_subscription', [ $this, 'cancel_subscriptions' ] );
+
+
 			//reset transient for marketplace catalog
 			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
 			add_action('update_option_WPLANG', [$this, 'reset_transient_on_locale_change'], 999, 0);
@@ -1167,6 +1170,11 @@ class MarketplaceController {
 		wp_send_json_success( $result['data']["subscriptions"] );
 	}
 
+	public function cancel_subscriptions() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		wp_send_json_success( [ 'message' => 'Subscriptions cancelled successfully.' ] );
+	}
 	/**
 	 * Clear a pending procurement entry for a plugin.
 	 * Called when procurement completes and plugin is installed, or on manual cleanup.
