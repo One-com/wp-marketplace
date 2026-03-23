@@ -172,6 +172,7 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_save_pending_procurement', [ $this, 'ajax_save_pending_procurement' ] );
 			add_action( 'wp_ajax_marketplace_clear_pending_procurement', [ $this, 'ajax_clear_pending_procurement' ] );
 			add_action( 'wp_ajax_marketplace_subscribe', [ $this, 'ajax_subscribe' ] );
+			add_action( 'wp_ajax_marketplace_track_status', [ $this, 'ajax_track_status' ] );
 
 			//reset transient for marketplace catalog
 			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
@@ -1069,18 +1070,18 @@ class MarketplaceController {
 	public function ajax_save_pending_procurement() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
-		$slug           = sanitize_text_field( $_POST['slug'] ?? '' );
-		$procurement_id = sanitize_text_field( $_POST['procurement_id'] ?? '' );
-		$product_id     = sanitize_text_field( $_POST['product_id'] ?? '' );
+		$slug            = sanitize_text_field( $_POST['slug'] ?? '' );
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+		$product_id      = sanitize_text_field( $_POST['product_id'] ?? '' );
 
-		if ( empty( $slug ) || empty( $procurement_id ) ) {
+		if ( empty( $slug ) || empty( $subscription_id ) ) {
 			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
 		}
 
 		$pending = get_option( 'marketplace_pending_procurements', [] );
 
 		$pending[ $slug ] = [
-			'procurement_id' => $procurement_id,
+			'subscriptionId' => $subscription_id,
 			'product_id'     => $product_id,
 			'timestamp'      => time(),
 		];
@@ -1118,6 +1119,41 @@ class MarketplaceController {
 					'currency'  => $price_currency,
 					'interval'  => $price_period,
 				] ),
+			]
+		);
+
+		$result = $this->get_model()->request( $payload, 'POST' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Poll the external API to track subscription/procurement status.
+	 * Proxies wp-marketplace-track-status calls server-side to keep credentials out of browser.
+	 */
+	public function ajax_track_status() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+
+		if ( empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action'        => 'wp-marketplace-track-status',
+				'resource_type' => 'procurement',
+				'resource_id'   => $subscription_id,
 			]
 		);
 

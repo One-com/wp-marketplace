@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
+import { startPolling } from "../utils/pollingHelper";
 
 /**
  * Extracts price data from a plugin object for the subscription API.
@@ -52,12 +53,142 @@ export default function PluginActions({ plugin }) {
     } = useMarketplace();
 
     const [buyNowLoading, setBuyNowLoading] = useState(false);
+    const pollingIntervalRef = useRef(null);
 
     // Get subscription status for this plugin from context
     const pluginSubscriptionStatus = subscriptionStatus[plugin.slug];
     const pluginIsCheckingSubscription = isCheckingSubscription[plugin.slug];
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/` : "";
+
+    // Helper function to replace {0} with plugin name
+    const formatMessage = (message, pluginName) => {
+        if (!message) return '';
+        return message.replace('{0}', pluginName || '');
+    };
+
+    const pluginName = plugin?.name || '';
+
+    /**
+     * Start polling wp-marketplace-track-status for a subscription procurement.
+     * Uses the generic startPolling utility so the same pattern can be reused
+     * for other tracking operations (e.g. cancellation).
+     *
+     * @param {string} slug           Plugin slug (used for DB clear + local state key).
+     * @param {string} subscriptionId Procurement / subscription ID to track.
+     */
+    const startSubscriptionPolling = (slug, subscriptionId) => {
+        // Stop any in-flight polling for this component before starting a new one
+        if (pollingIntervalRef.current) {
+            pollingIntervalRef.current();
+        }
+
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl || !subscriptionId) return;
+
+        pollingIntervalRef.current = startPolling({
+            ajaxUrl,
+            nonce: wpConfig.nonce,
+            action: 'marketplace_track_status',
+            params: { subscriptionId },
+            interval: 10000,
+            onResult: async (result) => {
+                if (!result.success) return false; // keep polling
+
+                // WP AJAX wraps external response: result.data = external API response
+                // External response shape: { error, success, data: { type, id, status, license: { accessDetails: { downloadUrl } } } }
+                const procurementData = result?.data?.data;
+                const status = procurementData?.status;
+
+                // Stop and show error if the response doesn't have the expected shape
+                // (e.g. {"success":true,"data":{"message":"Not Found"}})
+                if (!procurementData || !status) {
+                    setErrorState({ visible: true, type: 'buy_now', pluginSlug: slug });
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            action: 'marketplace_clear_pending_procurement',
+                            nonce: wpConfig.nonce,
+                            slug,
+                        }),
+                    });
+                    setPendingProcurements(prev => {
+                        const next = { ...prev };
+                        delete next[slug];
+                        return next;
+                    });
+                    return true; // stop polling
+                }
+
+                if (status === 'active') {
+                    const downloadUrl = procurementData?.license?.accessDetails?.downloadUrl;
+
+                    if (downloadUrl) {
+                        await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'product_detail');
+                    }
+
+                    // Clear DB entry
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            action: 'marketplace_clear_pending_procurement',
+                            nonce: wpConfig.nonce,
+                            slug,
+                        }),
+                    });
+
+                    // Remove from local state
+                    setPendingProcurements(prev => {
+                        const next = { ...prev };
+                        delete next[slug];
+                        return next;
+                    });
+
+                    return true; // stop polling
+                }
+
+                if (status === 'not_found') {
+                    setErrorState({ visible: true, type: 'buy_now', pluginSlug: slug });
+
+                    // Clean up DB entry and local state
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            action: 'marketplace_clear_pending_procurement',
+                            nonce: wpConfig.nonce,
+                            slug,
+                        }),
+                    });
+                    setPendingProcurements(prev => {
+                        const next = { ...prev };
+                        delete next[slug];
+                        return next;
+                    });
+
+                    return true; // stop polling
+                }
+
+                return false; // 'pending' — keep polling
+            },
+            onError: (error) => console.error('[Marketplace] Polling error', error),
+        });
+    };
+
+    // Resume polling on mount for any pending procurement persisted in DB (survives page reload)
+    useEffect(() => {
+        const pending = pendingProcurements?.[plugin.slug];
+        if (pending?.subscriptionId) {
+            startSubscriptionPolling(plugin.slug, pending.subscriptionId);
+        }
+
+        return () => {
+            if (pollingIntervalRef.current) {
+                pollingIntervalRef.current(); // call the stop function
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handleClick = (action) => {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
         const isNotInstalled = !plugin.installed;
@@ -148,13 +279,12 @@ export default function PluginActions({ plugin }) {
 
             const result = await response.json();
 
-            // Scenario 3: API-level error (WP AJAX wraps in {success, data})
             if (!result.success) {
                 trackButtonClick({
                     buttonName: 'Buy now',
                     buttonAction: 'buy_now',
                     plugin: plugin,
-                    context: { result: 'error', error_message: result.data?.message || 'Procurement failed' },
+                    context: { result: 'error', error_message: result.data?.message || 'Subscription failed' },
                 });
                 setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug });
                 setBuyNowLoading(false);
@@ -162,39 +292,39 @@ export default function PluginActions({ plugin }) {
                 return;
             }
 
-            // result.data contains the external API response
-            const apiData = result.data;
-            const accessUrl = apiData?.data?.subscriptionDetails?.accessUrl;
+            // External API response: result.data = {error, success, data: {status, subscriptionId, productId}}
+            const innerData = result?.data?.data;
+            const status = innerData?.status;
+            const subscriptionId = innerData?.subscriptionId;
 
             trackButtonClick({
                 buttonName: 'Buy now',
                 buttonAction: 'buy_now',
                 plugin: plugin,
                 context: {
-                    result: accessUrl ? 'procurement_success' : 'procurement_pending',
-                    procurement_id: apiData?.data?.procurement_id,
-                    has_access_url: !!accessUrl,
+                    result: status === 'active' ? 'procurement_success' : 'procurement_pending',
+                    subscription_id: subscriptionId,
+                    status: status,
                 },
             });
 
-            if (accessUrl) {
-                // Scenario 1: accessUrl present — trigger install via existing flow
-                // handlePluginAction sets its own overlay message, so clear ours
+            if (status === 'active') {
+                // Subscription immediately active — install using download URL
+                // Response shape: data.license.accessDetails.downloadUrl
+                const downloadUrl = innerData?.license?.accessDetails?.downloadUrl;
                 setBuyNowLoading(false);
                 setLoadingAction('');
-                await handlePluginAction(
-                    "install",
-                    { ...plugin, download: accessUrl },
-                    'product_detail'
-                );
-            } else {
-                // Scenario 2: No accessUrl — procurement pending, persist to DB
+                if (downloadUrl) {
+                    await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'product_detail');
+                }
+            } else if (status === 'pending' && subscriptionId) {
+                // Save pending procurement to DB
                 const saveProcurementData = new URLSearchParams({
                     action: 'marketplace_save_pending_procurement',
                     nonce: wpConfig.nonce,
                     slug: plugin.slug,
-                    procurement_id: apiData?.data?.procurement_id || '',
-                    product_id: plugin.productId || '',
+                    subscriptionId: subscriptionId,
+                    product_id: innerData?.productId || plugin.productId || '',
                 });
                 // Fire and forget — UI updates immediately via local state
                 fetch(ajaxUrl, { method: 'POST', body: saveProcurementData });
@@ -202,16 +332,22 @@ export default function PluginActions({ plugin }) {
                 setPendingProcurements(prev => ({
                     ...prev,
                     [plugin.slug]: {
-                        procurement_id: apiData?.data?.procurement_id,
-                        product_id: plugin.productId,
+                        subscriptionId: subscriptionId,
+                        product_id: innerData?.productId || plugin.productId,
                         timestamp: Math.floor(Date.now() / 1000),
                     },
                 }));
+
+                setBuyNowLoading(false);
+                setLoadingAction('');
+
+                // Start polling for status updates
+                startSubscriptionPolling(plugin.slug, subscriptionId);
+            } else {
                 setBuyNowLoading(false);
                 setLoadingAction('');
             }
         } catch (error) {
-            // Scenario 3: Network/exception error
             console.error('Buy now subscription request failed', error);
             trackButtonClick({
                 buttonName: 'Buy now',
@@ -241,14 +377,6 @@ export default function PluginActions({ plugin }) {
         const redirectUrl = getPluginRedirectUrl(plugin, false);
         navigateToPluginUrl(redirectUrl);
     };
-
-    // Helper function to replace {0} with plugin name
-    const formatMessage = (message, pluginName) => {
-        if (!message) return '';
-        return message.replace('{0}', pluginName || '');
-    };
-
-    const pluginName = plugin?.name || '';
 
     // Check if we should show "Select" button instead of install/activate
     const shouldShowSelectButton = isOnecomBrand && isSpecialPlugin(plugin.slug) && !plugin.installed && pluginSubscriptionStatus === false;
@@ -309,7 +437,7 @@ export default function PluginActions({ plugin }) {
                         {uiI18n?.buyNowButton || 'Buy now'}
                     </button>
                     {isPendingProcurement && (
-                        <p className="gv-text-sm gv-mt-sm">
+                        <p className="gv-text-sm gv-mt-sm gv-text-secondary">
                             {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
                         </p>
                     )}

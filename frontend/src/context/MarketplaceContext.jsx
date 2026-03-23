@@ -319,14 +319,6 @@ export const MarketplaceProvider = ({
         return true;
     }, [activePlugins, activeThemeAuthor]);
 
-    // TODO: Polling for pending procurements (next iteration)
-    // When a polling endpoint is available, add a useEffect here that:
-    // 1. Iterates over pendingProcurements entries
-    // 2. Polls the procurement status endpoint for each
-    // 3. On success (accessUrl returned): calls handlePluginAction("install", {...plugin, download: accessUrl})
-    //    and then clears the entry via marketplace_clear_pending_procurement AJAX + setPendingProcurements
-    // 4. On still-pending: no action
-    // 5. On error/expired: clears the entry and shows error toast
 
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin, source = '') => {
