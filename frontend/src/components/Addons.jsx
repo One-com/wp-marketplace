@@ -523,6 +523,7 @@ export default function Addons() {
 
       // 3. Active subscription
       if (status === 'active') {
+        const download_url = latestSubscription?.accessDetails?.downloadUrl;
         if (!plugin.installed) {
           return (
             <a
@@ -530,7 +531,7 @@ export default function Addons() {
               className="gv-action"
               onClick={(e) => {
                 e.preventDefault();
-                handlePluginAction('install', plugin, 'addons');
+                handlePluginAction('install', plugin, 'addons', download_url);
               }}
             >
               {labels?.installButton || 'Install'}

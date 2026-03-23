@@ -372,7 +372,8 @@ export const MarketplaceProvider = ({
     }, []);
 
     // Handle plugin actions (install, activate, deactivate)
-    const handlePluginAction = useCallback(async (action, plugin, source = '') => {
+    // downloadUrl (4th arg) overrides plugin.download for install; omit to keep existing behaviour
+    const handlePluginAction = useCallback(async (action, plugin, source = '', downloadUrl = '') => {
         // Check if this is Imagify plugin activation (handles 302 redirect case)
         const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
 
@@ -411,8 +412,8 @@ export const MarketplaceProvider = ({
         try {
             let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
 
-            // prepare encoded download param (safe if plugin.download is undefined)
-            const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
+            // prefer explicit downloadUrl arg, fall back to plugin.download, then empty string
+            const downloadParam = `download_url=${encodeURIComponent(downloadUrl || plugin.download || '')}`;
 
             if (useWPHandlers) {
                 // original WP-AJAX URL + download_url appended
@@ -448,7 +449,7 @@ export const MarketplaceProvider = ({
 
                 // Show success notice for install, activate and delete actions
                 if (action === 'install' && result.data.installed) {
-                    setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
+                    actionSuccessful = true; // keep pluginInAction locked until reload
 
                     // Track successful install
                     trackButtonClick({
@@ -460,6 +461,35 @@ export const MarketplaceProvider = ({
                             result: 'success',
                         }
                     });
+
+                    if (source === 'product_detail') {
+                        // Quick reload for product detail page
+                        sessionStorage.setItem('mp_skip_page_view', 'true');
+                        sessionStorage.setItem('mp_success_notice', JSON.stringify({
+                            visible: true,
+                            type: 'installed',
+                            pluginSlug: plugin.slug,
+                            successType: 'install'
+                        }));
+                        reloadTimeoutRef.current = setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    } else {
+                        // Addons page: show success toast, reload after a short delay
+                        setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
+                        setSuccessState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+
+                        reloadTimeoutRef.current = setTimeout(() => {
+                            sessionStorage.setItem('mp_skip_page_view', 'true');
+                            window.location.reload();
+                        }, 3000);
+
+                        // Explicitly clear loading state so loader hides immediately
+                        setLoadingAction('');
+                        setLoadingPlugin('');
+                    }
+
+                    return;
                 } else if (action === 'delete' && !result.data.installed) {
                     setNoticeState({ visible: true, type: 'deleted', pluginSlug: plugin.slug });
                     setSuccessState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
