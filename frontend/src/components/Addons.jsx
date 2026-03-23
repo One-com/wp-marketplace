@@ -25,6 +25,9 @@ export default function Addons() {
         uiI18n,
         setUiI18n,
         handlePluginAction,
+        handleCancelSubsAction,
+        subscriptionsList,
+        setSubscriptionsList,
         catalogError,
         setCatalogError,
         catalogLoading,
@@ -58,7 +61,6 @@ export default function Addons() {
     // Use ref to store is_cached flag from API response
     const isCachedRef = useRef(false);
 
-    const [subscriptionsList, setSubscriptionsList] = useState([]);
     const [mergedPlugins, setMergedPlugins] = useState([]);
 
     // Construct icon base URL with fallback logic
@@ -411,9 +413,9 @@ export default function Addons() {
   }
 
     //const installedPlugins = [...plugins, ...subscriptionsList];
-    console.log("plugins addons", plugins);
-    console.log("subscriptions addons", subscriptionsList);
-    console.log("Merged plugins", mergedPlugins);
+    //console.log("plugins addons", plugins);
+    //console.log("subscriptions addons", subscriptionsList);
+    //console.log("Merged plugins", mergedPlugins);
 
     // Filter plugins for the table: installed OR special plugins with subscription
     const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription);
@@ -526,9 +528,12 @@ export default function Addons() {
             <a
               href="#"
               className="gv-action"
-              onClick={handleProvisionClick}
+              onClick={(e) => {
+                e.preventDefault();
+                handlePluginAction('install', plugin, 'addons');
+              }}
             >
-              {labels?.installAndActivate || 'Install'}
+              {labels?.installButton || 'Install'}
             </a>
           );
         }
@@ -717,7 +722,6 @@ export default function Addons() {
                     const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
                     const latestSubsDate = (latestSubscription !== null) ? formatDateDDMMYYYY(latestSubscription.expiresAt) : '-';
                     const renewalDate =  (latestSubscription !== null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : '-'
-
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>
                         {/* Image */}
@@ -767,7 +771,7 @@ export default function Addons() {
 
                         {/* Menu actions */}
                         <td>
-                          {(plugin.activated || (plugin.installed && !isProvisionable)) && (
+                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
@@ -841,6 +845,20 @@ export default function Addons() {
                                           <span>{uiI18n?.deleteButton || 'Delete'}</span>
                                         </a>
                                       )}
+                                    </li>
+
+                                    <li className="gv-mb-0">
+                                      {latestSubscription?.status === 'active' && (<button
+                                        className="gv-menu-item"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          setOpenMenuIndex(null);
+                                          handleCancelSubsAction('cancel_subscription', plugin, latestSubscription.subscriptionId );
+                                        }}
+                                      >
+                                        <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                        <span>{uiI18n?.cancel || 'Cancel'}</span>
+                                      </button>)}
                                     </li>
                                   </ul>
                                 </div>

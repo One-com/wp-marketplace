@@ -42,6 +42,7 @@ export const MarketplaceProvider = ({
     assetsBaseUrl
 }) => {
     const [pluginInAction, setPluginInAction] = useState({});
+    const [subscriptionsList, setSubscriptionsList] = useState([]);
     const [subscriptionStatus, setSubscriptionStatus] = useState({});
     const [isCheckingSubscription, setIsCheckingSubscription] = useState({});
     const [plugins, setPlugins] = useState([]);
@@ -328,6 +329,56 @@ export const MarketplaceProvider = ({
     // 4. On still-pending: no action
     // 5. On error/expired: clears the entry and shows error toast
 
+    // Handle "Cancel Subscription" action
+    const handleCancelSubsAction = useCallback(async (action, plugin, subscription_id) => {
+        try {
+            const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
+
+            if (!ajaxUrl) {
+                console.error('ajaxUrl is missing');
+                return;
+            }
+
+            const formData = new URLSearchParams({
+                action: 'marketplace_cancel_subscription',
+                nonce: window.marketplaceConfig?.wpConfig?.nonce,
+                plugin_slug: plugin.slug,
+                ...(subscription_id ? { subscription_id } : {}),
+            });
+
+            const response = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                console.error('Cancel subscription failed:', result?.data?.message || 'Unknown error');
+                return;
+            }
+
+            // Refresh subscriptions list after successful cancellation
+            const refreshFormData = new URLSearchParams({
+                action: 'marketplace_get_subscriptions_list',
+                nonce: window.marketplaceConfig?.wpConfig?.nonce,
+            });
+
+            const refreshResponse = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: refreshFormData,
+            });
+
+            const refreshResult = await refreshResponse.json();
+
+            if (refreshResult.success) {
+                setSubscriptionsList(refreshResult?.data || []);
+            }
+        } catch (error) {
+            console.error('Error during cancel subscription', error);
+        }
+    }, []);
+
     // Handle plugin actions (install, activate, deactivate)
     const handlePluginAction = useCallback(async (action, plugin, source = '') => {
         // Check if this is Imagify plugin activation (handles 302 redirect case)
@@ -602,6 +653,8 @@ export const MarketplaceProvider = ({
         assetsBaseUrl,
         pluginInAction,
         setPluginInAction,
+        subscriptionsList,
+        setSubscriptionsList,
         subscriptionStatus,
         isCheckingSubscription,
         fetchSubscriptionStatus,
@@ -611,6 +664,7 @@ export const MarketplaceProvider = ({
         uiI18n,
         setUiI18n,
         handlePluginAction,
+        handleCancelSubsAction,
         cancelReload,
         loadingAction,
         setLoadingAction,
