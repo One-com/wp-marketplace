@@ -97,12 +97,13 @@ export default function Addons() {
 
     //Get a subscription list
   useEffect(() => {
+    const controller = new AbortController();
     const fetchSubscriptions = async () => {
       try {
-        debugger;
         const formData = new URLSearchParams({
           action: 'marketplace_get_subscriptions_list',
-          nonce: window.marketplaceConfig?.wpConfig?.nonce
+          nonce: window.marketplaceConfig?.wpConfig?.nonce,
+          signal: controller.signal
         });
 
         const ajaxUrl = window.marketplaceConfig?.wpConfig?.ajaxUrl;
@@ -135,6 +136,7 @@ export default function Addons() {
     };
 
     fetchSubscriptions();
+    return () => controller.abort();
   }, []);
 
   const mergePluginsWithSubscriptions = (installedPlugins, subscriptions) => {
