@@ -1147,6 +1147,15 @@ class MarketplaceController {
 	{
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
+		$brand_name = $this->config['brand'];
+		$transient_name = "{$brand_name}_subscription_list";
+		$get_subscription_list = get_site_transient( $transient_name );
+
+		if ( is_array($get_subscription_list ) && ! empty( $get_subscription_list ) ) {
+			error_log( 'Return transient subscriptions list' );
+			wp_send_json_success( $get_subscription_list );
+		}
+
 		$payload = array_merge(
 			$this->config['payload'] ?? [],
 			[
@@ -1167,7 +1176,10 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
-		wp_send_json_success( $result['data']["subscriptions"] );
+		$get_subscription_list = $result['data']["subscriptions"];
+		error_log( 'Caching subscriptions list' );
+		set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
+		wp_send_json_success($get_subscription_list);
 	}
 
 	public function cancel_subscriptions() {
