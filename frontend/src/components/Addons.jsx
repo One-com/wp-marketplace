@@ -10,6 +10,7 @@ import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
+import { getLatestSubscription } from "../utils/common.utils";
 
 export default function Addons() {
     const {
@@ -151,7 +152,7 @@ export default function Addons() {
       acc[sub.productId].push(sub);
       return acc;
     }, {});
-    console.log("subscriptionMap", plugins);
+
     // Merge subscription data into every plugin
     return plugins.map((plugin) => ({
       ...plugin,
@@ -403,23 +404,10 @@ export default function Addons() {
     );
   }
 
-    //const installedPlugins = [...plugins, ...subscriptionsList];
-    //console.log("plugins addons", plugins);
-    //console.log("subscriptions addons", subscriptionsList);
-    //console.log("Merged plugins", mergedPlugins);
-
     // Filter plugins for the table: installed OR special plugins with subscription
     const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription);
 
-  const getLatestSubscription = (subscriptions) => {
-    if (!subscriptions?.length) return null;
 
-    return subscriptions.reduce((latest, current) => {
-      return new Date(current.expiresAt) > new Date(latest.expiresAt)
-        ? current
-        : latest;
-    });
-  };
 
   /**
    * Formats a date string to DD/MM/YYYY format.
