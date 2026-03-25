@@ -29,6 +29,7 @@ export default function Addons() {
         handleCancelSubsAction,
         subscriptionsList,
         setSubscriptionsList,
+        fetchPartnerSubscriptions,
         catalogError,
         setCatalogError,
         catalogLoading,
@@ -96,47 +97,8 @@ export default function Addons() {
 
     //Get a subscription list
   useEffect(() => {
-    const controller = new AbortController();
-    const fetchSubscriptions = async () => {
-      try {
-        const formData = new URLSearchParams({
-          action: 'marketplace_get_subscriptions_list',
-          nonce: window.marketplaceConfig?.wpConfig?.nonce,
-          signal: controller.signal
-        });
-
-        const ajaxUrl = window.marketplaceConfig?.wpConfig?.ajaxUrl;
-
-        if (!ajaxUrl) {
-          console.error('ajaxUrl is missing');
-          return;
-        }
-
-        const response = await fetch(ajaxUrl, {
-          method: 'POST',
-          body: formData,
-        });
-
-        const result = await response.json();
-
-        if (!result.success) {
-          setSubscriptionsList([]);
-          return;
-        }
-
-        const subscriptionLists = result?.data || [];
-        setSubscriptionsList(subscriptionLists);
-
-      } catch (error) {
-        console.error('Error during fetch subscription list', error);
-        setSubscriptionsList([]);
-        return;
-      }
-    };
-
-    fetchSubscriptions();
-    return () => controller.abort();
-  }, []);
+    fetchPartnerSubscriptions();
+  }, [fetchPartnerSubscriptions]);
 
   // Synchronously merge plugins with subscriptions — no extra render cycle.
   // Works even when subscriptionsList is empty (plugins without subscriptions

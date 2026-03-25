@@ -19,6 +19,7 @@ export default function Marketplace() {
         assetsBaseUrl,
         pluginInAction,
         setPluginInAction,
+        fetchPartnerSubscriptions,
         fetchSubscriptionStatus,
         isOnecomBrand,
         plugins,
@@ -132,6 +133,9 @@ export default function Marketplace() {
                 setPlugins(normalizedPlugins);
                 setUiI18n(apiUiI18n);
 
+                // Fetch full subscriptions list so subscription data is available on the Marketplace page
+                fetchPartnerSubscriptions();
+
                 // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                 if (isOnecomBrand) {
                     const specialPlugins = normalizedPlugins.filter(p => isSpecialPlugin(p.slug));
@@ -155,7 +159,7 @@ export default function Marketplace() {
         }
 
         fetchPlugins();
-    }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
+    }, [apiBaseUrl, isOnecomBrand, fetchPartnerSubscriptions, fetchSubscriptionStatus, setPlugins]);
 
     // Use useMemo to filter plugins based on rules and activation status
     const { visiblePlugins, visibleConditionalPlugins } = React.useMemo(() => {
