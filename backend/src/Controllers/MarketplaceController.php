@@ -1163,9 +1163,7 @@ class MarketplaceController {
 		$payload = array_merge(
 			$this->config['payload'] ?? [],
 			[
-				'action' => 'wp-marketplace-subscription-list',
-				'username' => 'test-6202', //TODO: remove this after testing
-				'api_key'  => 'd05fbebee53d13108a3c96747901f58f', //TODO: remove this after testing
+				'action' => 'wp-marketplace-subscription-list'
 			]
 		);
 
