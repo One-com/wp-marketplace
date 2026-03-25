@@ -15,3 +15,13 @@ export const HtmlRenderer = ({ htmlString }) => {
   );
 };
 
+export const getLatestSubscription = (subscriptions) => {
+  if (!subscriptions?.length) return null;
+
+  return subscriptions.reduce((latest, current) => {
+    return new Date(current.expiresAt) > new Date(latest.expiresAt)
+      ? current
+      : latest;
+  });
+};
+

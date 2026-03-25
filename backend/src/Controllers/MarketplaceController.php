@@ -1148,6 +1148,10 @@ class MarketplaceController {
 
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+		}
+
 		$brand_name = $this->config['brand'];
 		$transient_name = "{$brand_name}_subscription_list";
 		$get_subscription_list = get_site_transient( $transient_name );
