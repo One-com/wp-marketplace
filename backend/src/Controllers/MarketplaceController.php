@@ -1075,18 +1075,18 @@ class MarketplaceController {
 	public function ajax_save_pending_procurement() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
-		$slug            = sanitize_text_field( $_POST['slug'] ?? '' );
-		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
-		$product_id      = sanitize_text_field( $_POST['product_id'] ?? '' );
+		$slug           = sanitize_text_field( $_POST['slug'] ?? '' );
+		$procurement_id = sanitize_text_field( $_POST['procurement_id'] ?? '' );
+		$product_id     = sanitize_text_field( $_POST['product_id'] ?? '' );
 
-		if ( empty( $slug ) || empty( $subscription_id ) ) {
+		if ( empty( $slug ) || empty( $procurement_id ) ) {
 			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
 		}
 
 		$pending = get_option( 'marketplace_pending_procurements', [] );
 
 		$pending[ $slug ] = [
-			'subscriptionId' => $subscription_id,
+			'procurement_id' => $procurement_id,
 			'product_id'     => $product_id,
 			'timestamp'      => time(),
 		];
@@ -1144,8 +1144,8 @@ class MarketplaceController {
 	 *
 	 * @return void
 	 */
-	public function get_subscriptions_list() {
-
+	public function get_subscriptions_list(): void
+	{
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'install_plugins' ) ) {
@@ -1168,7 +1168,8 @@ class MarketplaceController {
 			]
 		);
 
-		$result = $this->get_model()->request( $payload, 'GET' );
+		//The default method is GET
+		$result = $this->get_model()->request( $payload);
 
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
