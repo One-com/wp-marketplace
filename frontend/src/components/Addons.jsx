@@ -61,8 +61,6 @@ export default function Addons() {
     // Use ref to store is_cached flag from API response
     const isCachedRef = useRef(false);
 
-    const [mergedPlugins, setMergedPlugins] = useState([]);
-
     // Construct icon base URL with fallback logic
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
@@ -139,36 +137,27 @@ export default function Addons() {
     return () => controller.abort();
   }, []);
 
-  const mergePluginsWithSubscriptions = (installedPlugins, subscriptions) => {
-    // Step 1: Group subscriptions by productId
-    const subscriptionMap = subscriptions.reduce((acc, sub) => {
+  // Synchronously merge plugins with subscriptions — no extra render cycle.
+  // Works even when subscriptionsList is empty (plugins without subscriptions
+  // still appear; they just get subscriptions:[] and hasSubscription:false).
+  const mergedPlugins = useMemo(() => {
+    if (!plugins?.length) return [];
+
+    // Group subscriptions by productId (safe when subscriptionsList is empty)
+    const subscriptionMap = (subscriptionsList || []).reduce((acc, sub) => {
       if (!acc[sub.productId]) {
         acc[sub.productId] = [];
       }
       acc[sub.productId].push(sub);
       return acc;
     }, {});
-
-    // Step 2: Merge into plugins
-    const merged = installedPlugins.map((plugin) => {
-      return {
-        ...plugin,
-        subscriptions: subscriptionMap[plugin.productId] || [], // attach subscriptions
-        hasSubscription: !!subscriptionMap[plugin.productId]?.length // optional helper flag
-      };
-    });
-
-    return merged;
-  };
-
-  useEffect(() => {
-    if (plugins?.length && subscriptionsList?.length) {
-      const merged = mergePluginsWithSubscriptions(
-        plugins,
-        subscriptionsList
-      );
-      setMergedPlugins(merged);
-    }
+    console.log("subscriptionMap", plugins);
+    // Merge subscription data into every plugin
+    return plugins.map((plugin) => ({
+      ...plugin,
+      subscriptions: subscriptionMap[plugin.productId] || [],
+      hasSubscription: !!subscriptionMap[plugin.productId]?.length,
+    }));
   }, [plugins, subscriptionsList]);
 
     // Fetch plugins from API
