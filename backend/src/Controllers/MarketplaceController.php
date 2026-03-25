@@ -174,6 +174,11 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_subscribe', [ $this, 'ajax_subscribe' ] );
 			add_action( 'wp_ajax_marketplace_track_status', [ $this, 'ajax_track_status' ] );
 
+			add_action( 'wp_ajax_marketplace_get_subscriptions_list', [ $this, 'get_subscriptions_list' ] );
+
+			add_action( 'wp_ajax_marketplace_cancel_subscription', [ $this, 'cancel_subscriptions' ] );
+
+
 			//reset transient for marketplace catalog
 			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
 			add_action('update_option_WPLANG', [$this, 'reset_transient_on_locale_change'], 999, 0);
@@ -1170,6 +1175,56 @@ class MarketplaceController {
 		wp_send_json_success( $result );
 	}
 
+	/**
+	 *
+	 * @return void
+	 */
+	public function get_subscriptions_list(): void
+	{
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+		}
+
+		$brand_name = $this->config['brand'];
+		$transient_name = "{$brand_name}_subscription_list";
+		$get_subscription_list = get_site_transient( $transient_name );
+
+		if ( is_array($get_subscription_list ) && ! empty( $get_subscription_list ) ) {
+			error_log( 'Return transient subscriptions list' );
+			wp_send_json_success( $get_subscription_list );
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action' => 'wp-marketplace-subscription-list'
+			]
+		);
+
+		//The default method is GET
+		$result = $this->get_model()->request( $payload);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		$get_subscription_list = $result['data']["subscriptions"];
+		error_log( 'Caching subscriptions list' );
+		set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
+		wp_send_json_success($get_subscription_list);
+	}
+
+	public function cancel_subscriptions() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		wp_send_json_success( [ 'message' => 'Subscriptions cancelled successfully.' ] );
+	}
 	/**
 	 * Clear a pending procurement entry for a plugin.
 	 * Called when procurement completes and plugin is installed, or on manual cleanup.

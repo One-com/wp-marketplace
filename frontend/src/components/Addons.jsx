@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef, useMemo} from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getRebatePrice, getFullPrice } from "../utils/priceFormatter";
 import ProductDetail from "./ProductDetail";
@@ -10,6 +10,7 @@ import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
+import { getLatestSubscription } from "../utils/common.utils";
 
 export default function Addons() {
     const {
@@ -25,6 +26,10 @@ export default function Addons() {
         uiI18n,
         setUiI18n,
         handlePluginAction,
+        handleCancelSubsAction,
+        subscriptionsList,
+        setSubscriptionsList,
+        fetchPartnerSubscriptions,
         catalogError,
         setCatalogError,
         catalogLoading,
@@ -89,6 +94,34 @@ export default function Addons() {
         const redirectUrl = getPluginRedirectUrl(plugin, false);
         navigateToPluginUrl(redirectUrl);
     };
+
+    //Get a subscription list
+  useEffect(() => {
+    fetchPartnerSubscriptions();
+  }, [fetchPartnerSubscriptions]);
+
+  // Synchronously merge plugins with subscriptions — no extra render cycle.
+  // Works even when subscriptionsList is empty (plugins without subscriptions
+  // still appear; they just get subscriptions:[] and hasSubscription:false).
+  const mergedPlugins = useMemo(() => {
+    if (!plugins?.length) return [];
+
+    // Group subscriptions by productId (safe when subscriptionsList is empty)
+    const subscriptionMap = (subscriptionsList || []).reduce((acc, sub) => {
+      if (!acc[sub.productId]) {
+        acc[sub.productId] = [];
+      }
+      acc[sub.productId].push(sub);
+      return acc;
+    }, {});
+
+    // Merge subscription data into every plugin
+    return plugins.map((plugin) => ({
+      ...plugin,
+      subscriptions: subscriptionMap[plugin.productId] || [],
+      hasSubscription: !!subscriptionMap[plugin.productId]?.length,
+    }));
+  }, [plugins, subscriptionsList]);
 
     // Fetch plugins from API
     useEffect(() => {
@@ -333,9 +366,169 @@ export default function Addons() {
     );
   }
 
-
     // Filter plugins for the table: installed OR special plugins with subscription
-    const installedPlugins = plugins.filter(p => p.installed || shouldShowProvision(p));
+    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription);
+
+
+
+  /**
+   * Formats a date string to DD/MM/YYYY format.
+   * @param dateString
+   * @returns {string}
+   */
+  const formatDateDDMMYYYY = (dateString) => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
+    const year = date.getFullYear();
+
+    return `${day}/${month}/${year}`;
+  };
+
+  /**
+   * Get plugin status based on subscription status.
+   * @param plugin
+   * @param latestSubscription
+   * @param uiI18n
+   * @param isProvisionable
+   * @returns {boolean|number|string|ServiceWorker|string|*|SyncHook<Error>}
+   */
+  const getPluginStatus = (plugin, latestSubscription, uiI18n, isProvisionable) => {
+    const labels = uiI18n?.labels || {};
+
+    // 1. If subscription exists
+    if (latestSubscription) {
+      const status = latestSubscription.status;
+
+      // Pending → highest priority
+      if (status === 'pending') {
+        return labels?.pending || 'Pending';
+      }
+
+      // Failed → show failure
+      if (status === 'failed') {
+        return labels?.failed || 'Failed';
+      }
+
+      // Active subscription
+      if (status === 'active') {
+        if (!plugin.installed) {
+          return labels?.notInstalled || 'Not Installed';
+        }
+
+        if (plugin.activated) {
+          return labels?.active || 'Active';
+        }
+
+        return labels?.notActive || 'Not Active';
+      }
+    }
+
+    // 2. Fallback (no subscription)
+    if (plugin.activated) {
+      return labels?.active || 'Active';
+    }
+
+    if (isProvisionable) {
+      return labels?.notInstalled || 'Not Installed';
+    }
+
+    return labels?.notActive || 'Not Active';
+  };
+
+  const renderPluginAction = (
+    plugin,
+    latestSubscription,
+    isProvisionable,
+    uiI18n,
+    handleProvisionClick,
+    handlePluginAction
+  ) => {
+    const labels = uiI18n || {};
+
+    if (latestSubscription) {
+      const status = latestSubscription.status;
+
+      // 1. Pending → no action
+      if (status === 'pending') {
+        return null;
+      }
+
+      // 2. Failed → no action (updated)
+      if (status === 'failed') {
+        return null;
+      }
+
+      // 3. Active subscription
+      if (status === 'active') {
+        const download_url = latestSubscription?.accessDetails?.downloadUrl;
+        if (!plugin.installed) {
+          return (
+            <a
+              href="#"
+              className="gv-action"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePluginAction('install', plugin, 'addons', download_url);
+              }}
+            >
+              {labels?.installButton || 'Install'}
+            </a>
+          );
+        }
+
+        if (!plugin.activated) {
+          return (
+            <a
+              href="#"
+              className="gv-action"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePluginAction('activate', plugin, 'addons');
+              }}
+            >
+              {labels?.activateButton || 'Activate'}
+            </a>
+          );
+        }
+
+        return null;
+      }
+    }
+
+    // 4. Fallback (no subscription)
+    if (isProvisionable) {
+      return (
+        <a
+          href="#"
+          className="gv-action"
+          onClick={handleProvisionClick}
+        >
+          {labels?.installAndActivate || 'Install and activate'}
+        </a>
+      );
+    }
+
+    if (!plugin.activated) {
+      return (
+        <a
+          href="#"
+          className="gv-action"
+          onClick={(e) => {
+            e.preventDefault();
+            handlePluginAction('activate', plugin, 'addons');
+          }}
+        >
+          {labels?.activateButton || 'Activate'}
+        </a>
+      );
+    }
+
+    return null;
+  };
 
     return (
         <div className="marketplace-container gv-flex gv-flex-col">
@@ -433,6 +626,7 @@ export default function Addons() {
               </section>
           )}
 
+          {/* Entry point for addons list */}
           {installedPlugins.length > 0 && (
             <section className="addons-section gv-mt-fluid">
               <div className="gv-data-table gv-mt-lg gv-addons-table">
@@ -441,8 +635,8 @@ export default function Addons() {
                   <tr>
                     <th scope="col"></th>
                     <th scope="col">{uiI18n?.labels?.name}</th>
-                    <th scope="col">{uiI18n?.labels?.type}</th>
                     <th scope="col">{uiI18n?.labels?.status}</th>
+                    <th scope="col">Expiration date</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
                   </tr>
@@ -466,8 +660,13 @@ export default function Addons() {
                       document.dispatchEvent(event);
                     };
 
+                    //Get subscription details
+                    const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
+                    const latestSubsDate = (latestSubscription !== null) ? formatDateDDMMYYYY(latestSubscription.expiresAt) : '-';
+                    const renewalDate =  (latestSubscription !== null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : '-'
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>
+                        {/* Image */}
                         <td style={{width: "80px"}}>
                           <img
                             src={plugin.iconUrl || `${iconBase}add_box.svg`}
@@ -476,39 +675,45 @@ export default function Addons() {
                             style={{maxWidth: "auto"}}
                           />
                         </td>
-                        <td>{plugin.name}</td>
-                        <td>{plugin.licenseType === 'free' ? uiI18n?.labels?.freePlugin : uiI18n?.labels?.premiumPlugin}</td>
+                        {/* Image End */}
+
+                        {/* Plugin name and type */}
+                        <td><p>{plugin.name}</p> <span class="gv-caption-sm gv-text-on-alternative">{plugin.licenseType === 'free' ? uiI18n?.labels?.freePlugin : uiI18n?.labels?.premiumPlugin}</span></td>
+                        {/* Plugin name and type end */}
+
+                        {/* Plugin status */}
                         <td>
                           <div className="gv-text-indicator">
                             <span
                               className={plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
-                            <span> {plugin.activated ? (uiI18n?.labels?.active || 'Active') : (isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (uiI18n?.labels?.notActive || 'Not Active'))}</span>
+                            <span> {getPluginStatus(plugin, latestSubscription, uiI18n, isProvisionable)}</span>
                           </div>
                         </td>
+                        {/* Plugin status end */}
+
+                        {/* Plugin expiration */}
+                        <td>{latestSubsDate !== '-' ? (
+                          <>
+                            <p>{latestSubsDate}</p>
+                            <span className="gv-caption-sm gv-text-on-alternative">
+                              {renewalDate}
+                            </span>
+                          </>
+                        ) : (
+                          <p>-</p>
+                        )}</td>
+                        {/* Plugin expiration end */}
+
+                        {/* Plugin actions */}
                         <td>
-                          {isProvisionable ? (
-                            <a
-                              href="#"
-                              className="gv-action"
-                              onClick={handleProvisionClick}
-                            >
-                              {uiI18n?.installAndActivate || 'Install and activate'}
-                            </a>
-                          ) : !plugin.activated && (
-                            <a
-                              href="#"
-                              className="gv-action"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handlePluginAction('activate', plugin, 'addons');
-                              }}
-                            >
-                              {uiI18n?.activateButton || 'Activate'}
-                            </a>
-                          )}
+                          {renderPluginAction(plugin, latestSubscription, isProvisionable, uiI18n, handleProvisionClick,handlePluginAction
+                            )}
                         </td>
+                        {/* Plugin actions end */}
+
+                        {/* Menu actions */}
                         <td>
-                          {(plugin.activated || (plugin.installed && !isProvisionable)) && (
+                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
@@ -583,12 +788,27 @@ export default function Addons() {
                                         </a>
                                       )}
                                     </li>
+
+                                    <li className="gv-mb-0">
+                                      {latestSubscription?.status === 'active' && (<button
+                                        className="gv-menu-item"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          setOpenMenuIndex(null);
+                                          handleCancelSubsAction('cancel_subscription', plugin, latestSubscription.subscriptionId );
+                                        }}
+                                      >
+                                        <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                        <span>{uiI18n?.cancel || 'Cancel'}</span>
+                                      </button>)}
+                                    </li>
                                   </ul>
                                 </div>
                               </div>
                             </div>
                           )}
                         </td>
+                        {/* Menu actions end */}
                       </tr>
                     );
                   })}
