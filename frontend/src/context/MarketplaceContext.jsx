@@ -321,6 +321,39 @@ export const MarketplaceProvider = ({
     }, [activePlugins, activeThemeAuthor]);
 
 
+    // Fetch the full subscriptions list (used on both Marketplace and Addons pages)
+    const fetchPartnerSubscriptions = useCallback(async () => {
+        try {
+            const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
+            if (!ajaxUrl) {
+                console.error('ajaxUrl is missing');
+                return;
+            }
+
+            const formData = new URLSearchParams({
+                action: 'marketplace_get_subscriptions_list',
+                nonce: window.marketplaceConfig?.wpConfig?.nonce,
+            });
+
+            const response = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                setSubscriptionsList([]);
+                return;
+            }
+            console.log('Subscriptions list:', result?.data || []);
+            setSubscriptionsList(result?.data || []);
+        } catch (error) {
+            console.error('Error during fetch subscription list', error);
+            setSubscriptionsList([]);
+        }
+    }, []);
+
     // Handle "Cancel Subscription" action
     const handleCancelSubsAction = useCallback(async (action, plugin, subscription_id) => {
         try {
@@ -679,6 +712,7 @@ export const MarketplaceProvider = ({
         setSubscriptionsList,
         subscriptionStatus,
         isCheckingSubscription,
+        fetchPartnerSubscriptions,
         fetchSubscriptionStatus,
         isOnecomBrand,
         plugins,
