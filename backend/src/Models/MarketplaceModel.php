@@ -32,9 +32,14 @@ class MarketplaceModel {
 
 		error_log( '[Marketplace] ' . $method . ' ' . $this->api_url . ' | payload: ' . wp_json_encode( $payload ) );
 
-		$response = ( $method === 'POST' )
-			? wp_remote_post( $this->api_url, $args )
-			: wp_remote_get( $this->api_url, $args );
+		if ( $method === 'POST' ) {
+			$response = wp_remote_post( $this->api_url, $args );
+		} elseif ( $method === 'DELETE' ) {
+			$args['method'] = 'DELETE';
+			$response       = wp_remote_request( $this->api_url, $args );
+		} else {
+			$response = wp_remote_get( $this->api_url, $args );
+		}
 
 		if ( is_wp_error( $response ) ) {
 			error_log( '[Marketplace] WP error: ' . $response->get_error_message() );

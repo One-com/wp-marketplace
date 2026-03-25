@@ -11,6 +11,7 @@ import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { getLatestSubscription } from "../utils/common.utils";
+import { startPolling } from "../utils/pollingHelper";
 
 export default function Addons() {
     const {
@@ -39,13 +40,20 @@ export default function Addons() {
         isSpecialPlugin,
         shouldShowPlugin,
         isWpVersionSupported,
-        openDeleteModal
+        openDeleteModal,
+        wpConfig,
+        setErrorState,
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
     const [featuredPlugins, setFeaturedPlugins] = useState([]);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const menuRef = useRef(null);
+
+    // Track which plugin slugs have a cancellation in flight (hides Cancel button)
+    const [cancellingSubscriptions, setCancellingSubscriptions] = useState({});
+    // Store stop-functions for each in-flight cancellation poll, keyed by slug
+    const cancelPollingRefs = useRef({});
 
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
@@ -94,6 +102,101 @@ export default function Addons() {
         const redirectUrl = getPluginRedirectUrl(plugin, false);
         navigateToPluginUrl(redirectUrl);
     };
+
+    /**
+     * Handle "Cancel subscription" click:
+     * 1. Call marketplace_unsubscribe (DELETE via PHP proxy).
+     * 2. On success, start polling marketplace_track_status with resourceType=cancellation.
+     * 3. On 'cancelled' → stop, refresh subscription list (cancel button disappears).
+     * 4. On 'pending' → keep polling.
+     * 5. On any other status → stop, show error toast.
+     */
+    const handleCancelClick = (plugin, subscriptionId) => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl || !subscriptionId) return;
+
+        // Stop any existing poll for this plugin before starting a new one
+        if (cancelPollingRefs.current[plugin.slug]) {
+            cancelPollingRefs.current[plugin.slug]();
+        }
+
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: new URLSearchParams({
+                action: 'marketplace_unsubscribe',
+                nonce: wpConfig.nonce,
+                subscriptionId,
+            }),
+        })
+            .then(r => r.json())
+            .then(result => {
+                if (!result.success) {
+                    setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+                    return;
+                }
+
+                // Mark as cancelling — hides the Cancel menu item immediately
+                setCancellingSubscriptions(prev => ({ ...prev, [plugin.slug]: true }));
+
+                // Poll track-status with resourceType=cancellation
+                cancelPollingRefs.current[plugin.slug] = startPolling({
+                    ajaxUrl,
+                    nonce: wpConfig.nonce,
+                    action: 'marketplace_track_status',
+                    params: { subscriptionId, resourceType: 'cancellation' },
+                    interval: 10000,
+                    onResult: (pollResult) => {
+                        const data = pollResult?.data?.data;
+                        const status = data?.status;
+
+                        if (status === 'cancelled') {
+                            setCancellingSubscriptions(prev => {
+                                const next = { ...prev };
+                                delete next[plugin.slug];
+                                return next;
+                            });
+                            // Refresh list — transient was already cleared on the server
+                            fetchPartnerSubscriptions();
+                            return true; // stop polling
+                        }
+
+                        if (status === 'pending') {
+                            return false; // keep polling
+                        }
+
+                        // Unknown / error status — stop and show toast
+                        setCancellingSubscriptions(prev => {
+                            const next = { ...prev };
+                            delete next[plugin.slug];
+                            return next;
+                        });
+                        setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+                        return true; // stop polling
+                    },
+                    onError: (error) => {
+                        console.error('[Marketplace] Cancel polling error', error);
+                        setCancellingSubscriptions(prev => {
+                            const next = { ...prev };
+                            delete next[plugin.slug];
+                            return next;
+                        });
+                        setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+                    },
+                });
+            })
+            .catch(err => {
+                console.error('[Marketplace] Unsubscribe error', err);
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+            });
+    };
+
+    // Stop all cancellation polls when the component unmounts
+    useEffect(() => {
+        const refs = cancelPollingRefs.current;
+        return () => {
+            Object.values(refs).forEach(stop => stop());
+        };
+    }, []);
 
     //Get a subscription list
   useEffect(() => {
@@ -713,7 +816,11 @@ export default function Addons() {
 
                         {/* Menu actions */}
                         <td>
-                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
+                          {cancellingSubscriptions[plugin.slug] ? (
+                            <span className="gv-text-sm gv-text-on-alternative">
+                              {uiI18n?.labels?.cancelling || 'Cancelling…'}
+                            </span>
+                          ) : (plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
@@ -790,17 +897,19 @@ export default function Addons() {
                                     </li>
 
                                     <li className="gv-mb-0">
-                                      {latestSubscription?.status === 'active' && (<button
-                                        className="gv-menu-item"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setOpenMenuIndex(null);
-                                          handleCancelSubsAction('cancel_subscription', plugin, latestSubscription.subscriptionId );
-                                        }}
-                                      >
-                                        <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
-                                        <span>{uiI18n?.cancel || 'Cancel'}</span>
-                                      </button>)}
+                                      {latestSubscription?.status === 'active' && !cancellingSubscriptions[plugin.slug] && (
+                                        <button
+                                          className="gv-menu-item"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setOpenMenuIndex(null);
+                                            handleCancelClick(plugin, latestSubscription.subscriptionId);
+                                          }}
+                                        >
+                                          <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                          <span>{uiI18n?.cancel || 'Cancel'}</span>
+                                        </button>
+                                      )}
                                     </li>
                                   </ul>
                                 </div>

@@ -34,6 +34,17 @@ const getPluginPriceData = (plugin) => {
     };
 };
 
+/** Format an ISO date string into a human-readable locale date. */
+const formatDate = (isoString) => {
+    if (!isoString) return '';
+    return new Date(isoString).toLocaleDateString(undefined, {
+        year: 'numeric', month: 'short', day: 'numeric',
+    });
+};
+
+/** Terminal status that means the procurement succeeded and a license was issued. */
+const SUBSCRIPTION_SUCCESS_STATUSES = ['active'];
+
 export default function PluginActions({ plugin }) {
     const {
         assetsBaseUrl,
@@ -49,10 +60,13 @@ export default function PluginActions({ plugin }) {
         pendingProcurements,
         setPendingProcurements,
         setLoadingAction,
-        setLoadingPlugin
+        setLoadingPlugin,
+        subscriptionsList,
+        fetchPartnerSubscriptions,
     } = useMarketplace();
 
     const [buyNowLoading, setBuyNowLoading] = useState(false);
+    const [subscriptionDates, setSubscriptionDates] = useState(null);
     const pollingIntervalRef = useRef(null);
 
     // Get subscription status for this plugin from context
@@ -60,6 +74,14 @@ export default function PluginActions({ plugin }) {
     const pluginIsCheckingSubscription = isCheckingSubscription[plugin.slug];
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/` : "";
+
+    // Check if we should show "Buy now" button for premium plugins on non-onecom brands
+    // Declared early so mount effects can reference it
+    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed;
+
+    // Whether this plugin can have a subscription (premium on non-onecom brands).
+    // Used for subscription date display — does NOT require plugin to be uninstalled.
+    const isPremiumOnNonOnecom = !isOnecomBrand && plugin.licenseType === "premium";
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -96,7 +118,7 @@ export default function PluginActions({ plugin }) {
                 if (!result.success) return false; // keep polling
 
                 // WP AJAX wraps external response: result.data = external API response
-                // External response shape: { error, success, data: { type, id, status, license: { accessDetails: { downloadUrl } } } }
+                // External response shape: { error, success, data: { type, id, status, license: { provisionedAt, expiresAt, accessDetails: { downloadUrl } } } }
                 const procurementData = result?.data?.data;
                 const status = procurementData?.status;
 
@@ -120,14 +142,17 @@ export default function PluginActions({ plugin }) {
                     return true; // stop polling
                 }
 
-                if (status === 'active') {
-                    const downloadUrl = procurementData?.license?.accessDetails?.downloadUrl;
+                if (SUBSCRIPTION_SUCCESS_STATUSES.includes(status)) {
+                    const license = procurementData?.license;
+                    const downloadUrl = license?.accessDetails?.downloadUrl;
 
-                    if (downloadUrl) {
-                        await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'product_detail');
-                    }
+                    // Show subscription dates — replaces the "processing" message
+                    setSubscriptionDates({
+                        provisionedAt: license?.provisionedAt || null,
+                        expiresAt: license?.expiresAt || null,
+                    });
 
-                    // Clear DB entry
+                    // Clear DB entry and local pending state
                     fetch(ajaxUrl, {
                         method: 'POST',
                         body: new URLSearchParams({
@@ -136,13 +161,15 @@ export default function PluginActions({ plugin }) {
                             slug,
                         }),
                     });
-
-                    // Remove from local state
                     setPendingProcurements(prev => {
                         const next = { ...prev };
                         delete next[slug];
                         return next;
                     });
+
+                    if (downloadUrl) {
+                        await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'product_detail');
+                    }
 
                     return true; // stop polling
                 }
@@ -174,11 +201,16 @@ export default function PluginActions({ plugin }) {
         });
     };
 
-    // Resume polling on mount for any pending procurement persisted in DB (survives page reload)
+    // On mount: resume polling for any pending procurement, and fetch subscription dates
     useEffect(() => {
         const pending = pendingProcurements?.[plugin.slug];
         if (pending?.subscriptionId) {
             startSubscriptionPolling(plugin.slug, pending.subscriptionId);
+        }
+
+        // Fetch subscription list to populate dates on page reload (only for premium plugins on non-onecom brands)
+        if (isPremiumOnNonOnecom && !subscriptionsList?.length) {
+            fetchPartnerSubscriptions();
         }
 
         return () => {
@@ -188,6 +220,20 @@ export default function PluginActions({ plugin }) {
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Derive subscription dates from the list whenever it updates (covers page reload case)
+    useEffect(() => {
+        if (!isPremiumOnNonOnecom || !plugin.productId || !subscriptionsList?.length) return;
+        const match = subscriptionsList.find(
+            s => s.productId === plugin.productId && s.status === 'active'
+        );
+        if (match) {
+            setSubscriptionDates({
+                provisionedAt: match.provisionedAt || null,
+                expiresAt: match.expiresAt || null,
+            });
+        }
+    }, [subscriptionsList]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleClick = (action) => {
         // Check if brand is onecom, plugin is not installed, and slug is wp-rocket or rank-math-pro
@@ -302,16 +348,20 @@ export default function PluginActions({ plugin }) {
                 buttonAction: 'buy_now',
                 plugin: plugin,
                 context: {
-                    result: status === 'active' ? 'procurement_success' : 'procurement_pending',
+                    result: SUBSCRIPTION_SUCCESS_STATUSES.includes(status) ? 'procurement_success' : 'procurement_pending',
                     subscription_id: subscriptionId,
                     status: status,
                 },
             });
 
-            if (status === 'active') {
-                // Subscription immediately active — install using download URL
-                // Response shape: data.license.accessDetails.downloadUrl
-                const downloadUrl = innerData?.license?.accessDetails?.downloadUrl;
+            if (SUBSCRIPTION_SUCCESS_STATUSES.includes(status)) {
+                // Subscription immediately active/created — install using download URL
+                const license = innerData?.license;
+                const downloadUrl = license?.accessDetails?.downloadUrl;
+                setSubscriptionDates({
+                    provisionedAt: license?.provisionedAt || null,
+                    expiresAt: license?.expiresAt || null,
+                });
                 setBuyNowLoading(false);
                 setLoadingAction('');
                 if (downloadUrl) {
@@ -386,9 +436,6 @@ export default function PluginActions({ plugin }) {
     const shouldShowSkeleton = isOnecomBrand && isSpecialPlugin(plugin.slug) && !plugin.installed &&
         (pluginIsCheckingSubscription || pluginSubscriptionStatus === undefined);
 
-    // Check if we should show "Buy now" button for premium plugins on non-onecom brands
-    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed;
-
     // Check if there's a pending procurement for this plugin (persisted across page loads)
     const isPendingProcurement = !!pendingProcurements?.[plugin.slug];
 
@@ -427,21 +474,14 @@ export default function PluginActions({ plugin }) {
                     </button>
                 )
             ) : shouldShowBuyNow ? (
-                <>
-                    <button
-                        type="button"
-                        className="gv-button gv-button-primary"
-                        disabled={buyNowLoading || pluginInAction[plugin.slug] || isPendingProcurement}
-                        onClick={handleBuyNowClick}
-                    >
-                        {uiI18n?.buyNowButton || 'Buy now'}
-                    </button>
-                    {isPendingProcurement && (
-                        <p className="gv-text-sm gv-mt-sm gv-text-secondary">
-                            {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
-                        </p>
-                    )}
-                </>
+                <button
+                    type="button"
+                    className="gv-button gv-button-primary"
+                    disabled={buyNowLoading || pluginInAction[plugin.slug] || isPendingProcurement}
+                    onClick={handleBuyNowClick}
+                >
+                    {uiI18n?.buyNowButton || 'Buy now'}
+                </button>
             ) : (
                 <button
                     className={`gv-button ${plugin.slug === "seo-by-rank-math" ? "gv-button-secondary" : "gv-button-primary"}`}
@@ -453,6 +493,24 @@ export default function PluginActions({ plugin }) {
                         : (uiI18n?.installButton || plugin.i18n?.installButton || 'Install')}
                 </button>
             )}
+            {isPremiumOnNonOnecom && (subscriptionDates ? (
+                <div className="gv-mt-sm">
+                    {subscriptionDates.provisionedAt && (
+                        <p className="gv-text-sm gv-text-bold">
+                            {`${uiI18n?.labels?.subscribedAt || 'Subscribed'}: ${formatDate(subscriptionDates.provisionedAt)}`}
+                        </p>
+                    )}
+                    {subscriptionDates.expiresAt && (
+                        <p className="gv-text-sm gv-text-bold">
+                            {`${uiI18n?.labels?.expiresAt || 'Expires'}: ${formatDate(subscriptionDates.expiresAt)}`}
+                        </p>
+                    )}
+                </div>
+            ) : isPendingProcurement ? (
+                <p className="gv-text-sm gv-mt-sm gv-text-bold">
+                    {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
+                </p>
+            ) : null)}
         </div>
     );
 }

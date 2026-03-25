@@ -177,6 +177,7 @@ class MarketplaceController {
 			add_action( 'wp_ajax_marketplace_get_subscriptions_list', [ $this, 'get_subscriptions_list' ] );
 
 			add_action( 'wp_ajax_marketplace_cancel_subscription', [ $this, 'cancel_subscriptions' ] );
+			add_action( 'wp_ajax_marketplace_unsubscribe', [ $this, 'ajax_unsubscribe' ] );
 
 
 			//reset transient for marketplace catalog
@@ -1148,6 +1149,7 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+		$resource_type   = sanitize_text_field( $_POST['resourceType'] ?? 'procurement' );
 
 		if ( empty( $subscription_id ) ) {
 			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
@@ -1157,7 +1159,7 @@ class MarketplaceController {
 			$this->config['payload'] ?? [],
 			[
 				'action'        => 'wp-marketplace-track-status',
-				'resource_type' => 'procurement',
+				'resource_type' => $resource_type,
 				'resource_id'   => $subscription_id,
 			]
 		);
@@ -1224,6 +1226,45 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		wp_send_json_success( [ 'message' => 'Subscriptions cancelled successfully.' ] );
+	}
+
+	/**
+	 * Proxy a cancellation (unsubscribe) request to the external marketplace API.
+	 * Sends a DELETE request with action wp-marketplace-unsubscribe.
+	 * Clears the cached subscription list so the next fetch reflects the cancellation.
+	 */
+	public function ajax_unsubscribe(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+
+		if ( empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action' => 'wp-marketplace-unsubscribe',
+				'data'   => wp_json_encode( [ 'subscriptionID' => $subscription_id ] ),
+			]
+		);
+
+		$result = $this->get_model()->request( $payload, 'DELETE' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		// Clear cached subscription list so next fetch returns fresh data
+		$brand_name = $this->config['brand'];
+		delete_site_transient( "{$brand_name}_subscription_list" );
+
+		wp_send_json_success( $result );
 	}
 	/**
 	 * Clear a pending procurement entry for a plugin.
