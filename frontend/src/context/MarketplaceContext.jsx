@@ -482,8 +482,6 @@ export const MarketplaceProvider = ({
 
                 // Show success notice for install, activate and delete actions
                 if (action === 'install' && result.data.installed) {
-                    actionSuccessful = true; // keep pluginInAction locked until reload
-
                     // Track successful install
                     trackButtonClick({
                         buttonName: 'Install',
@@ -494,6 +492,17 @@ export const MarketplaceProvider = ({
                             result: 'success',
                         }
                     });
+
+                    if (source === 'buy_now') {
+                        // Buy Now flow: show notice but no reload — let the state update
+                        // naturally show the Activate button. actionSuccessful stays false
+                        // so the finally block releases the pluginInAction lock.
+                        setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
+                        setSuccessState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+                        return;
+                    }
+
+                    actionSuccessful = true; // keep pluginInAction locked until reload
 
                     if (source === 'product_detail') {
                         // Quick reload for product detail page

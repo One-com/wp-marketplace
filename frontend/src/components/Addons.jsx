@@ -43,6 +43,7 @@ export default function Addons() {
         openDeleteModal,
         wpConfig,
         setErrorState,
+        pendingProcurements,
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
@@ -50,8 +51,12 @@ export default function Addons() {
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const menuRef = useRef(null);
 
-    // Track which plugin slugs have a cancellation in flight (hides Cancel button)
-    const [cancellingSubscriptions, setCancellingSubscriptions] = useState({});
+    // Track which plugin slugs have a cancellation in flight (hides Cancel button).
+    // Pre-populated from DB-persisted pendingCancellations so the state survives page reloads.
+    const [cancellingSubscriptions, setCancellingSubscriptions] = useState(() => {
+        const persisted = (typeof window !== 'undefined' && window.marketplaceConfig?.pendingCancellations) || {};
+        return Object.fromEntries(Object.keys(persisted).map(slug => [slug, true]));
+    });
     // Store stop-functions for each in-flight cancellation poll, keyed by slug
     const cancelPollingRefs = useRef({});
 
@@ -104,21 +109,76 @@ export default function Addons() {
     };
 
     /**
+     * Start polling track-status for a cancellation.
+     * Used both when the user clicks Cancel and on mount to resume persisted cancellations.
+     */
+    const startCancellationPolling = (slug, subscriptionId) => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl || !subscriptionId) return;
+
+        if (cancelPollingRefs.current[slug]) {
+            cancelPollingRefs.current[slug]();
+        }
+
+        const stopPolling = () => {
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'marketplace_clear_pending_cancellation',
+                    nonce: wpConfig.nonce,
+                    slug,
+                }),
+            });
+            setCancellingSubscriptions(prev => {
+                const next = { ...prev };
+                delete next[slug];
+                return next;
+            });
+        };
+
+        cancelPollingRefs.current[slug] = startPolling({
+            ajaxUrl,
+            nonce: wpConfig.nonce,
+            action: 'marketplace_track_status',
+            params: { subscriptionId, resourceType: 'cancellation' },
+            interval: 10000,
+            onResult: (pollResult) => {
+                const data = pollResult?.data?.data;
+                const status = data?.status;
+
+                if (status === 'cancelled') {
+                    stopPolling();
+                    fetchPartnerSubscriptions();
+                    return true;
+                }
+
+                if (status === 'pending' || status === 'pending_cancellation') {
+                    return false; // keep polling
+                }
+
+                // Unknown / error status
+                stopPolling();
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug });
+                return true;
+            },
+            onError: (error) => {
+                console.error('[Marketplace] Cancel polling error', error);
+                stopPolling();
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug });
+            },
+        });
+    };
+
+    /**
      * Handle "Cancel subscription" click:
      * 1. Call marketplace_unsubscribe (DELETE via PHP proxy).
-     * 2. On success, start polling marketplace_track_status with resourceType=cancellation.
-     * 3. On 'cancelled' → stop, refresh subscription list (cancel button disappears).
-     * 4. On 'pending' → keep polling.
-     * 5. On any other status → stop, show error toast.
+     * 2. Check response status:
+     *    - 'cancelled' immediately → refresh subscription list.
+     *    - 'pending_cancellation' → persist to DB, mark as cancelling, start polling.
      */
     const handleCancelClick = (plugin, subscriptionId) => {
         const ajaxUrl = wpConfig?.ajaxUrl;
         if (!ajaxUrl || !subscriptionId) return;
-
-        // Stop any existing poll for this plugin before starting a new one
-        if (cancelPollingRefs.current[plugin.slug]) {
-            cancelPollingRefs.current[plugin.slug]();
-        }
 
         fetch(ajaxUrl, {
             method: 'POST',
@@ -135,54 +195,35 @@ export default function Addons() {
                     return;
                 }
 
-                // Mark as cancelling — hides the Cancel menu item immediately
-                setCancellingSubscriptions(prev => ({ ...prev, [plugin.slug]: true }));
+                const responseData = result?.data?.data;
+                const status = responseData?.status;
 
-                // Poll track-status with resourceType=cancellation
-                cancelPollingRefs.current[plugin.slug] = startPolling({
-                    ajaxUrl,
-                    nonce: wpConfig.nonce,
-                    action: 'marketplace_track_status',
-                    params: { subscriptionId, resourceType: 'cancellation' },
-                    interval: 10000,
-                    onResult: (pollResult) => {
-                        const data = pollResult?.data?.data;
-                        const status = data?.status;
+                if (status === 'cancelled') {
+                    // Immediately cancelled — refresh list, no polling needed
+                    fetchPartnerSubscriptions();
+                    return;
+                }
 
-                        if (status === 'cancelled') {
-                            setCancellingSubscriptions(prev => {
-                                const next = { ...prev };
-                                delete next[plugin.slug];
-                                return next;
-                            });
-                            // Refresh list — transient was already cleared on the server
-                            fetchPartnerSubscriptions();
-                            return true; // stop polling
-                        }
+                if (status === 'pending_cancellation') {
+                    // Persist to DB and start polling
+                    setCancellingSubscriptions(prev => ({ ...prev, [plugin.slug]: true }));
 
-                        if (status === 'pending') {
-                            return false; // keep polling
-                        }
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            action: 'marketplace_save_pending_cancellation',
+                            nonce: wpConfig.nonce,
+                            slug: plugin.slug,
+                            subscriptionId,
+                        }),
+                    });
 
-                        // Unknown / error status — stop and show toast
-                        setCancellingSubscriptions(prev => {
-                            const next = { ...prev };
-                            delete next[plugin.slug];
-                            return next;
-                        });
-                        setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
-                        return true; // stop polling
-                    },
-                    onError: (error) => {
-                        console.error('[Marketplace] Cancel polling error', error);
-                        setCancellingSubscriptions(prev => {
-                            const next = { ...prev };
-                            delete next[plugin.slug];
-                            return next;
-                        });
-                        setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
-                    },
-                });
+                    startCancellationPolling(plugin.slug, subscriptionId);
+                    return;
+                }
+
+                // Any other status — show error and exit
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
             })
             .catch(err => {
                 console.error('[Marketplace] Unsubscribe error', err);
@@ -190,13 +231,19 @@ export default function Addons() {
             });
     };
 
-    // Stop all cancellation polls when the component unmounts
+    // On mount: resume polling for any DB-persisted pending cancellations,
+    // and stop all polls on unmount.
     useEffect(() => {
+        const persisted = (typeof window !== 'undefined' && window.marketplaceConfig?.pendingCancellations) || {};
+        Object.entries(persisted).forEach(([slug, data]) => {
+            if (data?.subscriptionId) {
+                startCancellationPolling(slug, data.subscriptionId);
+            }
+        });
+
         const refs = cancelPollingRefs.current;
-        return () => {
-            Object.values(refs).forEach(stop => stop());
-        };
-    }, []);
+        return () => { Object.values(refs).forEach(stop => stop()); };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     //Get a subscription list
   useEffect(() => {
@@ -470,7 +517,7 @@ export default function Addons() {
   }
 
     // Filter plugins for the table: installed OR special plugins with subscription
-    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription);
+    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription || !!pendingProcurements?.[p.slug]);
 
 
 
@@ -502,13 +549,18 @@ export default function Addons() {
   const getPluginStatus = (plugin, latestSubscription, uiI18n, isProvisionable) => {
     const labels = uiI18n?.labels || {};
 
+    // 0. Pending procurement (Buy Now triggered, waiting for subscription to activate)
+    if (pendingProcurements?.[plugin.slug]) {
+      return labels?.orderBeingProcessed || 'Order being processed…';
+    }
+
     // 1. If subscription exists
     if (latestSubscription) {
       const status = latestSubscription.status;
 
       // Pending → highest priority
       if (status === 'pending') {
-        return labels?.pending || 'Pending';
+        return labels?.subscriptionInProgress || 'Subscription in progress';
       }
 
       // Failed → show failure
@@ -788,19 +840,21 @@ export default function Addons() {
                         <td>
                           <div className="gv-text-indicator">
                             <span
-                              className={plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
+                              className={pendingProcurements?.[plugin.slug] || plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
                             <span> {getPluginStatus(plugin, latestSubscription, uiI18n, isProvisionable)}</span>
                           </div>
                         </td>
                         {/* Plugin status end */}
 
                         {/* Plugin expiration */}
-                        <td>{latestSubsDate !== '-' ? (
+                        <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
                           <>
                             <p>{latestSubsDate}</p>
-                            <span className="gv-caption-sm gv-text-on-alternative">
-                              {renewalDate}
-                            </span>
+                            {!cancellingSubscriptions[plugin.slug] && latestSubscription?.status !== 'pending_cancellation' && (
+                              <span className="gv-caption-sm gv-text-on-alternative">
+                                {renewalDate}
+                              </span>
+                            )}
                           </>
                         ) : (
                           <p>-</p>
@@ -809,8 +863,7 @@ export default function Addons() {
 
                         {/* Plugin actions */}
                         <td>
-                          {renderPluginAction(plugin, latestSubscription, isProvisionable, uiI18n, handleProvisionClick,handlePluginAction
-                            )}
+                          {!pendingProcurements?.[plugin.slug] && renderPluginAction(plugin, latestSubscription, isProvisionable, uiI18n, handleProvisionClick, handlePluginAction)}
                         </td>
                         {/* Plugin actions end */}
 

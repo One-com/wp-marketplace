@@ -99,6 +99,19 @@ export default function PluginActions({ plugin }) {
      * @param {string} slug           Plugin slug (used for DB clear + local state key).
      * @param {string} subscriptionId Procurement / subscription ID to track.
      */
+    /** Fire-and-forget: delete the server-side subscription list transient. */
+    const clearSubscriptionListCache = () => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl) return;
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: new URLSearchParams({
+                action: 'marketplace_clear_subscription_list',
+                nonce: wpConfig.nonce,
+            }),
+        });
+    };
+
     const startSubscriptionPolling = (slug, subscriptionId) => {
         // Stop any in-flight polling for this component before starting a new one
         if (pollingIntervalRef.current) {
@@ -150,6 +163,7 @@ export default function PluginActions({ plugin }) {
                     setSubscriptionDates({
                         provisionedAt: license?.provisionedAt || null,
                         expiresAt: license?.expiresAt || null,
+                        status: 'active',
                     });
 
                     // Clear DB entry and local pending state
@@ -167,9 +181,15 @@ export default function PluginActions({ plugin }) {
                         return next;
                     });
 
+                    // Clear subscription list cache so addons page shows fresh status
+                    clearSubscriptionListCache();
+
                     if (downloadUrl) {
-                        await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'product_detail');
+                        await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
                     }
+
+                    // Refetch subscriptions so addons page reflects the active subscription
+                    fetchPartnerSubscriptions();
 
                     return true; // stop polling
                 }
@@ -225,12 +245,13 @@ export default function PluginActions({ plugin }) {
     useEffect(() => {
         if (!isPremiumOnNonOnecom || !plugin.productId || !subscriptionsList?.length) return;
         const match = subscriptionsList.find(
-            s => s.productId === plugin.productId && s.status === 'active'
+            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'cancelled')
         );
         if (match) {
             setSubscriptionDates({
                 provisionedAt: match.provisionedAt || null,
                 expiresAt: match.expiresAt || null,
+                status: match.status,
             });
         }
     }, [subscriptionsList]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -361,13 +382,18 @@ export default function PluginActions({ plugin }) {
                 setSubscriptionDates({
                     provisionedAt: license?.provisionedAt || null,
                     expiresAt: license?.expiresAt || null,
+                    status: 'active',
                 });
                 setBuyNowLoading(false);
                 setLoadingAction('');
                 if (downloadUrl) {
-                    await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'product_detail');
+                    await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
                 }
             } else if (status === 'pending' && subscriptionId) {
+                // Clear subscription list cache — external API will now include this
+                // subscription as pending, so next addons page load shows it immediately
+                clearSubscriptionListCache();
+
                 // Save pending procurement to DB
                 const saveProcurementData = new URLSearchParams({
                     action: 'marketplace_save_pending_procurement',
@@ -493,7 +519,11 @@ export default function PluginActions({ plugin }) {
                         : (uiI18n?.installButton || plugin.i18n?.installButton || 'Install')}
                 </button>
             )}
-            {isPremiumOnNonOnecom && (subscriptionDates ? (
+            {isPremiumOnNonOnecom && (isPendingProcurement ? (
+                <p className="gv-text-sm gv-mt-sm gv-text-bold">
+                    {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
+                </p>
+            ) : !shouldShowBuyNow && subscriptionDates ? (
                 <div className="gv-mt-sm">
                     {subscriptionDates.provisionedAt && (
                         <p className="gv-text-sm gv-text-bold">
@@ -502,14 +532,12 @@ export default function PluginActions({ plugin }) {
                     )}
                     {subscriptionDates.expiresAt && (
                         <p className="gv-text-sm gv-text-bold">
-                            {`${uiI18n?.labels?.expiresAt || 'Expires'}: ${formatDate(subscriptionDates.expiresAt)}`}
+                            {`${subscriptionDates.status === 'cancelled'
+                                ? (uiI18n?.labels?.expiresOn || 'Expires on')
+                                : (uiI18n?.labels?.renewsOn || 'Renews on')}: ${formatDate(subscriptionDates.expiresAt)}`}
                         </p>
                     )}
                 </div>
-            ) : isPendingProcurement ? (
-                <p className="gv-text-sm gv-mt-sm gv-text-bold">
-                    {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
-                </p>
             ) : null)}
         </div>
     );

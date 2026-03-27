@@ -178,6 +178,9 @@ class MarketplaceController {
 
 			add_action( 'wp_ajax_marketplace_cancel_subscription', [ $this, 'cancel_subscriptions' ] );
 			add_action( 'wp_ajax_marketplace_unsubscribe', [ $this, 'ajax_unsubscribe' ] );
+			add_action( 'wp_ajax_marketplace_clear_subscription_list', [ $this, 'ajax_clear_subscription_list' ] );
+			add_action( 'wp_ajax_marketplace_save_pending_cancellation', [ $this, 'ajax_save_pending_cancellation' ] );
+			add_action( 'wp_ajax_marketplace_clear_pending_cancellation', [ $this, 'ajax_clear_pending_cancellation' ] );
 
 
 			//reset transient for marketplace catalog
@@ -355,7 +358,8 @@ class MarketplaceController {
 				'globalProperties' => $global_properties,
 				'distinctId' => $distinct_id,
 			],
-			'pendingProcurements' => get_option( 'marketplace_pending_procurements', [] ),
+			'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
+		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
 		];
 
 		// Localize JS with config
@@ -500,7 +504,8 @@ class MarketplaceController {
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
  		],
- 		'pendingProcurements' => get_option( 'marketplace_pending_procurements', [] ),
+ 		'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
+		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
  	];
 
  	// Localize JS with config
@@ -1266,6 +1271,64 @@ class MarketplaceController {
 
 		wp_send_json_success( $result );
 	}
+
+	/**
+	 * Delete the cached subscription list transient so the next fetch returns fresh data from the API.
+	 * Called by the frontend after a new subscription is initiated or completed.
+	 */
+	public function ajax_clear_subscription_list(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$brand_name = $this->config['brand'];
+		delete_site_transient( "{$brand_name}_subscription_list" );
+
+		wp_send_json_success( [ 'message' => 'Subscription list cache cleared.' ] );
+	}
+
+	/**
+	 * Persist a pending cancellation to the DB so the cancelling state survives page reloads.
+	 */
+	public function ajax_save_pending_cancellation(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug            = sanitize_text_field( $_POST['slug'] ?? '' );
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+
+		if ( empty( $slug ) || empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		$pending          = get_option( 'marketplace_pending_cancellations', [] );
+		$pending[ $slug ] = [
+			'subscriptionId' => $subscription_id,
+			'timestamp'      => time(),
+		];
+		update_option( 'marketplace_pending_cancellations', $pending, false );
+
+		wp_send_json_success( [ 'message' => 'Pending cancellation saved.' ] );
+	}
+
+	/**
+	 * Remove a pending cancellation entry from the DB once cancellation is confirmed.
+	 */
+	public function ajax_clear_pending_cancellation(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug = sanitize_text_field( $_POST['slug'] ?? '' );
+
+		if ( empty( $slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing slug.' ] );
+		}
+
+		$pending = get_option( 'marketplace_pending_cancellations', [] );
+		if ( isset( $pending[ $slug ] ) ) {
+			unset( $pending[ $slug ] );
+			update_option( 'marketplace_pending_cancellations', $pending, false );
+		}
+
+		wp_send_json_success( [ 'message' => 'Pending cancellation cleared.' ] );
+	}
+
 	/**
 	 * Clear a pending procurement entry for a plugin.
 	 * Called when procurement completes and plugin is installed, or on manual cleanup.
