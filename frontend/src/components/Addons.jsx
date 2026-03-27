@@ -85,7 +85,10 @@ export default function Addons() {
         const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
             ? window.marketplaceConfig.wpConfig.adminUrl
             : '/wp-admin/';
-        return `${adminUrl}admin.php?page=onecom-marketplace&plugin=${slug}`;
+        const menuSlug = typeof window !== "undefined" && window.marketplaceConfig?.menuSlug
+            ? window.marketplaceConfig.menuSlug
+            : 'onecom-marketplace';
+        return `${adminUrl}admin.php?page=${menuSlug}&plugin=${slug}`;
     };
 
     // Handle "Manage" action

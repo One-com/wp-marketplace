@@ -360,6 +360,7 @@ class MarketplaceController {
 			],
 			'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
 		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
+		'menuSlug'             => $this->config['menu_slug'],
 		];
 
 		// Localize JS with config
@@ -506,6 +507,7 @@ class MarketplaceController {
  		],
  		'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
 		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
+		'menuSlug'             => $this->config['menu_slug'],
  	];
 
  	// Localize JS with config
