@@ -709,7 +709,10 @@ export default function Addons() {
                     const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
                       ? window.marketplaceConfig.wpConfig.adminUrl
                       : '/wp-admin/';
-                    window.location.href = `${adminUrl}admin.php?page=onecom-marketplace`;
+                    const menuSlug = typeof window !== "undefined" && window.marketplaceConfig?.menuSlug
+                      ? window.marketplaceConfig.menuSlug
+                      : 'onecom-marketplace';
+                    window.location.href = `${adminUrl}admin.php?page=${menuSlug}`;
                   }}
                 >
                   {uiI18n.seeAllProducts}
