@@ -821,7 +821,7 @@ export default function Addons() {
                     //Get subscription details
                     const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
                     const latestSubsDate = (latestSubscription !== null) ? formatDateDDMMYYYY(latestSubscription.expiresAt) : '-';
-                    const renewalDate =  (latestSubscription !== null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : '-'
+                    const renewalDate = (latestSubscription !== null && latestSubscription.renewsAt != null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : null
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>
                         {/* Image */}
@@ -841,11 +841,18 @@ export default function Addons() {
 
                         {/* Plugin status */}
                         <td>
-                          <div className="gv-text-indicator">
-                            <span
-                              className={pendingProcurements?.[plugin.slug] || plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
-                            <span> {getPluginStatus(plugin, latestSubscription, uiI18n, isProvisionable)}</span>
-                          </div>
+                          {cancellingSubscriptions[plugin.slug] ? (
+                            <div className="gv-text-indicator">
+                              <span className="gv-indicator gv-state-attention"></span>
+                              <span> {uiI18n?.labels?.cancellationInProgress || 'Cancellation in progress..'}</span>
+                            </div>
+                          ) : (
+                            <div className="gv-text-indicator">
+                              <span
+                                className={pendingProcurements?.[plugin.slug] || plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
+                              <span> {getPluginStatus(plugin, latestSubscription, uiI18n, isProvisionable)}</span>
+                            </div>
+                          )}
                         </td>
                         {/* Plugin status end */}
 
@@ -853,7 +860,7 @@ export default function Addons() {
                         <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
                           <>
                             <p>{latestSubsDate}</p>
-                            {!cancellingSubscriptions[plugin.slug] && latestSubscription?.status !== 'pending_cancellation' && (
+                            {!cancellingSubscriptions[plugin.slug] && latestSubscription?.status !== 'pending_cancellation' && renewalDate && (
                               <span className="gv-caption-sm gv-text-on-alternative">
                                 {renewalDate}
                               </span>
@@ -872,11 +879,7 @@ export default function Addons() {
 
                         {/* Menu actions */}
                         <td>
-                          {cancellingSubscriptions[plugin.slug] ? (
-                            <span className="gv-text-sm gv-text-on-alternative">
-                              {uiI18n?.labels?.cancelling || 'Cancelling…'}
-                            </span>
-                          ) : (plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
+                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
