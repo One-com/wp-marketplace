@@ -321,7 +321,7 @@ export default function ProductDetail({
                                 <div className="gv-section oc-left-border-0" role="rowgroup">
                                     <div className="gv-section-header gv-table-row" role="row">
                                         <div className="gv-cell" role="cell">
-                                            <h4 className="gv-title">{uiI18n?.keyFeatureHeading || plugin.i18n?.keyFeatureHeading}</h4>
+                                            <h4 className="gv-title">{uiI18n?.headings?.key_features || 'Key features'}</h4>
                                         </div>
                                     </div>
                                     {keyFeatures.map((f, i) => (
