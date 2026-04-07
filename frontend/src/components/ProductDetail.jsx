@@ -180,6 +180,15 @@ export default function ProductDetail({
     const fullPriceAmount = getFullPrice(plugin);
     const rebatePriceAmount = getRebatePrice(plugin);
 
+    const getTimeAgo = (dateStr) => {
+        const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+        if (days < 7) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+        const weeks = Math.floor(days / 7);
+        if (weeks < 52) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+        const years = Math.floor(weeks / 52);
+        return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+    };
+
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
         if (!obj || typeof obj !== 'object') return [];
@@ -319,9 +328,58 @@ export default function ProductDetail({
 
                             {keyFeatures.length > 0 && (
                                 <div className="gv-section oc-left-border-0" role="rowgroup">
+                                    {plugin.version && (
                                     <div className="gv-section-header gv-table-row" role="row">
                                         <div className="gv-cell" role="cell">
-                                            <h4 className="gv-title">{uiI18n?.keyFeatureHeading || plugin.i18n?.keyFeatureHeading}</h4>
+                                          <span className="gv-cell-text">{uiI18n?.labels?.version || 'Version'}: <strong>{plugin.version}</strong></span>
+                                        </div>
+                                    </div>
+                                    )}
+                                  {plugin.testedUpTo && (
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                      <div className="gv-cell" role="cell">
+                                        <span className="gv-cell-text">{uiI18n?.labels?.tested_upto || 'Tested up to'}: <strong>{plugin.testedUpTo}</strong></span>
+                                        </div>
+                                  </div>
+                                  )}
+                                  {plugin.requiresPhpVersion && (
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                      <div className="gv-cell" role="cell">
+                                        <span className="gv-cell-text">{uiI18n?.headings?.php_version || 'PHP version'}: <strong>{plugin.requiresPhpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                                        </div>
+                                  </div>
+                                  )}
+                                  {plugin.requiresWpVersion && (
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                    <div className="gv-cell" role="cell">
+                                      <span className="gv-cell-text">{uiI18n?.headings?.wordpress_version || 'WordPress version'}: <strong>{plugin.requiresWpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                                        </div>
+                                  </div>
+                                  )}
+                                  {plugin.pluginLastUpdated && (
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                    <div className="gv-cell" role="cell">
+                                      <span className="gv-cell-text">{uiI18n?.labels?.lastUpdated || 'Last updated'}: <strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
+                                    </div>
+                                  </div>
+                                  )}
+                                  {plugin.activeInstalls !== null && (
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                    <div className="gv-cell" role="cell">
+                                      <span className="gv-cell-text">{uiI18n?.headings?.active_installs || 'Active installations'}: <strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
+                                    </div>
+                                  </div>
+                                  )}
+                                  {plugin.rating !== null && (
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                    <div className="gv-cell" role="cell">
+                                      <span className="gv-cell-text">{uiI18n?.labels?.rating || 'Rating'}: <strong>{(plugin.rating / 20).toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
+                                    </div>
+                                  </div>
+                                  )}
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                  <div className="gv-cell" role="cell">
+                                            <h4 className="gv-title">{uiI18n?.headings?.key_features || plugin.i18n?.keyFeatureHeading}</h4>
                                         </div>
                                     </div>
                                     {keyFeatures.map((f, i) => (
