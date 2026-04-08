@@ -46,6 +46,6 @@
   "dependencies": {
     "@group.one/gravity": "^5.22.1",
     "mixpanel-browser": "^2.72.0",
-    "react-i18next": "^15.7.3"
+    "react-i18next": "^16.5.4"
   }
 }
