@@ -499,7 +499,7 @@ export const MarketplaceProvider = ({
                         // so the finally block releases the pluginInAction lock.
                         setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
                         setSuccessState({ visible: true, type: 'install', pluginSlug: plugin.slug });
-                        return;
+                        return true;
                     }
 
                     actionSuccessful = true; // keep pluginInAction locked until reload

@@ -361,6 +361,7 @@ class MarketplaceController {
 			'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
 		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
 		'menuSlug'             => $this->config['menu_slug'],
+		'siteUrl'              => home_url(),
 		];
 
 		// Localize JS with config
@@ -508,6 +509,7 @@ class MarketplaceController {
  		'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
 		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
 		'menuSlug'             => $this->config['menu_slug'],
+		'siteUrl'              => home_url(),
  	];
 
  	// Localize JS with config
@@ -1115,9 +1117,26 @@ class MarketplaceController {
 		$price_amount   = floatval( $_POST['priceAmount'] ?? 0 );
 		$price_currency = sanitize_text_field( $_POST['priceCurrency'] ?? '' );
 		$price_period   = sanitize_text_field( $_POST['pricePeriod'] ?? '' );
+		$domain         = sanitize_text_field( $_POST['domain'] ?? '' );
+		$subdomain      = sanitize_text_field( $_POST['subdomain'] ?? '' );
 
 		if ( empty( $product_id ) ) {
 			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		$data = [
+			'productId' => $product_id,
+			'price'     => $price_amount,
+			'currency'  => $price_currency,
+			'interval'  => $price_period,
+		];
+
+		if ( ! empty( $domain ) ) {
+			$data['domain'] = $domain;
+		}
+
+		if ( ! empty( $subdomain ) ) {
+			$data['subdomain'] = $subdomain;
 		}
 
 		// Merge config credentials (username, api_key, locale) with subscribe-specific fields.
@@ -1126,12 +1145,7 @@ class MarketplaceController {
 			$this->config['payload'] ?? [],
 			[
 				'action' => 'wp-marketplace-subscribe',
-				'data'   => wp_json_encode( [
-					'productId' => $product_id,
-					'price'     => $price_amount,
-					'currency'  => $price_currency,
-					'interval'  => $price_period,
-				] ),
+				'data'   => wp_json_encode( $data ),
 			]
 		);
 

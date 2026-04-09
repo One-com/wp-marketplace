@@ -99,6 +99,21 @@ export default function PluginActions({ plugin }) {
      * @param {string} slug           Plugin slug (used for DB clear + local state key).
      * @param {string} subscriptionId Procurement / subscription ID to track.
      */
+    /** Fire-and-forget: acknowledge successful plugin download/installation to the API. */
+    const acknowledgePluginDownload = (subscriptionId) => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl) return;
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: new URLSearchParams({
+                action: 'marketplace_track_status',
+                nonce: wpConfig.nonce,
+                resourceType: 'acknowledge-plugin-download',
+                subscriptionId: subscriptionId || '',
+            }),
+        });
+    };
+
     /** Fire-and-forget: delete the server-side subscription list transient. */
     const clearSubscriptionListCache = () => {
         const ajaxUrl = wpConfig?.ajaxUrl;
@@ -185,7 +200,8 @@ export default function PluginActions({ plugin }) {
                     clearSubscriptionListCache();
 
                     if (downloadUrl) {
-                        await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
+                        const installed = await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
+                        if (installed) acknowledgePluginDownload(subscriptionId);
                     }
 
                     // Refetch subscriptions so addons page reflects the active subscription
@@ -339,6 +355,19 @@ export default function PluginActions({ plugin }) {
                 pricePeriod: priceData.period || '',
             });
 
+            if (plugin.requiresDomain) {
+                try {
+                    const hostname = new URL(window.marketplaceConfig?.siteUrl || window.location.href).hostname;
+                    const parts = hostname.split('.');
+                    const subdomain = parts.length > 1 ? parts[0] : '';
+                    const domain = parts.length > 1 ? parts.slice(1).join('.') : hostname;
+                    formData.set('domain', domain);
+                    if (subdomain) formData.set('subdomain', subdomain);
+                } catch (e) {
+                    // ignore URL parse errors
+                }
+            }
+
             const response = await fetch(ajaxUrl, {
                 method: 'POST',
                 body: formData,
@@ -387,7 +416,8 @@ export default function PluginActions({ plugin }) {
                 setBuyNowLoading(false);
                 setLoadingAction('');
                 if (downloadUrl) {
-                    await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
+                    const installed = await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
+                    if (installed) acknowledgePluginDownload(subscriptionId);
                 }
             } else if (status === 'pending' && subscriptionId) {
                 // Clear subscription list cache — external API will now include this
