@@ -358,8 +358,8 @@ class MarketplaceController {
 				'globalProperties' => $global_properties,
 				'distinctId' => $distinct_id,
 			],
-			'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
-		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
+			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
+		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
 		'menuSlug'             => $this->config['menu_slug'],
 		'siteUrl'              => home_url(),
 		];
@@ -506,8 +506,8 @@ class MarketplaceController {
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
  		],
- 		'pendingProcurements'  => get_option( 'marketplace_pending_procurements', [] ),
-		'pendingCancellations' => get_option( 'marketplace_pending_cancellations', [] ),
+ 		'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
+		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
 		'menuSlug'             => $this->config['menu_slug'],
 		'siteUrl'              => home_url(),
  	];
@@ -1093,7 +1093,9 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
 		}
 
-		$pending = get_option( 'marketplace_pending_procurements', [] );
+		$brand_name = $this->config['brand'];
+		$option_name = "{$brand_name}_marketplace_pending_procurements";
+		$pending = get_option( $option_name, [] );
 
 		$pending[ $slug ] = [
 			'subscriptionId' => $subscription_id,
@@ -1101,7 +1103,7 @@ class MarketplaceController {
 			'timestamp'      => time(),
 		];
 
-		update_option( 'marketplace_pending_procurements', $pending, false );
+		update_option( $option_name, $pending, false );
 
 		wp_send_json_success( [ 'message' => 'Pending procurement saved.' ] );
 	}
@@ -1314,12 +1316,14 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
 		}
 
-		$pending          = get_option( 'marketplace_pending_cancellations', [] );
+		$brand_name       = $this->config['brand'];
+		$option_name      = "{$brand_name}_marketplace_pending_cancellations";
+		$pending          = get_option( $option_name, [] );
 		$pending[ $slug ] = [
 			'subscriptionId' => $subscription_id,
 			'timestamp'      => time(),
 		];
-		update_option( 'marketplace_pending_cancellations', $pending, false );
+		update_option( $option_name, $pending, false );
 
 		wp_send_json_success( [ 'message' => 'Pending cancellation saved.' ] );
 	}
@@ -1336,10 +1340,12 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => 'Missing slug.' ] );
 		}
 
-		$pending = get_option( 'marketplace_pending_cancellations', [] );
+		$brand_name  = $this->config['brand'];
+		$option_name = "{$brand_name}_marketplace_pending_cancellations";
+		$pending     = get_option( $option_name, [] );
 		if ( isset( $pending[ $slug ] ) ) {
 			unset( $pending[ $slug ] );
-			update_option( 'marketplace_pending_cancellations', $pending, false );
+			update_option( $option_name, $pending, false );
 		}
 
 		wp_send_json_success( [ 'message' => 'Pending cancellation cleared.' ] );
@@ -1358,11 +1364,13 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => 'Missing slug.' ] );
 		}
 
-		$pending = get_option( 'marketplace_pending_procurements', [] );
+		$brand_name  = $this->config['brand'];
+		$option_name = "{$brand_name}_marketplace_pending_procurements";
+		$pending     = get_option( $option_name, [] );
 
 		if ( isset( $pending[ $slug ] ) ) {
 			unset( $pending[ $slug ] );
-			update_option( 'marketplace_pending_procurements', $pending, false );
+			update_option( $option_name, $pending, false );
 		}
 
 		wp_send_json_success( [ 'message' => 'Pending procurement cleared.' ] );
