@@ -75,13 +75,20 @@ export default function PluginActions({ plugin }) {
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/` : "";
 
-    // Check if we should show "Buy now" button for premium plugins on non-onecom brands
-    // Declared early so mount effects can reference it
-    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed;
-
     // Whether this plugin can have a subscription (premium on non-onecom brands).
     // Used for subscription date display — does NOT require plugin to be uninstalled.
     const isPremiumOnNonOnecom = !isOnecomBrand && plugin.licenseType === "premium";
+
+    // Find active subscription for this plugin's productId — if present, user already owns it
+    const activeSubscription = isPremiumOnNonOnecom && plugin.productId && subscriptionsList?.length
+        ? subscriptionsList.find(
+            s => s.productId === plugin.productId && s.status === 'active' && s.accessDetails?.downloadUrl
+        )
+        : null;
+
+    // Check if we should show "Buy now" button for premium plugins on non-onecom brands
+    // Skip "Buy now" if user already has an active subscription with a download URL
+    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed && !activeSubscription;
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -261,7 +268,7 @@ export default function PluginActions({ plugin }) {
     useEffect(() => {
         if (!isPremiumOnNonOnecom || !plugin.productId || !subscriptionsList?.length) return;
         const match = subscriptionsList.find(
-            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'cancelled')
+            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled')
         );
         if (match) {
             setSubscriptionDates({
@@ -299,6 +306,12 @@ export default function PluginActions({ plugin }) {
             });
             // Dispatch on document so listeners using document.addEventListener receive it
             document.dispatchEvent(event);
+            return;
+        }
+
+        // If installing a premium plugin with an active subscription, use the subscription's download URL
+        if (action === 'install' && activeSubscription?.accessDetails?.downloadUrl) {
+            handlePluginAction('install', { ...plugin, download: activeSubscription.accessDetails.downloadUrl }, 'product_detail');
             return;
         }
 
@@ -521,11 +534,15 @@ export default function PluginActions({ plugin }) {
                 ) : (
                     <button
                         className="gv-button gv-button-primary"
-                        disabled={pluginInAction[plugin.slug]}
+                        disabled={!!pluginInAction[plugin.slug]}
                         onClick={() => handleClick("activate")}
                     >
                         {pluginInAction[plugin.slug]
-                            ? formatMessage(uiI18n?.notifications?.activating || 'Activating {0}', pluginName)
+                            ? formatMessage(
+                                pluginInAction[plugin.slug] === 'install'
+                                    ? (uiI18n?.notifications?.installing || 'Installing {0}')
+                                    : (uiI18n?.notifications?.activating || 'Activating {0}'),
+                                pluginName)
                             : (uiI18n?.activateButton || plugin.i18n?.activateButton || 'Activate')}
                     </button>
                 )
@@ -562,7 +579,7 @@ export default function PluginActions({ plugin }) {
                     )}
                     {subscriptionDates.expiresAt && (
                         <p className="gv-text-sm gv-text-bold">
-                            {`${subscriptionDates.status === 'cancelled'
+                            {`${subscriptionDates.status === 'canceled'
                                 ? (uiI18n?.labels?.expiresOn || 'Expires on')
                                 : (uiI18n?.labels?.renewsOn || 'Renews on')}: ${formatDate(subscriptionDates.expiresAt)}`}
                         </p>

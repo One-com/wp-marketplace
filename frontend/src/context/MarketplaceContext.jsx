@@ -410,7 +410,7 @@ export const MarketplaceProvider = ({
         // Check if this is Imagify plugin activation (handles 302 redirect case)
         const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
 
-        setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
+        setPluginInAction(prev => ({ ...prev, [plugin.slug]: action }));
 
         // Use ref to track if action was successful (to prevent finally block from clearing pluginInAction)
         let actionSuccessful = false;

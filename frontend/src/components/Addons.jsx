@@ -149,7 +149,7 @@ export default function Addons() {
                 const data = pollResult?.data?.data;
                 const status = data?.status;
 
-                if (status === 'cancelled') {
+                if (status === 'canceled') {
                     stopPolling();
                     fetchPartnerSubscriptions();
                     return true;
@@ -176,7 +176,7 @@ export default function Addons() {
      * Handle "Cancel subscription" click:
      * 1. Call marketplace_unsubscribe (DELETE via PHP proxy).
      * 2. Check response status:
-     *    - 'cancelled' immediately → refresh subscription list.
+     *    - 'canceled' immediately → refresh subscription list.
      *    - 'pending_cancellation' → persist to DB, mark as cancelling, start polling.
      */
     const handleCancelClick = (plugin, subscriptionId) => {
@@ -201,8 +201,8 @@ export default function Addons() {
                 const responseData = result?.data?.data;
                 const status = responseData?.status;
 
-                if (status === 'cancelled') {
-                    // Immediately cancelled — refresh list, no polling needed
+                if (status === 'canceled') {
+                    // Immediately canceled — refresh list, no polling needed
                     fetchPartnerSubscriptions();
                     return;
                 }
@@ -520,7 +520,9 @@ export default function Addons() {
   }
 
     // Filter plugins for the table: installed OR special plugins with subscription
-    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || p.hasSubscription || !!pendingProcurements?.[p.slug]);
+    // Exclude plugins that only have canceled subscriptions and are not installed
+    const hasActiveSubscription = (p) => p.hasSubscription && p.subscriptions.some(s => s.status !== 'canceled');
+    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || hasActiveSubscription(p) || !!pendingProcurements?.[p.slug]);
 
 
 
