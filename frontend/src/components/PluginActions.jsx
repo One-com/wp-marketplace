@@ -3,6 +3,7 @@ import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { startPolling } from "../utils/pollingHelper";
+import PurchaseModal from "./PurchaseModal";
 
 /**
  * Extracts price data from a plugin object for the subscription API.
@@ -67,6 +68,7 @@ export default function PluginActions({ plugin }) {
 
     const [buyNowLoading, setBuyNowLoading] = useState(false);
     const [subscriptionDates, setSubscriptionDates] = useState(null);
+    const [purchaseModalOpen, setPurchaseModalOpen] = useState(false);
     const pollingIntervalRef = useRef(null);
 
     // Get subscription status for this plugin from context
@@ -345,7 +347,7 @@ export default function PluginActions({ plugin }) {
         });
 
         setBuyNowLoading(true);
-        setLoadingAction(formatMessage(uiI18n?.notifications?.processing || 'Processing {0}...', pluginName));
+        setLoadingAction(formatMessage(uiI18n?.notifications?.processing || 'Purchase in progress, please wait while your payment is processing.', pluginName));
         setLoadingPlugin('');
 
         const priceData = getPluginPriceData(plugin);
@@ -550,8 +552,8 @@ export default function PluginActions({ plugin }) {
                 <button
                     type="button"
                     className="gv-button gv-button-primary"
-                    disabled={buyNowLoading || pluginInAction[plugin.slug] || isPendingProcurement}
-                    onClick={handleBuyNowClick}
+                    disabled={buyNowLoading || !!pluginInAction[plugin.slug] || isPendingProcurement}
+                    onClick={() => setPurchaseModalOpen(true)}
                 >
                     {uiI18n?.buyNowButton || 'Buy now'}
                 </button>
@@ -567,25 +569,38 @@ export default function PluginActions({ plugin }) {
                 </button>
             )}
             {isPremiumOnNonOnecom && (isPendingProcurement ? (
-                <p className="gv-text-sm gv-mt-sm gv-text-bold">
-                    {uiI18n?.notifications?.procurementPending || 'Your purchase is being processed. The plugin will be available for installation shortly.'}
-                </p>
+                <div className="gv-text-indicator gv-mt-sm">
+                    <div className="gv-indicator gv-state-positive"></div>
+                    <span style={{whiteSpace:'normal'}}>{uiI18n?.notifications?.procurementPending || 'Payment successful. The plugin will be available for installation shortly.'}</span>
+                </div>
             ) : !shouldShowBuyNow && subscriptionDates ? (
                 <div className="gv-mt-sm">
-                    {subscriptionDates.provisionedAt && (
-                        <p className="gv-text-sm gv-text-bold">
-                            {`${uiI18n?.labels?.subscribedAt || 'Subscribed'}: ${formatDate(subscriptionDates.provisionedAt)}`}
-                        </p>
-                    )}
                     {subscriptionDates.expiresAt && (
-                        <p className="gv-text-sm gv-text-bold">
-                            {`${subscriptionDates.status === 'canceled'
-                                ? (uiI18n?.labels?.expiresOn || 'Expires on')
-                                : (uiI18n?.labels?.renewsOn || 'Renews on')}: ${formatDate(subscriptionDates.expiresAt)}`}
-                        </p>
+                        subscriptionDates.status === 'canceled' ? (
+                            <div className="gv-text-indicator">
+                                <div className="gv-indicator gv-state-attention"></div>
+                                <span>{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}. {uiI18n?.labels?.expiresOn || 'Expires at'}: {formatDate(subscriptionDates.expiresAt)}</span>
+                            </div>
+                        ) : (
+                            <div className="gv-text-indicator">
+                                <div className="gv-indicator gv-state-positive"></div>
+                                <span style={{whiteSpace:'normal'}}>{uiI18n?.labels?.subscriptionActive || 'Subscription active'}. {uiI18n?.labels?.renewsOn || 'Renewal at'}: {formatDate(subscriptionDates.expiresAt)}</span>
+                            </div>
+                        )
                     )}
                 </div>
             ) : null)}
+            <PurchaseModal
+                isOpen={purchaseModalOpen}
+                plugin={plugin}
+                uiI18n={uiI18n}
+                assetsBaseUrl={assetBase}
+                onClose={() => setPurchaseModalOpen(false)}
+                onPurchase={() => {
+                    setPurchaseModalOpen(false);
+                    handleBuyNowClick();
+                }}
+            />
         </div>
     );
 }

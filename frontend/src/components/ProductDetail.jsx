@@ -160,14 +160,14 @@ export default function ProductDetail({
     const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
     // // --- MOCK DATA: Remove this block once API returns real values ---
-    // if (!plugin.version) plugin = { ...plugin, version: '3.2.1' };
-    // if (!plugin.testedUpTo) plugin = { ...plugin, testedUpTo: '6.7' };
-    // if (!plugin.requiresPhpVersion) plugin = { ...plugin, requiresPhpVersion: '7.4' };
-    // if (!plugin.requiresWpVersion) plugin = { ...plugin, requiresWpVersion: '5.8' };
-    // if (plugin.rating === null || plugin.rating === undefined) plugin = { ...plugin, rating: 92 };
-    // if (plugin.ratingCount === null || plugin.ratingCount === undefined) plugin = { ...plugin, ratingCount: 1247 };
-    // if (plugin.activeInstalls === null || plugin.activeInstalls === undefined) plugin = { ...plugin, activeInstalls: 500000 };
-    // if (!plugin.pluginLastUpdated) plugin = { ...plugin, pluginLastUpdated: '2026-03-15T10:30:00.000Z' };
+    if (!plugin.version) plugin = { ...plugin, version: '3.2.1' };
+    if (!plugin.testedUpTo) plugin = { ...plugin, testedUpTo: '6.7' };
+    if (!plugin.requiresPhpVersion) plugin = { ...plugin, requiresPhpVersion: '7.4' };
+    if (!plugin.requiresWpVersion) plugin = { ...plugin, requiresWpVersion: '5.8' };
+    if (plugin.rating === null || plugin.rating === undefined) plugin = { ...plugin, rating: 92 };
+    if (plugin.ratingCount === null || plugin.ratingCount === undefined) plugin = { ...plugin, ratingCount: 1247 };
+    if (plugin.activeInstalls === null || plugin.activeInstalls === undefined) plugin = { ...plugin, activeInstalls: 500000 };
+    if (!plugin.pluginLastUpdated) plugin = { ...plugin, pluginLastUpdated: '2026-03-15T10:30:00.000Z' };
     // // --- END MOCK DATA ---
 
     // Extract data with fallbacks
@@ -339,71 +339,85 @@ export default function ProductDetail({
 
                             {keyFeatures.length > 0 && (
                                 <div className="gv-section oc-left-border-0" role="rowgroup">
-                                    {plugin.version && (
-                                    <div className="gv-section-header gv-table-row" role="row">
-                                        <div className="gv-cell" role="cell">
-                                          <span className="gv-cell-text">{uiI18n?.labels?.version || 'Version'}: <strong>{plugin.version}</strong></span>
-                                        </div>
-                                    </div>
-                                    )}
-                                  {plugin.testedUpTo && (
-                                  <div className="gv-section-header gv-table-row" role="row">
-                                      <div className="gv-cell" role="cell">
-                                        <span className="gv-cell-text">{uiI18n?.labels?.tested_upto || 'Tested up to'}: <strong>{plugin.testedUpTo}</strong></span>
-                                        </div>
-                                  </div>
-                                  )}
-                                  {plugin.requiresPhpVersion && (
-                                  <div className="gv-section-header gv-table-row" role="row">
-                                      <div className="gv-cell" role="cell">
-                                        <span className="gv-cell-text">{uiI18n?.headings?.php_version || 'PHP version'}: <strong>{plugin.requiresPhpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
-                                        </div>
-                                  </div>
-                                  )}
-                                  {plugin.requiresWpVersion && (
                                   <div className="gv-section-header gv-table-row" role="row">
                                     <div className="gv-cell" role="cell">
-                                      <span className="gv-cell-text">{uiI18n?.headings?.wordpress_version || 'WordPress version'}: <strong>{plugin.requiresWpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
-                                        </div>
-                                  </div>
-                                  )}
-                                  {plugin.pluginLastUpdated && (
-                                  <div className="gv-section-header gv-table-row" role="row">
-                                    <div className="gv-cell" role="cell">
-                                      <span className="gv-cell-text">{uiI18n?.labels?.lastUpdated || 'Last updated'}: <strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
+                                      <h4 className="gv-title">{uiI18n?.headings?.key_features || plugin.i18n?.keyFeatureHeading}</h4>
                                     </div>
                                   </div>
-                                  )}
-                                  {plugin.activeInstalls !== null && (
-                                  <div className="gv-section-header gv-table-row" role="row">
-                                    <div className="gv-cell" role="cell">
-                                      <span className="gv-cell-text">{uiI18n?.headings?.active_installs || 'Active installations'}: <strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
-                                    </div>
-                                  </div>
-                                  )}
-                                  {plugin.rating !== null && (
-                                  <div className="gv-section-header gv-table-row" role="row">
-                                    <div className="gv-cell" role="cell">
-                                      <span className="gv-cell-text">{uiI18n?.labels?.rating || 'Rating'}: <strong>{(plugin.rating / 20).toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
-                                    </div>
-                                  </div>
-                                  )}
-                                  <div className="gv-section-header gv-table-row" role="row">
-                                  <div className="gv-cell" role="cell">
-                                            <h4 className="gv-title">{uiI18n?.headings?.key_features || plugin.i18n?.keyFeatureHeading}</h4>
-                                        </div>
-                                    </div>
-                                    {keyFeatures.map((f, i) => (
-                                        <div className="gv-table-row" role="row" key={i}>
-                                            <div className="gv-cell" role="cell">
-                                                <span className="gv-cell-text">{f}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                  {keyFeatures.map((f, i) => (
+                                      <div className="gv-table-row" role="row" key={i}>
+                                          <div className="gv-cell" role="cell">
+                                              <span className="gv-cell-text">{f}</span>
+                                          </div>
+                                      </div>
+                                  ))}
                                 </div>
                             )}
                         </div>
                     </div>
+                  {/* Plugin Meta — rendered outside gv-layout-product grid to avoid area conflicts */}
+                  {(plugin.version || plugin.testedUpTo || plugin.requiresPhpVersion || plugin.requiresWpVersion || plugin.pluginLastUpdated || plugin.activeInstalls !== null || plugin.rating !== null) && (
+                    <div className="gv-table-container gv-mt-fluid">
+                      <div className="gv-table" role="table">
+                        <div className="gv-section oc-left-border-0" role="rowgroup">
+                          <div className="gv-section-header gv-table-row" role="row">
+                            <div className="gv-cell" role="cell" style={{ borderTop: '1px solid #E0E0E0'}}>
+                              <h4 className="gv-title">{uiI18n?.headings?.plugin_meta || 'Plugin Meta'}</h4>
+                            </div>
+                          </div>
+                          {plugin.version && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.labels?.version || 'Version'}: <strong>{plugin.version}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.testedUpTo && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.labels?.tested_upto || 'Tested up to'}: <strong>{plugin.testedUpTo}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.requiresPhpVersion && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.headings?.php_version || 'PHP version'}: <strong>{plugin.requiresPhpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.requiresWpVersion && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.headings?.wordpress_version || 'WordPress version'}: <strong>{plugin.requiresWpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.pluginLastUpdated && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.labels?.lastUpdated || 'Last updated'}: <strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.activeInstalls !== null && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.headings?.active_installs || 'Active installations'}: <strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.rating !== null && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text">{uiI18n?.labels?.rating || 'Rating'}: <strong>{(plugin.rating / 20).toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </section>
 
                 {/* Details / Benefits */}
@@ -435,6 +449,8 @@ export default function ProductDetail({
                     </div>
                 )}
             </article>
+
+
         </div>
     );
 
