@@ -368,49 +368,49 @@ export default function ProductDetail({
                           {plugin.version && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.labels?.version || 'Version'}: <strong>{plugin.version}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.version || 'Version'}</span><strong>{plugin.version}</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.testedUpTo && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.labels?.tested_upto || 'Tested up to'}: <strong>{plugin.testedUpTo}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.tested_upto || 'Tested up to'}</span><strong>{plugin.testedUpTo}</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.requiresPhpVersion && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.headings?.php_version || 'PHP version'}: <strong>{plugin.requiresPhpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.php_version || 'PHP version'}</span><strong>{plugin.requiresPhpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.requiresWpVersion && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.headings?.wordpress_version || 'WordPress version'}: <strong>{plugin.requiresWpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.wordpress_version || 'WordPress version'}</span><strong>{plugin.requiresWpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.pluginLastUpdated && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.labels?.lastUpdated || 'Last updated'}: <strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.lastUpdated || 'Last updated'}</span><strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.activeInstalls !== null && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.headings?.active_installs || 'Active installations'}: <strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.active_installs || 'Active installations'}</span><strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.rating !== null && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text">{uiI18n?.labels?.rating || 'Rating'}: <strong>{(plugin.rating / 20).toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.rating || 'Rating'}</span><strong>{(plugin.rating / 20).toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
                               </div>
                             </div>
                           )}
