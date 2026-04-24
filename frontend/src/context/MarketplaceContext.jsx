@@ -368,6 +368,7 @@ export const MarketplaceProvider = ({
                 action: 'marketplace_cancel_subscription',
                 nonce: window.marketplaceConfig?.wpConfig?.nonce,
                 plugin_slug: plugin.slug,
+                locale: window.marketplaceConfig?.locale || '',
                 ...(subscription_id ? { subscription_id } : {}),
             });
 

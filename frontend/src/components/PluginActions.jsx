@@ -81,10 +81,12 @@ export default function PluginActions({ plugin }) {
     // Used for subscription date display — does NOT require plugin to be uninstalled.
     const isPremiumOnNonOnecom = !isOnecomBrand && plugin.licenseType === "premium";
 
-    // Find active subscription for this plugin's productId — if present, user already owns it
+    // Find existing subscription for this plugin's productId — if present, user already owns it.
+    // Includes 'canceled' status because the subscription may still have remaining days before expiry.
+    // Once expired, the API stops returning it in the list entirely.
     const activeSubscription = isPremiumOnNonOnecom && plugin.productId && subscriptionsList?.length
         ? subscriptionsList.find(
-            s => s.productId === plugin.productId && s.status === 'active' && s.accessDetails?.downloadUrl
+            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled') && s.accessDetails?.downloadUrl
         )
         : null;
 
@@ -119,6 +121,7 @@ export default function PluginActions({ plugin }) {
                 nonce: wpConfig.nonce,
                 resourceType: 'acknowledge-plugin-download',
                 subscriptionId: subscriptionId || '',
+                locale: window.marketplaceConfig?.locale || '',
             }),
         });
     };
@@ -149,7 +152,7 @@ export default function PluginActions({ plugin }) {
             ajaxUrl,
             nonce: wpConfig.nonce,
             action: 'marketplace_track_status',
-            params: { subscriptionId },
+            params: { subscriptionId, locale: window.marketplaceConfig?.locale || '' },
             interval: 10000,
             onResult: async (result) => {
                 if (!result.success) return false; // keep polling
@@ -368,6 +371,7 @@ export default function PluginActions({ plugin }) {
                 priceAmount: priceData.amount || '',
                 priceCurrency: priceData.currency || '',
                 pricePeriod: priceData.period || '',
+                locale: window.marketplaceConfig?.locale || '',
             });
 
             if (plugin.requiresDomain) {
