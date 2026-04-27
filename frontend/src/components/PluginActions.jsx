@@ -165,7 +165,7 @@ export default function PluginActions({ plugin }) {
                 // Stop and show error if the response doesn't have the expected shape
                 // (e.g. {"success":true,"data":{"message":"Not Found"}})
                 if (!procurementData || !status) {
-                    setErrorState({ visible: true, type: 'buy_now', pluginSlug: slug });
+                    setErrorState({ visible: true, type: 'buy_now', pluginSlug: slug, message: result?.error || result?.data?.message || result?.data?.error || null });
                     fetch(ajaxUrl, {
                         method: 'POST',
                         body: new URLSearchParams({
@@ -223,7 +223,7 @@ export default function PluginActions({ plugin }) {
                 }
 
                 if (status === 'not_found') {
-                    setErrorState({ visible: true, type: 'buy_now', pluginSlug: slug });
+                    setErrorState({ visible: true, type: 'buy_now', pluginSlug: slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Clean up DB entry and local state
                     fetch(ajaxUrl, {
@@ -401,7 +401,7 @@ export default function PluginActions({ plugin }) {
                     plugin: plugin,
                     context: { result: 'error', error_message: result.data?.message || 'Subscription failed' },
                 });
-                setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug });
+                setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug, message: result?.error || result?.error || result?.data?.message || result?.data?.error || null });
                 setBuyNowLoading(false);
                 setLoadingAction('');
                 return;
@@ -480,7 +480,7 @@ export default function PluginActions({ plugin }) {
                 plugin: plugin,
                 context: { result: 'error', error_message: error.message || 'Network error' },
             });
-            setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug });
+            setErrorState({ visible: true, type: 'buy_now', pluginSlug: plugin.slug, message: error.message || null });
             setBuyNowLoading(false);
             setLoadingAction('');
         }

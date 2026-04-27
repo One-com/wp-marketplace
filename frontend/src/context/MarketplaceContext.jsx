@@ -623,7 +623,7 @@ export const MarketplaceProvider = ({
             } else {
                 // Show error toast for activation and installation errors
                 if (action === 'activate') {
-                    setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track activation error
                     trackButtonClick({
@@ -637,7 +637,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'deactivate') {
-                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track deactivation error
                     trackButtonClick({
@@ -651,7 +651,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'install') {
-                    setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track installation error
                     trackButtonClick({
@@ -665,7 +665,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'delete') {
-                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track deletion error
                     trackButtonClick({

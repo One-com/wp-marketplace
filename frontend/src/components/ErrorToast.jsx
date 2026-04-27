@@ -31,7 +31,7 @@ export default function ErrorToast({ plugin: propPlugin }) {
     const iconBase = assetBase ? `${assetBase}assets/` : "";
 
     const handleClose = () => {
-        setErrorState({ visible: false, type: null, pluginSlug: null });
+        setErrorState({ visible: false, type: null, pluginSlug: null, message: null });
     };
 
     const isActivateError = errorState.type === 'activate';
@@ -58,12 +58,17 @@ export default function ErrorToast({ plugin: propPlugin }) {
                     src={`${iconBase}icons/error.svg`}
                 ></gv-icon>
                 <div className="gv-toast-content">
-                    {isActivateError && formatMessage(uiI18n?.notifications?.pluginActivationFailed || "Couldn't activate plugin.", pluginName)}
-                    {isDeactivateError && formatMessage(uiI18n?.notifications?.pluginDeactivationFailed || "Couldn't deactivate plugin.", pluginName)}
-                    {isInstallError && formatMessage(uiI18n?.notifications?.pluginInstallationFailed || "Couldn't install plugin.", pluginName)}
-                    {isDeleteError && formatMessage(uiI18n?.notifications?.pluginDeletionFailed || "Couldn't delete plugin.", pluginName)}
-                    {isBuyNowError && (uiI18n?.notifications?.procurementFailed || "Couldn't complete the purchase. Please try again.")}
-                    {isCancelSubscriptionError && (uiI18n?.notifications?.cancelSubscriptionFailed || "Couldn't cancel the subscription. Please try again later.")}
+                    {errorState.message
+                        ? errorState.message
+                        : (<>
+                            {isActivateError && formatMessage(uiI18n?.notifications?.pluginActivationFailed || "Couldn't activate plugin.", pluginName)}
+                            {isDeactivateError && formatMessage(uiI18n?.notifications?.pluginDeactivationFailed || "Couldn't deactivate plugin.", pluginName)}
+                            {isInstallError && formatMessage(uiI18n?.notifications?.pluginInstallationFailed || "Couldn't install plugin.", pluginName)}
+                            {isDeleteError && formatMessage(uiI18n?.notifications?.pluginDeletionFailed || "Couldn't delete plugin.", pluginName)}
+                            {isBuyNowError && (uiI18n?.notifications?.procurementFailed || "Couldn't complete the purchase. Please try again.")}
+                            {isCancelSubscriptionError && (uiI18n?.notifications?.cancelSubscriptionFailed || "Couldn't cancel the subscription. Please try again later.")}
+                        </>)
+                    }
                 </div>
                 <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>

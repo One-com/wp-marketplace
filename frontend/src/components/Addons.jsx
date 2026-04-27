@@ -44,6 +44,8 @@ export default function Addons() {
         wpConfig,
         setErrorState,
         pendingProcurements,
+        setLoadingAction,
+        setLoadingPlugin,
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
@@ -53,6 +55,8 @@ export default function Addons() {
 
     // Track which plugin slugs have a cancellation in flight (hides Cancel button).
     // Pre-populated from DB-persisted pendingCancellations so the state survives page reloads.
+    const [refreshing, setRefreshing] = useState(false);
+
     const [cancellingSubscriptions, setCancellingSubscriptions] = useState(() => {
         const persisted = (typeof window !== 'undefined' && window.marketplaceConfig?.pendingCancellations) || {};
         return Object.fromEntries(Object.keys(persisted).map(slug => [slug, true]));
@@ -89,6 +93,35 @@ export default function Addons() {
             ? window.marketplaceConfig.menuSlug
             : 'onecom-marketplace';
         return `${adminUrl}admin.php?page=${menuSlug}&plugin=${slug}`;
+    };
+
+    // Clear subscription list transient and refetch fresh data from API
+    const handleRefreshSubscriptions = async () => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl) return;
+
+        setRefreshing(true);
+        setLoadingAction(uiI18n?.notifications?.refreshing || 'Refreshing subscriptions...');
+        setLoadingPlugin('');
+        try {
+            // Clear the server-side transient so the next fetch hits the API
+            await fetch(ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: 'marketplace_clear_subscription_list',
+                    nonce: wpConfig.nonce,
+                }),
+            });
+
+            // Fetch fresh subscriptions — backend will call the API and store new results
+            await fetchPartnerSubscriptions();
+        } catch (err) {
+            console.error('[Marketplace] Refresh subscriptions error', err);
+        } finally {
+            setRefreshing(false);
+            setLoadingAction('');
+            setLoadingPlugin('');
+        }
     };
 
     // Handle "Manage" action
@@ -161,13 +194,13 @@ export default function Addons() {
 
                 // Unknown / error status
                 stopPolling();
-                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug });
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug, message: pollResult?.error || pollResult?.data?.message || pollResult?.data?.error || null });
                 return true;
             },
             onError: (error) => {
                 console.error('[Marketplace] Cancel polling error', error);
                 stopPolling();
-                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug });
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug, message: error.message || null });
             },
         });
     };
@@ -195,7 +228,7 @@ export default function Addons() {
             .then(r => r.json())
             .then(result => {
                 if (!result.success) {
-                    setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug, message: result?.error || result?.error || result?.data?.message || result?.data?.error || null });
                     return;
                 }
 
@@ -227,11 +260,11 @@ export default function Addons() {
                 }
 
                 // Any other status — show error and exit
-                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
             })
             .catch(err => {
                 console.error('[Marketplace] Unsubscribe error', err);
-                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug });
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug, message: err.message || null });
             });
     };
 
@@ -705,22 +738,32 @@ export default function Addons() {
                     className="gv-text-bold gv-text-lg gv-mb-xs">{uiI18n?.headings?.recommendedProducts}</p>
                   <p className="gv-text-sm gv-mb-md">{uiI18n?.text?.recommendedText}</p>
                 </div>
-                <button
-                  className="gv-button gv-button-primary gv-mode-condensed gv-flex-shrink-0"
-                  onClick={() => {
-                    // Navigate to the main marketplace page
-                    const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
-                      ? window.marketplaceConfig.wpConfig.adminUrl
-                      : '/wp-admin/';
-                    const menuSlug = typeof window !== "undefined" && window.marketplaceConfig?.menuSlug
-                      ? window.marketplaceConfig.menuSlug
-                      : 'onecom-marketplace';
-                    window.location.href = `${adminUrl}admin.php?page=${menuSlug}`;
-                  }}
-                >
-                  {uiI18n.seeAllProducts}
-                  <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`} alt="See all products"></gv-icon>
-                </button>
+                <div className="gv-flex gv-gap-sm gv-flex-shrink-0">
+                  <button
+                    className="gv-button gv-button-secondary gv-mode-condensed"
+                    disabled={refreshing}
+                    onClick={handleRefreshSubscriptions}
+                  >
+                    <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
+                    <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
+                  </button>
+                  <button
+                    className="gv-button gv-button-primary gv-mode-condensed"
+                    onClick={() => {
+                      // Navigate to the main marketplace page
+                      const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
+                        ? window.marketplaceConfig.wpConfig.adminUrl
+                        : '/wp-admin/';
+                      const menuSlug = typeof window !== "undefined" && window.marketplaceConfig?.menuSlug
+                        ? window.marketplaceConfig.menuSlug
+                        : 'onecom-marketplace';
+                      window.location.href = `${adminUrl}admin.php?page=${menuSlug}`;
+                    }}
+                  >
+                    {uiI18n.seeAllProducts}
+                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`} alt="See all products"></gv-icon>
+                  </button>
+                </div>
 
               </div>
                 <div
@@ -799,8 +842,9 @@ export default function Addons() {
                   <tr>
                     <th scope="col"></th>
                     <th scope="col">{uiI18n?.labels?.name}</th>
+                    <th scope="col">{uiI18n?.labels?.type || 'Type'}</th>
                     <th scope="col">{uiI18n?.labels?.status}</th>
-                    <th scope="col">Expiration date</th>
+                    <th scope="col">{uiI18n?.labels?.renewalExpiry || 'Renewal / Expiry'}</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
                   </tr>
@@ -841,9 +885,19 @@ export default function Addons() {
                         </td>
                         {/* Image End */}
 
-                        {/* Plugin name and type */}
-                        <td><p>{plugin.name}</p> <span class="gv-caption-sm gv-text-on-alternative">{plugin.licenseType === 'free' ? uiI18n?.labels?.freePlugin : uiI18n?.labels?.premiumPlugin}</span></td>
-                        {/* Plugin name and type end */}
+                        {/* Plugin name */}
+                        <td><p>{plugin.name}</p></td>
+                        {/* Plugin name end */}
+
+                        {/* Plugin type */}
+                        <td>
+                          {plugin.licenseType === 'free' ? (
+                            <div className="gv-badge gv-badge-generic">{uiI18n?.labels?.freeLabel || 'FREE'}</div>
+                          ) : (
+                            <div className="gv-badge gv-badge-info">{uiI18n?.labels?.premiumLabel || 'PREMIUM'}</div>
+                          )}
+                        </td>
+                        {/* Plugin type end */}
 
                         {/* Plugin status */}
                         <td>
