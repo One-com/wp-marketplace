@@ -583,7 +583,7 @@ export default function PluginActions({ plugin }) {
                         subscriptionDates.status === 'canceled' ? (
                             <div className="gv-text-indicator">
                                 <div className="gv-indicator gv-state-attention"></div>
-                                <span>{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}. {uiI18n?.labels?.expiresOn || 'Expires at'}: {formatDate(subscriptionDates.expiresAt)}</span>
+                                <span style={{whiteSpace:'normal'}}>{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}. {uiI18n?.labels?.expiresOn || 'Expires at'}: {formatDate(subscriptionDates.expiresAt)}</span>
                             </div>
                         ) : (
                             <div className="gv-text-indicator">

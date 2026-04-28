@@ -555,8 +555,11 @@ export default function Addons() {
 
     // Filter plugins for the table: installed OR special plugins with subscription
     // Exclude plugins that only have canceled subscriptions and are not installed
-    const hasActiveSubscription = (p) => p.hasSubscription && p.subscriptions.some(s => s.status !== 'canceled');
-    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || hasActiveSubscription(p) || !!pendingProcurements?.[p.slug]);
+    // Show plugin if it has a subscription that is either active OR canceled but not yet expired
+    const hasValidSubscription = (p) => p.hasSubscription && p.subscriptions.some(
+        s => s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date())
+    );
+    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || hasValidSubscription(p) || !!pendingProcurements?.[p.slug]);
 
 
 
@@ -843,8 +846,8 @@ export default function Addons() {
                     <th scope="col"></th>
                     <th scope="col">{uiI18n?.labels?.name}</th>
                     <th scope="col">{uiI18n?.labels?.type || 'Type'}</th>
+                    <th scope="col">{uiI18n?.labels?.subscriptions || 'Subscription'}</th>
                     <th scope="col">{uiI18n?.labels?.status}</th>
-                    <th scope="col">{uiI18n?.labels?.renewalExpiry || 'Renewal / Expiry'}</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
                   </tr>
@@ -899,6 +902,25 @@ export default function Addons() {
                         </td>
                         {/* Plugin type end */}
 
+                        {/* Plugin subscription */}
+                        <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
+                          <>
+                            {latestSubscription?.status === 'canceled' ? (
+                              <p>{uiI18n?.labels?.expiresOn || 'Expires'}: {latestSubsDate}</p>
+                            ) : (
+                              <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
+                            )}
+                            {latestSubscription?.status === 'canceled' ? (
+                              <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}</p></div>
+                            ) : (
+                              <div className="gv-underline"><p class="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>
+                            )}
+                          </>
+                        ) : (
+                          <p>-</p>
+                        )}</td>
+                        {/* Plugin subscription end */}
+
                         {/* Plugin status */}
                         <td>
                           {cancellingSubscriptions[plugin.slug] ? (
@@ -915,21 +937,6 @@ export default function Addons() {
                           )}
                         </td>
                         {/* Plugin status end */}
-
-                        {/* Plugin expiration */}
-                        <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
-                          <>
-                            <p>{latestSubsDate}</p>
-                            {!cancellingSubscriptions[plugin.slug] && latestSubscription?.status !== 'pending_cancellation' && renewalDate && (
-                              <span className="gv-caption-sm gv-text-on-alternative">
-                                {renewalDate}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <p>-</p>
-                        )}</td>
-                        {/* Plugin expiration end */}
 
                         {/* Plugin actions */}
                         <td>
