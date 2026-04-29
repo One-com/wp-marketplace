@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
 import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
 import { handleImagifyActivation } from '../utils/imagifyHandler';
+import { getAjaxAction } from '../utils/common.utils';
 
 const MarketplaceContext = createContext(null);
 
@@ -331,7 +332,7 @@ export const MarketplaceProvider = ({
             }
 
             const formData = new URLSearchParams({
-                action: 'marketplace_get_subscriptions_list',
+                action: getAjaxAction('get_subscriptions_list'),
                 nonce: window.marketplaceConfig?.wpConfig?.nonce,
             });
 
@@ -365,7 +366,7 @@ export const MarketplaceProvider = ({
             }
 
             const formData = new URLSearchParams({
-                action: 'marketplace_cancel_subscription',
+                action: getAjaxAction('cancel_subscription'),
                 nonce: window.marketplaceConfig?.wpConfig?.nonce,
                 plugin_slug: plugin.slug,
                 locale: window.marketplaceConfig?.locale || '',
@@ -386,7 +387,7 @@ export const MarketplaceProvider = ({
 
             // Refresh subscriptions list after successful cancellation
             const refreshFormData = new URLSearchParams({
-                action: 'marketplace_get_subscriptions_list',
+                action: getAjaxAction('get_subscriptions_list'),
                 nonce: window.marketplaceConfig?.wpConfig?.nonce,
             });
 
@@ -451,7 +452,7 @@ export const MarketplaceProvider = ({
 
             if (useWPHandlers) {
                 // original WP-AJAX URL + download_url appended
-                url = `${wpConfig.ajaxUrl}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
+                url = `${wpConfig.ajaxUrl}?action=${getAjaxAction(`${action}_plugin`)}&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
             } else {
                 // append download_url to non-WP URL (adds ? or & correctly)
                 url = url + (url.includes('?') ? '&' : '?') + downloadParam;

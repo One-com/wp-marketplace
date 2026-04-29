@@ -10,7 +10,7 @@ import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
-import { getLatestSubscription } from "../utils/common.utils";
+import { getLatestSubscription, getAjaxAction } from "../utils/common.utils";
 import { startPolling } from "../utils/pollingHelper";
 
 export default function Addons() {
@@ -108,7 +108,7 @@ export default function Addons() {
             await fetch(ajaxUrl, {
                 method: 'POST',
                 body: new URLSearchParams({
-                    action: 'marketplace_clear_subscription_list',
+                    action: getAjaxAction('clear_subscription_list'),
                     nonce: wpConfig.nonce,
                 }),
             });
@@ -160,7 +160,7 @@ export default function Addons() {
             fetch(ajaxUrl, {
                 method: 'POST',
                 body: new URLSearchParams({
-                    action: 'marketplace_clear_pending_cancellation',
+                    action: getAjaxAction('clear_pending_cancellation'),
                     nonce: wpConfig.nonce,
                     slug,
                 }),
@@ -175,7 +175,7 @@ export default function Addons() {
         cancelPollingRefs.current[slug] = startPolling({
             ajaxUrl,
             nonce: wpConfig.nonce,
-            action: 'marketplace_track_status',
+            action: getAjaxAction('track_status'),
             params: { subscriptionId, resourceType: 'cancellation', locale: window.marketplaceConfig?.locale || '' },
             interval: 10000,
             onResult: (pollResult) => {
@@ -219,7 +219,7 @@ export default function Addons() {
         fetch(ajaxUrl, {
             method: 'POST',
             body: new URLSearchParams({
-                action: 'marketplace_unsubscribe',
+                action: getAjaxAction('unsubscribe'),
                 nonce: wpConfig.nonce,
                 subscriptionId,
                 locale: window.marketplaceConfig?.locale || '',
@@ -248,7 +248,7 @@ export default function Addons() {
                     fetch(ajaxUrl, {
                         method: 'POST',
                         body: new URLSearchParams({
-                            action: 'marketplace_save_pending_cancellation',
+                            action: getAjaxAction('save_pending_cancellation'),
                             nonce: wpConfig.nonce,
                             slug: plugin.slug,
                             subscriptionId,

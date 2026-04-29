@@ -3,6 +3,7 @@ import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { startPolling } from "../utils/pollingHelper";
+import { getAjaxAction } from "../utils/common.utils";
 import PurchaseModal from "./PurchaseModal";
 
 /**
@@ -117,7 +118,7 @@ export default function PluginActions({ plugin }) {
         fetch(ajaxUrl, {
             method: 'POST',
             body: new URLSearchParams({
-                action: 'marketplace_track_status',
+                action: getAjaxAction('track_status'),
                 nonce: wpConfig.nonce,
                 resourceType: 'acknowledge-plugin-download',
                 subscriptionId: subscriptionId || '',
@@ -133,7 +134,7 @@ export default function PluginActions({ plugin }) {
         fetch(ajaxUrl, {
             method: 'POST',
             body: new URLSearchParams({
-                action: 'marketplace_clear_subscription_list',
+                action: getAjaxAction('clear_subscription_list'),
                 nonce: wpConfig.nonce,
             }),
         });
@@ -151,7 +152,7 @@ export default function PluginActions({ plugin }) {
         pollingIntervalRef.current = startPolling({
             ajaxUrl,
             nonce: wpConfig.nonce,
-            action: 'marketplace_track_status',
+            action: getAjaxAction('track_status'),
             params: { subscriptionId, locale: window.marketplaceConfig?.locale || '' },
             interval: 10000,
             onResult: async (result) => {
@@ -169,7 +170,7 @@ export default function PluginActions({ plugin }) {
                     fetch(ajaxUrl, {
                         method: 'POST',
                         body: new URLSearchParams({
-                            action: 'marketplace_clear_pending_procurement',
+                            action: getAjaxAction('clear_pending_procurement'),
                             nonce: wpConfig.nonce,
                             slug,
                         }),
@@ -197,7 +198,7 @@ export default function PluginActions({ plugin }) {
                     fetch(ajaxUrl, {
                         method: 'POST',
                         body: new URLSearchParams({
-                            action: 'marketplace_clear_pending_procurement',
+                            action: getAjaxAction('clear_pending_procurement'),
                             nonce: wpConfig.nonce,
                             slug,
                         }),
@@ -229,7 +230,7 @@ export default function PluginActions({ plugin }) {
                     fetch(ajaxUrl, {
                         method: 'POST',
                         body: new URLSearchParams({
-                            action: 'marketplace_clear_pending_procurement',
+                            action: getAjaxAction('clear_pending_procurement'),
                             nonce: wpConfig.nonce,
                             slug,
                         }),
@@ -365,7 +366,7 @@ export default function PluginActions({ plugin }) {
 
         try {
             const formData = new URLSearchParams({
-                action: 'marketplace_subscribe',
+                action: getAjaxAction('subscribe'),
                 nonce: wpConfig.nonce,
                 productId: plugin.productId || '',
                 priceAmount: priceData.amount || '',
@@ -445,7 +446,7 @@ export default function PluginActions({ plugin }) {
 
                 // Save pending procurement to DB
                 const saveProcurementData = new URLSearchParams({
-                    action: 'marketplace_save_pending_procurement',
+                    action: getAjaxAction('save_pending_procurement'),
                     nonce: wpConfig.nonce,
                     slug: plugin.slug,
                     subscriptionId: subscriptionId,

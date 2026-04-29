@@ -130,6 +130,17 @@ class MarketplaceController {
 	}
 
 	/**
+	 * Get the brand-specific AJAX action prefix to avoid conflicts when multiple
+	 * plugins embed the marketplace module simultaneously.
+	 *
+	 * @return string e.g. 'onecom_marketplace' or 'rankmath_marketplace'
+	 */
+	private function get_ajax_prefix(): string {
+		$brand = $this->config['brand'] ?? '';
+		return $brand ? "{$brand}_marketplace" : 'marketplace';
+	}
+
+	/**
 	 * Convert filesystem path to URL
 	 *
 	 * @param string $path Absolute filesystem path
@@ -165,22 +176,23 @@ class MarketplaceController {
 			add_action( 'admin_menu', [ $this, 'register_addons_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_addons_menu' ] );
-			add_action( 'wp_ajax_marketplace_install_plugin', [ $this, 'ajax_install_plugin' ] );
-			add_action( 'wp_ajax_marketplace_activate_plugin', [ $this, 'ajax_activate_plugin' ] );
-			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
-			add_action( 'wp_ajax_marketplace_delete_plugin', [ $this, 'ajax_delete_plugin' ] );
-			add_action( 'wp_ajax_marketplace_save_pending_procurement', [ $this, 'ajax_save_pending_procurement' ] );
-			add_action( 'wp_ajax_marketplace_clear_pending_procurement', [ $this, 'ajax_clear_pending_procurement' ] );
-			add_action( 'wp_ajax_marketplace_subscribe', [ $this, 'ajax_subscribe' ] );
-			add_action( 'wp_ajax_marketplace_track_status', [ $this, 'ajax_track_status' ] );
+			$prefix = $this->get_ajax_prefix();
+			add_action( "wp_ajax_{$prefix}_install_plugin", [ $this, 'ajax_install_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_activate_plugin", [ $this, 'ajax_activate_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_deactivate_plugin", [ $this, 'ajax_deactivate_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_delete_plugin", [ $this, 'ajax_delete_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_save_pending_procurement", [ $this, 'ajax_save_pending_procurement' ] );
+			add_action( "wp_ajax_{$prefix}_clear_pending_procurement", [ $this, 'ajax_clear_pending_procurement' ] );
+			add_action( "wp_ajax_{$prefix}_subscribe", [ $this, 'ajax_subscribe' ] );
+			add_action( "wp_ajax_{$prefix}_track_status", [ $this, 'ajax_track_status' ] );
 
-			add_action( 'wp_ajax_marketplace_get_subscriptions_list', [ $this, 'get_subscriptions_list' ] );
+			add_action( "wp_ajax_{$prefix}_get_subscriptions_list", [ $this, 'get_subscriptions_list' ] );
 
-			add_action( 'wp_ajax_marketplace_cancel_subscription', [ $this, 'cancel_subscriptions' ] );
-			add_action( 'wp_ajax_marketplace_unsubscribe', [ $this, 'ajax_unsubscribe' ] );
-			add_action( 'wp_ajax_marketplace_clear_subscription_list', [ $this, 'ajax_clear_subscription_list' ] );
-			add_action( 'wp_ajax_marketplace_save_pending_cancellation', [ $this, 'ajax_save_pending_cancellation' ] );
-			add_action( 'wp_ajax_marketplace_clear_pending_cancellation', [ $this, 'ajax_clear_pending_cancellation' ] );
+			add_action( "wp_ajax_{$prefix}_cancel_subscription", [ $this, 'cancel_subscriptions' ] );
+			add_action( "wp_ajax_{$prefix}_unsubscribe", [ $this, 'ajax_unsubscribe' ] );
+			add_action( "wp_ajax_{$prefix}_clear_subscription_list", [ $this, 'ajax_clear_subscription_list' ] );
+			add_action( "wp_ajax_{$prefix}_save_pending_cancellation", [ $this, 'ajax_save_pending_cancellation' ] );
+			add_action( "wp_ajax_{$prefix}_clear_pending_cancellation", [ $this, 'ajax_clear_pending_cancellation' ] );
 
 
 			//reset transient for marketplace catalog
@@ -320,7 +332,7 @@ class MarketplaceController {
 
 		// Build base localized config
 		$localized_config = [
-			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+			'apiBaseUrl' => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
 			'apiUrl'     => $this->config['api_url'],
 			'locale' => $locale,
 			'brand' => $this->config['brand'],
@@ -329,6 +341,7 @@ class MarketplaceController {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'ajaxActionPrefix' => $this->get_ajax_prefix(),
 				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
 			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
@@ -468,7 +481,7 @@ class MarketplaceController {
 
  	// Build base localized config
  	$localized_config = [
- 		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+ 		'apiBaseUrl' => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
  		'apiUrl'     => $this->config['api_url'],
  		'locale' => $locale,
  		'brand' => $this->config['brand'],
@@ -477,6 +490,7 @@ class MarketplaceController {
  			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
  			'adminUrl' => admin_url(),
  			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'ajaxActionPrefix' => $this->get_ajax_prefix(),
  			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
  		],
  		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
@@ -532,13 +546,16 @@ class MarketplaceController {
 	}
 
 	public function register_rest_routes() {
-		register_rest_route( 'marketplace/v1', '/plugins', [
+		$brand = $this->config['brand'] ?: 'marketplace';
+		$namespace = "{$brand}-marketplace/v1";
+
+		register_rest_route( $namespace, '/plugins', [
 			'methods'             => 'GET',
 			'callback'            => [ $this, 'get_plugins' ],
 			'permission_callback' => '__return_true',
 		] );
 
-		register_rest_route( 'marketplace/v1', '/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)', [
+		register_rest_route( $namespace, '/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)', [
 			'methods'             => 'GET',
 			'callback'            => [ $this, 'check_plugin_activation' ],
 			'permission_callback' => '__return_true',
