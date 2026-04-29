@@ -700,6 +700,44 @@ export default function Addons() {
 
         return null;
       }
+
+      // 4. Cancelled but still within the valid period
+      if (status === 'canceled') {
+        const isStillValid = latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
+        if (isStillValid) {
+          if (!plugin.installed) {
+            return (
+              <a
+                href="#"
+                className="gv-action"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePluginAction('install', plugin, 'addons', latestSubscription?.accessDetails?.downloadUrl);
+                }}
+              >
+                {labels?.installButton || 'Install'}
+              </a>
+            );
+          }
+
+          if (!plugin.activated) {
+            return (
+              <a
+                href="#"
+                className="gv-action"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePluginAction('activate', plugin, 'addons');
+                }}
+              >
+                {labels?.activateButton || 'Activate'}
+              </a>
+            );
+          }
+        }
+
+        return null;
+      }
     }
 
     // 4. Fallback (no subscription)
@@ -955,7 +993,7 @@ export default function Addons() {
 
                         {/* Menu actions */}
                         <td>
-                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active') || (isCancelledButValid && !plugin.installed)) && (
+                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
@@ -1031,22 +1069,6 @@ export default function Addons() {
                                       )}
                                     </li>
 
-                                    {isCancelledButValid && !plugin.installed && (
-                                    <li className="gv-mb-0">
-                                      <a
-                                        href="#"
-                                        className="gv-menu-item"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          setOpenMenuIndex(null);
-                                          handlePluginAction('install', plugin, 'addons', latestSubscription?.accessDetails?.downloadUrl);
-                                        }}
-                                      >
-                                        <gv-icon aria-hidden="true" src={`${iconBase}download.svg`}></gv-icon>
-                                        <span>{uiI18n?.labels?.installButton || 'Install'}</span>
-                                      </a>
-                                    </li>
-                                    )}
 
                                     <li className="gv-mb-0">
                                       {latestSubscription?.status === 'active' && !cancellingSubscriptions[plugin.slug] && (
