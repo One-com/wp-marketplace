@@ -50,7 +50,7 @@
   "author": "One.com",
   "license": "GPL-2.0-or-later",
   "dependencies": {
-    "@group.one/gravity": "^5.22.1",
+    "@group.one/gravity": "^5.36.1",
     "mixpanel-browser": "^2.72.0",
     "react-i18next": "^15.7.3"
   }

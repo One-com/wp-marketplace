@@ -439,7 +439,7 @@ export default function PluginActions({ plugin }) {
                     const installed = await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
                     if (installed) acknowledgePluginDownload(subscriptionId);
                 }
-            } else if (status === 'pending' && subscriptionId) {
+            } else if ((status === 'pending' || status === 'pending_provisioning') && subscriptionId) {
                 // Clear subscription list cache — external API will now include this
                 // subscription as pending, so next addons page load shows it immediately
                 clearSubscriptionListCache();
