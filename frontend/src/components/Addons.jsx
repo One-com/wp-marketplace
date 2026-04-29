@@ -559,7 +559,13 @@ export default function Addons() {
     const hasValidSubscription = (p) => p.hasSubscription && p.subscriptions.some(
         s => s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date())
     );
-    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || hasValidSubscription(p) || !!pendingProcurements?.[p.slug]);
+    const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+    const rankMathSlugs = ['seo-by-rank-math', 'seo-by-rank-math-pro'];
+    const installedPlugins = mergedPlugins.filter(p => {
+        // Hide Rank Math plugins from addons list when brand is rankmath
+        if (brand === 'rankmath' && rankMathSlugs.includes(p.slug)) return false;
+        return p.installed || shouldShowProvision(p) || hasValidSubscription(p) || !!pendingProcurements?.[p.slug];
+    });
 
 
 
@@ -622,6 +628,7 @@ export default function Addons() {
 
         return labels?.notActive || 'Not Active';
       }
+
     }
 
     // 2. Fallback (no subscription)
@@ -694,6 +701,44 @@ export default function Addons() {
 
         return null;
       }
+
+      // 4. Cancelled but still within the valid period
+      if (status === 'canceled') {
+        const isStillValid = latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
+        if (isStillValid) {
+          if (!plugin.installed) {
+            return (
+              <a
+                href="#"
+                className="gv-action"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePluginAction('install', plugin, 'addons', latestSubscription?.accessDetails?.downloadUrl);
+                }}
+              >
+                {labels?.installButton || 'Install'}
+              </a>
+            );
+          }
+
+          if (!plugin.activated) {
+            return (
+              <a
+                href="#"
+                className="gv-action"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePluginAction('activate', plugin, 'addons');
+                }}
+              >
+                {labels?.activateButton || 'Activate'}
+              </a>
+            );
+          }
+        }
+
+        return null;
+      }
     }
 
     // 4. Fallback (no subscription)
@@ -742,14 +787,6 @@ export default function Addons() {
                   <p className="gv-text-sm gv-mb-md">{uiI18n?.text?.recommendedText}</p>
                 </div>
                 <div className="gv-flex gv-gap-sm gv-flex-shrink-0">
-                  <button
-                    className="gv-button gv-button-secondary gv-mode-condensed"
-                    disabled={refreshing}
-                    onClick={handleRefreshSubscriptions}
-                  >
-                    <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
-                    <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
-                  </button>
                   <button
                     className="gv-button gv-button-primary gv-mode-condensed"
                     onClick={() => {
@@ -839,6 +876,16 @@ export default function Addons() {
           {/* Entry point for addons list */}
           {installedPlugins.length > 0 && (
             <section className="addons-section gv-mt-fluid">
+              <div className="gv-flex gv-justify-end gv-mt-0">
+                <button
+                  className="gv-button gv-button-secondary gv-mode-condensed"
+                  disabled={refreshing}
+                  onClick={handleRefreshSubscriptions}
+                >
+                  <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
+                  <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
+                </button>
+              </div>
               <div className="gv-data-table gv-mt-lg gv-addons-table">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>
@@ -875,6 +922,7 @@ export default function Addons() {
                     const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
                     const latestSubsDate = (latestSubscription !== null) ? formatDateDDMMYYYY(latestSubscription.expiresAt) : '-';
                     const renewalDate = (latestSubscription !== null && latestSubscription.renewsAt != null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : null
+                    const isCancelledButValid = latestSubscription?.status === 'canceled' && latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>
                         {/* Image */}
@@ -905,13 +953,21 @@ export default function Addons() {
                         {/* Plugin subscription */}
                         <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
                           <>
-                            {latestSubscription?.status === 'canceled' ? (
+                            {latestSubscription?.status === 'expired' ? (
+                              <p>{uiI18n?.labels?.expiredOn || 'Expired on'}: {latestSubsDate}</p>
+                            ) : latestSubscription?.status === 'canceled' ? (
                               <p>{uiI18n?.labels?.expiresOn || 'Expires'}: {latestSubsDate}</p>
                             ) : (
                               <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
                             )}
-                            {latestSubscription?.status === 'canceled' ? (
-                              <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}</p></div>
+                            {latestSubscription?.status === 'expired' ? (
+                              <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
+                            ) : latestSubscription?.status === 'canceled' ? (
+                              !isCancelledButValid ? (
+                                <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
+                              ) : (
+                                <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}</p></div>
+                              )
                             ) : (
                               <div className="gv-underline"><p class="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>
                             )}
@@ -1021,6 +1077,7 @@ export default function Addons() {
                                         </a>
                                       )}
                                     </li>
+
 
                                     <li className="gv-mb-0">
                                       {latestSubscription?.status === 'active' && !cancellingSubscriptions[plugin.slug] && (
