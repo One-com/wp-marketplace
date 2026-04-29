@@ -883,6 +883,7 @@ export default function Addons() {
                     const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
                     const latestSubsDate = (latestSubscription !== null) ? formatDateDDMMYYYY(latestSubscription.expiresAt) : '-';
                     const renewalDate = (latestSubscription !== null && latestSubscription.renewsAt != null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : null
+                    const isCancelledButValid = latestSubscription?.status === 'canceled' && latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>
                         {/* Image */}
@@ -954,7 +955,7 @@ export default function Addons() {
 
                         {/* Menu actions */}
                         <td>
-                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
+                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active') || (isCancelledButValid && !plugin.installed)) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
@@ -1029,6 +1030,23 @@ export default function Addons() {
                                         </a>
                                       )}
                                     </li>
+
+                                    {isCancelledButValid && !plugin.installed && (
+                                    <li className="gv-mb-0">
+                                      <a
+                                        href="#"
+                                        className="gv-menu-item"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          setOpenMenuIndex(null);
+                                          handlePluginAction('install', plugin, 'addons', latestSubscription?.accessDetails?.downloadUrl);
+                                        }}
+                                      >
+                                        <gv-icon aria-hidden="true" src={`${iconBase}download.svg`}></gv-icon>
+                                        <span>{uiI18n?.labels?.installButton || 'Install'}</span>
+                                      </a>
+                                    </li>
+                                    )}
 
                                     <li className="gv-mb-0">
                                       {latestSubscription?.status === 'active' && !cancellingSubscriptions[plugin.slug] && (
