@@ -78,7 +78,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                     )}
                     <div className="gv-notice gv-notice-info">
                       <gv-icon
-                        className="gv-notice-icon"
+                        className="gv-notice-icon" style={{flexShrink: 0}}
                         aria-hidden="true"
                         src={`${iconBase}info.svg`}
                       ></gv-icon>
