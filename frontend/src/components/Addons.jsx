@@ -743,14 +743,6 @@ export default function Addons() {
                 </div>
                 <div className="gv-flex gv-gap-sm gv-flex-shrink-0">
                   <button
-                    className="gv-button gv-button-secondary gv-mode-condensed"
-                    disabled={refreshing}
-                    onClick={handleRefreshSubscriptions}
-                  >
-                    <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
-                    <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
-                  </button>
-                  <button
                     className="gv-button gv-button-primary gv-mode-condensed"
                     onClick={() => {
                       // Navigate to the main marketplace page
@@ -839,6 +831,16 @@ export default function Addons() {
           {/* Entry point for addons list */}
           {installedPlugins.length > 0 && (
             <section className="addons-section gv-mt-fluid">
+              <div className="gv-flex gv-justify-end gv-mt-0">
+                <button
+                  className="gv-button gv-button-secondary gv-mode-condensed"
+                  disabled={refreshing}
+                  onClick={handleRefreshSubscriptions}
+                >
+                  <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
+                  <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
+                </button>
+              </div>
               <div className="gv-data-table gv-mt-lg gv-addons-table">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>
