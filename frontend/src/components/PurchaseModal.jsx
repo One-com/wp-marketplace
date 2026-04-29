@@ -50,40 +50,54 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                     <button type="button" className="gv-modal-close" aria-label="Close" onClick={onClose}>
                         <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
                     </button>
-                    <div className="gv-modal-body">
-                        <h2 id="id-purchase-modal-title" className="gv-modal-title">{title}</h2>
-                        {description && <p className="gv-product-intro">{description}</p>}
+                  <div className="gv-modal-body">
+                    <h2 id="id-purchase-modal-title" className="gv-modal-title">Get superior
+                      website speed</h2>
+                    {description && <p className="gv-product-intro">{description}</p>}
 
-                        <div className="gv-product-price">
-                            {fullPrice && rebatePrice !== null && (
-                                <div className="gv-price-discount">
-                                    <span className="gv-price-old">{fullPrice}/{uiI18n?.labels?.timeMonth || 'mo'}</span>
-                                </div>
-                            )}
-                            <div className="gv-price-current">
+                    <div className="gv-product-price">
+                      {fullPrice && rebatePrice !== null && (
+                        <div className="gv-price-discount">
+                          <span className="gv-price-old">{fullPrice}/{uiI18n?.labels?.timeMonth || 'mo'}</span>
+                        </div>
+                      )}
+                      <div className="gv-price-current">
                                 <span className="gv-price">
                                     {hasFreeTrialPeriod ? (uiI18n?.headings?.freeTrial || 'Free trial*') : price}
                                 </span>
-                                {!hasFreeTrialPeriod && price && price !== (uiI18n?.labels?.free || 'Free') && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && (
-                                    <span className="gv-price-period">/{uiI18n?.labels?.timeMonth || 'mo'}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        {hasFreeTrialPeriod && freeTrialText && (
-                            <div className="gv-product-more-info">
-                                <p>{freeTrialText}</p>
-                            </div>
+                        {!hasFreeTrialPeriod && price && price !== (uiI18n?.labels?.free || 'Free') && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && (
+                          <span className="gv-price-period">/{uiI18n?.labels?.timeMonth || 'mo'}</span>
                         )}
+                      </div>
                     </div>
-                    <div className="gv-button-group">
-                        <button type="button" className="gv-button gv-button-cancel" onClick={onClose}>
-                            {uiI18n?.cancel || 'Close'}
+
+                    {hasFreeTrialPeriod && freeTrialText && (
+                      <div className="gv-product-more-info">
+                        <p>{freeTrialText}</p>
+                      </div>
+                    )}
+                    <div className="gv-notice gv-notice-info">
+                      <gv-icon
+                        className="gv-notice-icon"
+                        aria-hidden="true"
+                        src={`${iconBase}info.svg`}
+                      ></gv-icon>
+                      <p
+                        className="gv-notice-content">{uiI18n?.labels?.purchaseMessage || 'Clicking purchase will auto-debit the payment from your saved payment method with Rankmath.com.'}
+                      </p>
+                    </div>
+                    <p className="gv-caption-lg">
+                    </p>
+                  </div>
+                  <div className="gv-button-group">
+                    <button type="button" className="gv-button gv-button-cancel" onClick={onClose}>
+                      {uiI18n?.cancel || 'Close'}
                         </button>
                         <button type="button" className="gv-button gv-button-primary" onClick={onPurchase}>
-                            {uiI18n?.labels?.purchase || 'Purchase'}
+                            {uiI18n?.labels?.purchase || 'Proceed to purchase'}
                         </button>
                     </div>
+
                     {image && (
                         <div className="gv-modal-image">
                             <img src={image} alt={`${title}`} />
