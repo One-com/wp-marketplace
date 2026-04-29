@@ -559,7 +559,13 @@ export default function Addons() {
     const hasValidSubscription = (p) => p.hasSubscription && p.subscriptions.some(
         s => s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date())
     );
-    const installedPlugins = mergedPlugins.filter(p => p.installed || shouldShowProvision(p) || hasValidSubscription(p) || !!pendingProcurements?.[p.slug]);
+    const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+    const rankMathSlugs = ['seo-by-rank-math', 'seo-by-rank-math-pro'];
+    const installedPlugins = mergedPlugins.filter(p => {
+        // Hide Rank Math plugins from addons list when brand is rankmath
+        if (brand === 'rankmath' && rankMathSlugs.includes(p.slug)) return false;
+        return p.installed || shouldShowProvision(p) || hasValidSubscription(p) || !!pendingProcurements?.[p.slug];
+    });
 
 
 
