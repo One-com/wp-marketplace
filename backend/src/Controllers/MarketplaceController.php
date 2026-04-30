@@ -365,6 +365,13 @@ class MarketplaceController {
 				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
 				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
 				'moreDetails' => __('More details', 'onecom-wp'),
+				// Cancel subscription modal
+				'cancelSubscriptionTitle'       => __('Cancel {0} subscription?', 'onecom-wp'),
+				'cancelSubscriptionBody'        => __('By cancelling, you will lose access to premium features after your current period ends on {0}.', 'onecom-wp'),
+				'cancelSubscriptionIrreversible' => __('IRREVERSIBLE ACTION', 'onecom-wp'),
+				'cancelSubscriptionInfo'        => __('After the cancellation, you can continue using the plugin until the expiration date. No further charges will be applied.', 'onecom-wp'),
+				'cancelSubscriptionKeep'        => __('Keep subscription', 'onecom-wp'),
+				'cancelSubscriptionConfirm'     => __('Confirm cancellation', 'onecom-wp'),
 			),
 			// Always send mixpanel config so it can be used when consent is granted dynamically
 			'mixpanel' => [
@@ -514,6 +521,13 @@ class MarketplaceController {
  			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
  			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
  			'moreDetails' => __('More details', 'onecom-wp'),
+ 			// Cancel subscription modal
+ 			'cancelSubscriptionTitle'        => __('Cancel {0} subscription?', 'onecom-wp'),
+ 			'cancelSubscriptionBody'         => __('By cancelling, you will lose access to premium features after your current period ends on {0}.', 'onecom-wp'),
+ 			'cancelSubscriptionIrreversible' => __('IRREVERSIBLE ACTION', 'onecom-wp'),
+ 			'cancelSubscriptionInfo'         => __('After the cancellation, you can continue using the plugin until the expiration date. No further charges will be applied.', 'onecom-wp'),
+ 			'cancelSubscriptionKeep'         => __('Keep subscription', 'onecom-wp'),
+ 			'cancelSubscriptionConfirm'      => __('Confirm cancellation', 'onecom-wp'),
  		),
  		// Always send mixpanel config so it can be used when consent is granted dynamically
  		'mixpanel' => [
