@@ -183,6 +183,7 @@ class MarketplaceController {
 			add_action( "wp_ajax_{$prefix}_delete_plugin", [ $this, 'ajax_delete_plugin' ] );
 			add_action( "wp_ajax_{$prefix}_save_pending_procurement", [ $this, 'ajax_save_pending_procurement' ] );
 			add_action( "wp_ajax_{$prefix}_clear_pending_procurement", [ $this, 'ajax_clear_pending_procurement' ] );
+			add_action( "wp_ajax_{$prefix}_get_pending_procurements", [ $this, 'ajax_get_pending_procurements' ] );
 			add_action( "wp_ajax_{$prefix}_subscribe", [ $this, 'ajax_subscribe' ] );
 			add_action( "wp_ajax_{$prefix}_track_status", [ $this, 'ajax_track_status' ] );
 
@@ -1123,6 +1124,19 @@ class MarketplaceController {
 		update_option( $option_name, $pending, false );
 
 		wp_send_json_success( [ 'message' => 'Pending procurement saved.' ] );
+	}
+
+	/**
+	 * Return the current pending procurements from the DB.
+	 * Called by the frontend refresh button to re-sync React state with the server.
+	 */
+	public function ajax_get_pending_procurements(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$brand_name = $this->config['brand'];
+		$pending    = get_option( "{$brand_name}_marketplace_pending_procurements", [] );
+
+		wp_send_json_success( $pending );
 	}
 
 	/**

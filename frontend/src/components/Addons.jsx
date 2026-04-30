@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, useMemo} from "react";
+import React, {useState, useEffect, useRef, useMemo, useCallback} from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getRebatePrice, getFullPrice } from "../utils/priceFormatter";
 import ProductDetail from "./ProductDetail";
@@ -44,6 +44,7 @@ export default function Addons() {
         wpConfig,
         setErrorState,
         pendingProcurements,
+        setPendingProcurements,
         setLoadingAction,
         setLoadingPlugin,
     } = useMarketplace();
@@ -113,8 +114,28 @@ export default function Addons() {
                 }),
             });
 
+            // Re-sync pending procurements from DB so entries added after the last page
+            // load (e.g. a just-purchased plugin whose save_pending_procurement AJAX
+            // completed after navigation) are reflected in the UI immediately.
+            const pendingResponse = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: getAjaxAction('get_pending_procurements'),
+                    nonce: wpConfig.nonce,
+                }),
+            });
+            const pendingResult = await pendingResponse.json();
+            if (pendingResult.success) {
+                setPendingProcurements(pendingResult.data || {});
+            }
+
             // Fetch fresh subscriptions — backend will call the API and store new results
             await fetchPartnerSubscriptions();
+
+            // Re-fetch the plugin catalog so installed/activated flags are current.
+            // This must come last so subscriptions are already in state when the
+            // catalog re-render happens.
+            fetchPluginCatalog();
         } catch (err) {
             console.error('[Marketplace] Refresh subscriptions error', err);
         } finally {
@@ -310,11 +331,10 @@ export default function Addons() {
     }));
   }, [plugins, subscriptionsList]);
 
-    // Fetch plugins from API
-    useEffect(() => {
-        if (hasFetchedPlugins.current) return;
-        hasFetchedPlugins.current = true;
-
+    // Fetch plugins catalog from API and update all derived state.
+    // Extracted into a useCallback so it can be called both on mount and from the
+    // manual refresh button without duplicating the logic.
+    const fetchPluginCatalog = useCallback(() => {
         setCatalogLoading(true);
         setCatalogError(null);
 
@@ -413,7 +433,14 @@ export default function Addons() {
             .finally(() => {
                 setCatalogLoading(false);
             });
-    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin]);
+    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin, isOnecomBrand, isSpecialPlugin, fetchSubscriptionStatus]);
+
+    // Fetch plugins on mount — guarded so it only runs once automatically.
+    useEffect(() => {
+        if (hasFetchedPlugins.current) return;
+        hasFetchedPlugins.current = true;
+        fetchPluginCatalog();
+    }, [fetchPluginCatalog]);
 
     // After plugins load, select plugin from URL if present
     useEffect(() => {
@@ -954,22 +981,22 @@ export default function Addons() {
                         <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
                           <>
                             {latestSubscription?.status === 'expired' ? (
-                              <p>{uiI18n?.labels?.expiredOn || 'Expired on'}: {latestSubsDate}</p>
-                            ) : latestSubscription?.status === 'canceled' ? (
-                              <p>{uiI18n?.labels?.expiresOn || 'Expires'}: {latestSubsDate}</p>
-                            ) : (
-                              <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
-                            )}
-                            {latestSubscription?.status === 'expired' ? (
                               <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
                             ) : latestSubscription?.status === 'canceled' ? (
                               !isCancelledButValid ? (
                                 <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
                               ) : (
-                                <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}</p></div>
+                                <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}</p></div>
                               )
                             ) : (
                               <div className="gv-underline"><p class="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>
+                            )}
+                            {latestSubscription?.status === 'expired' ? (
+                              <p>{uiI18n?.labels?.expiredOn || 'Expired on'}: {latestSubsDate}</p>
+                            ) : latestSubscription?.status === 'canceled' ? (
+                              <p>{uiI18n?.labels?.expiresOn || 'Expires'}: {latestSubsDate}</p>
+                            ) : (
+                              <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
                             )}
                           </>
                         ) : (
