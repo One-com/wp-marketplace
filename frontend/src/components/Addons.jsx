@@ -966,7 +966,7 @@ export default function Addons() {
                               !isCancelledButValid ? (
                                 <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
                               ) : (
-                                <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription canceled'}</p></div>
+                                <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}</p></div>
                               )
                             ) : (
                               <div className="gv-underline"><p class="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>

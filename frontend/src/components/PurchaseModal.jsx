@@ -83,7 +83,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                         src={`${iconBase}info.svg`}
                       ></gv-icon>
                       <p
-                        className="gv-notice-content">{uiI18n?.labels?.purchaseMessage || 'Clicking purchase will auto-debit the payment from your saved payment method with Rankmath.com.'}
+                        className="gv-notice-content">{uiI18n?.labels?.purchaseMessage || 'Payment will be processed using your saved RankMath method.'}
                       </p>
                     </div>
                     <p className="gv-caption-lg">
@@ -94,7 +94,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                       {uiI18n?.cancel || 'Close'}
                         </button>
                         <button type="button" className="gv-button gv-button-primary" onClick={onPurchase}>
-                            {uiI18n?.labels?.purchase || 'Proceed to purchase'}
+                            {uiI18n?.labels?.buyNowButton || 'Buy now'}
                         </button>
                     </div>
 

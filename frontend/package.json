@@ -17,6 +17,8 @@
   "scripts": {
     "start": "npm run minify-css && node copy-build.js --watch & wp-scripts start",
     "build": "npm run minify-css && webpack --config webpack.wp.js && node copy-build.js",
+    "build:dev": "npm run minify-css && cross-env NODE_ENV=development webpack --config webpack.wp.js && node copy-build.js",
+    "watch:dev": "npm run minify-css && cross-env NODE_ENV=development webpack --config webpack.wp.js --watch & node copy-build.js --watch",
     "build:standalone": "vite build",
     "copy": "node copy-build.js",
     "minify-css": "cleancss -o ../assets/min-css/marketplace.min.css ../css/marketplace.css",
