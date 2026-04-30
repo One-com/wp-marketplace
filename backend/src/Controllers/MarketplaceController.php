@@ -451,6 +451,7 @@ class MarketplaceController {
 			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
 		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
 		'menuSlug'             => $this->config['menu_slug'],
+		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
 		'siteUrl'              => home_url(),
 		];
 
@@ -600,6 +601,7 @@ class MarketplaceController {
  		'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
 		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
 		'menuSlug'             => $this->config['menu_slug'],
+		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
 		'siteUrl'              => home_url(),
  	];
 

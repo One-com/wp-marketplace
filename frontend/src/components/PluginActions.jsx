@@ -84,16 +84,19 @@ export default function PluginActions({ plugin }) {
 
     // Find existing subscription for this plugin's productId — if present, user already owns it.
     // Includes 'canceled' status because the subscription may still have remaining days before expiry.
+    // Includes 'pending_cancellation' because the subscription is still valid until the backend
+    // confirms the cancellation — the user should still be able to install during this window.
     // Once expired, the API stops returning it in the list entirely.
     const activeSubscription = isPremiumOnNonOnecom && plugin.productId && subscriptionsList?.length
         ? subscriptionsList.find(
-            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled') && s.accessDetails?.downloadUrl
+            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled' || s.status === 'pending_cancellation') && s.accessDetails?.downloadUrl
         )
         : null;
 
     // Check if we should show "Buy now" button for premium plugins on non-onecom brands
-    // Skip "Buy now" if user already has an active subscription with a download URL
-    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed && !activeSubscription;
+    // Skip "Buy now" if user already has an active subscription with a download URL,
+    // or if subscription dates are already known (e.g. cancellation in progress — keep showing the indicator)
+    const shouldShowBuyNow = !isOnecomBrand && plugin.licenseType === "premium" && !plugin.installed && !activeSubscription && !subscriptionDates;
 
     // Helper function to replace {0} with plugin name
     const formatMessage = (message, pluginName) => {
@@ -270,17 +273,19 @@ export default function PluginActions({ plugin }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Derive subscription dates from the list whenever it updates (covers page reload case)
+    // Derive subscription dates from the list whenever it updates (covers page reload case).
+    // 'pending_cancellation' is treated as 'active' for display — the indicator only flips to
+    // 'Subscription canceled' once the backend confirms the cancellation with status 'canceled'.
     useEffect(() => {
         if (!isPremiumOnNonOnecom || !plugin.productId || !subscriptionsList?.length) return;
         const match = subscriptionsList.find(
-            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled')
+            s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled' || s.status === 'pending_cancellation')
         );
         if (match) {
             setSubscriptionDates({
                 provisionedAt: match.provisionedAt || null,
                 expiresAt: match.expiresAt || null,
-                status: match.status,
+                status: match.status === 'canceled' ? 'canceled' : 'active',
             });
         }
     }, [subscriptionsList]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -560,11 +565,18 @@ export default function PluginActions({ plugin }) {
                     disabled={buyNowLoading || !!pluginInAction[plugin.slug] || isPendingProcurement}
                     onClick={() => setPurchaseModalOpen(true)}
                 >
-                    {uiI18n?.buyNowButton || 'Buy now'}
+                    {(buyNowLoading || !!pluginInAction[plugin.slug] || isPendingProcurement) ? (
+                      <>
+                        <span class="gv-mr-sm">{uiI18n?.labels?.processing || 'Processing'}</span>
+                        <gv-loader class="gv-mode-condensed"
+                                   src={`${assetBase}assets/images/spinner.svg`}></gv-loader>
+
+                      </>
+                    ) : (uiI18n?.buyNowButton || 'Buy now')}
                 </button>
             ) : (
-                <button
-                    className={`gv-button ${plugin.slug === "seo-by-rank-math" ? "gv-button-secondary" : "gv-button-primary"}`}
+              <button
+                className={`gv-button ${plugin.slug === "seo-by-rank-math" ? "gv-button-secondary" : "gv-button-primary"}`}
                     disabled={pluginInAction[plugin.slug]}
                     onClick={() => handleClick("install")}
                 >
@@ -580,19 +592,23 @@ export default function PluginActions({ plugin }) {
                 </div>
             ) : !shouldShowBuyNow && subscriptionDates ? (
                 <div className="gv-mt-sm">
-                    {subscriptionDates.expiresAt && (
-                        subscriptionDates.status === 'canceled' ? (
+                    {subscriptionDates.expiresAt && (() => {
+                        const adminUrl = (typeof window !== 'undefined' && window.marketplaceConfig?.wpConfig?.adminUrl) || '/wp-admin/';
+                        const addonsMenuSlug = (typeof window !== 'undefined' && window.marketplaceConfig?.addonsMenuSlug) || 'onecom-marketplace-products';
+                        const addonsUrl = `${adminUrl}admin.php?page=${addonsMenuSlug}`;
+                        const manageLabel = uiI18n?.labels?.manageYourAddons || 'Manage your addons';
+                        return subscriptionDates.status === 'canceled' ? (
                             <div className="gv-text-indicator">
                                 <div className="gv-indicator gv-state-attention"></div>
-                                <span style={{whiteSpace:'normal'}}>{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}. {uiI18n?.labels?.expiresOn || 'Expires at'}: {formatDate(subscriptionDates.expiresAt)}</span>
+                                <span style={{whiteSpace:'normal'}}>{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}. <a href={addonsUrl}>{manageLabel}</a></span>
                             </div>
                         ) : (
                             <div className="gv-text-indicator">
                                 <div className="gv-indicator gv-state-positive"></div>
-                                <span style={{whiteSpace:'normal'}}>{uiI18n?.labels?.subscriptionActive || 'Subscription active'}. {uiI18n?.labels?.renewsOn || 'Renewal at'}: {formatDate(subscriptionDates.expiresAt)}</span>
+                                <span style={{whiteSpace:'normal'}}>{uiI18n?.labels?.subscriptionActive || 'Subscription active'}. <a href={addonsUrl}>{manageLabel}</a></span>
                             </div>
-                        )
-                    )}
+                        );
+                    })()}
                 </div>
             ) : null)}
             <PurchaseModal
