@@ -34,6 +34,7 @@ class MarketplaceController {
 			'css_handle'       => 'marketplace-frontend-style',
 			'assets_path'      => '', //  Optional: explicit path to package root containing frontend/ directory
 			'payload'          => [], //  Optional: key-value array passed as headers for API authentication
+			'placed_menu_after' => '', // Optional: submenu slug after which marketplace and Your products menus should appear
 		] );
 
 		// Defer model and asset initialization until needed (optimization for multi-plugin installs)
@@ -176,6 +177,12 @@ class MarketplaceController {
 			add_action( 'admin_menu', [ $this, 'register_addons_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_addons_menu' ] );
+
+			// If placed_menu_after is configured, reorder submenus after all menus are registered.
+			if ( ! empty( $this->config['placed_menu_after'] ) ) {
+				add_action( 'admin_menu', [ $this, 'reorder_submenus' ], 999 );
+				add_action( 'network_admin_menu', [ $this, 'reorder_submenus' ], 999 );
+			}
 			$prefix = $this->get_ajax_prefix();
 			add_action( "wp_ajax_{$prefix}_install_plugin", [ $this, 'ajax_install_plugin' ] );
 			add_action( "wp_ajax_{$prefix}_activate_plugin", [ $this, 'ajax_activate_plugin' ] );
@@ -183,6 +190,7 @@ class MarketplaceController {
 			add_action( "wp_ajax_{$prefix}_delete_plugin", [ $this, 'ajax_delete_plugin' ] );
 			add_action( "wp_ajax_{$prefix}_save_pending_procurement", [ $this, 'ajax_save_pending_procurement' ] );
 			add_action( "wp_ajax_{$prefix}_clear_pending_procurement", [ $this, 'ajax_clear_pending_procurement' ] );
+			add_action( "wp_ajax_{$prefix}_get_pending_procurements", [ $this, 'ajax_get_pending_procurements' ] );
 			add_action( "wp_ajax_{$prefix}_subscribe", [ $this, 'ajax_subscribe' ] );
 			add_action( "wp_ajax_{$prefix}_track_status", [ $this, 'ajax_track_status' ] );
 
@@ -232,6 +240,75 @@ class MarketplaceController {
 			$menu_slug,
 			[ $this, 'render_addons_page' ]
 		);
+	}
+
+	/**
+	 * Reorder the parent menu's submenu entries so that the marketplace page
+	 * and the addons page both appear immediately after the item whose slug
+	 * matches $config['placed_menu_after'].
+	 *
+	 * Called on admin_menu / network_admin_menu at priority 999, after every
+	 * other plugin has had a chance to register its own submenu items.
+	 * If the target slug is not found in the submenu the array is left untouched.
+	 */
+	public function reorder_submenus() {
+		global $submenu;
+
+		$parent      = $this->config['parent_menu_slug'];
+		$after_slug  = $this->config['placed_menu_after'];
+		$market_slug = $this->config['menu_slug'];
+		$addons_slug = $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products';
+
+		// Nothing to do if the parent has no submenu yet.
+		if ( empty( $submenu[ $parent ] ) || ! is_array( $submenu[ $parent ] ) ) {
+			return;
+		}
+
+		$items = array_values( $submenu[ $parent ] );
+
+		// Check that placed_menu_after exists; bail without touching anything if not.
+		$after_found = false;
+		foreach ( $items as $item ) {
+			if ( isset( $item[2] ) && $item[2] === $after_slug ) {
+				$after_found = true;
+				break;
+			}
+		}
+
+		if ( ! $after_found ) {
+			return;
+		}
+
+		// Separate our two items from the rest, preserving their registration data.
+		$market_item = null;
+		$addons_item = null;
+		$rest        = [];
+
+		foreach ( $items as $item ) {
+			if ( isset( $item[2] ) && $item[2] === $market_slug ) {
+				$market_item = $item;
+			} elseif ( isset( $item[2] ) && $item[2] === $addons_slug ) {
+				$addons_item = $item;
+			} else {
+				$rest[] = $item;
+			}
+		}
+
+		// Re-build the submenu: insert our items right after placed_menu_after.
+		$reordered = [];
+		foreach ( $rest as $item ) {
+			$reordered[] = $item;
+			if ( isset( $item[2] ) && $item[2] === $after_slug ) {
+				if ( $market_item !== null ) {
+					$reordered[] = $market_item;
+				}
+				if ( $addons_item !== null ) {
+					$reordered[] = $addons_item;
+				}
+			}
+		}
+
+		$submenu[ $parent ] = $reordered;
 	}
 
 	public function render_addons_page() {
@@ -1125,6 +1202,19 @@ class MarketplaceController {
 		update_option( $option_name, $pending, false );
 
 		wp_send_json_success( [ 'message' => 'Pending procurement saved.' ] );
+	}
+
+	/**
+	 * Return the current pending procurements from the DB.
+	 * Called by the frontend refresh button to re-sync React state with the server.
+	 */
+	public function ajax_get_pending_procurements(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$brand_name = $this->config['brand'];
+		$pending    = get_option( "{$brand_name}_marketplace_pending_procurements", [] );
+
+		wp_send_json_success( $pending );
 	}
 
 	/**
