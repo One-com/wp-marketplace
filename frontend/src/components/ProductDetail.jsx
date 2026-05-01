@@ -6,6 +6,7 @@ import ErrorToast from "./ErrorToast";
 import Breadcrumbs from "./Breadcrumbs";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getFullPrice, getRebatePrice } from "../utils/priceFormatter";
+import { HtmlRenderer } from "../utils/common.utils";
 
 export default function ProductDetail({
     plugin,
@@ -24,11 +25,13 @@ export default function ProductDetail({
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+    const brand = (typeof window !== 'undefined' && window.marketplaceConfig?.brand) || '';
+    const brandClass = brand ? ` brand-${brand.replace(/[^a-zA-Z0-9_-]/g, '')}` : '';
 
     // Show skeleton loaders while loading (even if plugin is null)
     if (loading) {
         const skeletonContent = (
-            <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+            <div className={`gv-surface-dim${brandClass}`}>
                 <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                     {/* Breadcrumbs skeleton */}
                     <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
@@ -182,14 +185,14 @@ export default function ProductDetail({
 
     const price = (hasFreeTrialPeriod || hasFreeTrialText)
         ? (uiI18n?.headings?.freeTrial || 'Free trial*')
-        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n);
+        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n, true);
 
     // Check if price is "Free until renewal" (rebate amount is 0)
     const isFreeUntilRenewal = price === (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal');
 
     // Extract full and rebate prices using common utility functions
-    const fullPriceAmount = getFullPrice(plugin);
-    const rebatePriceAmount = getRebatePrice(plugin);
+    const fullPriceAmount = getFullPrice(plugin, true);
+    const rebatePriceAmount = getRebatePrice(plugin, true);
 
     const getTimeAgo = (dateStr) => {
         const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
@@ -241,7 +244,7 @@ export default function ProductDetail({
     const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
-        <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+        <div className={`gv-surface-dim${brandClass}`}>
             <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                 <Breadcrumbs
                     iconBase={iconBase}
@@ -295,12 +298,12 @@ export default function ProductDetail({
                                                     ) : (
                                                         <>
                                                             <span className="gv-price-text">
-                                                                {plugin.licenseType === "premium" && rebatePriceAmount !== null
+                                                                <HtmlRenderer htmlString={plugin.licenseType === "premium" && rebatePriceAmount !== null
                                                                     ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
-                                                                    : price}
+                                                                    : price} />
                                                             </span>
                                                             {!isFree && !isFreeUntilRenewal && price && (
-                                                                <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>
+                                                                <span className="gv-period">/{window.marketplaceConfig?.brand === 'rankmath' ? ' month' : uiI18n?.labels?.timeMonth}</span>
                                                             )}
                                                         </>
                                                     )}
@@ -312,8 +315,8 @@ export default function ProductDetail({
                                                 ) : (
                                                     !isFree && price && fullPriceAmount && rebatePriceAmount !== null &&
                                                     <div className="gv-price-info">
-                                                        <div className="gv-info">{uiI18n.labels.untilRenewal} [{rebatePriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
-                                                        <div className="gv-info">{uiI18n.labels.afterThat} [{fullPriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
+                                                        <div className="gv-info">{uiI18n.labels.untilRenewal} [<HtmlRenderer htmlString={rebatePriceAmount} />]/{uiI18n?.labels?.timeMonth}</div>
+                                                        <div className="gv-info">{uiI18n.labels.afterThat} [<HtmlRenderer htmlString={fullPriceAmount} />]/{uiI18n?.labels?.timeMonth}</div>
                                                     </div>
                                                 )}
                                             </div>

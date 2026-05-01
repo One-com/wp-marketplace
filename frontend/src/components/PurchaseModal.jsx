@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { formatPluginPrice, getFullPrice, getRebatePrice } from '../utils/priceFormatter';
+import { HtmlRenderer } from '../utils/common.utils';
 
 export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, onClose, onPurchase }) {
     const assetBase = assetsBaseUrl || '';
@@ -31,15 +32,19 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
     const title = plugin.name || 'Product';
     const description = plugin.i18n?.subtitle || plugin.i18n?.description || plugin.description || '';
     const image = plugin.bannerUrl || plugin.image || plugin.thumbnail || '';
-    const price = formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n);
-    const fullPrice = getFullPrice(plugin);
-    const rebatePrice = getRebatePrice(plugin);
+    const price = formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n, true);
+    const fullPrice = getFullPrice(plugin, true);
+    const rebatePrice = getRebatePrice(plugin, true);
     const hasFreeTrialPeriod = plugin.i18n?.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '';
     const freeTrialText = plugin.i18n?.freeTrialText || '';
 
+    const brand = (typeof window !== 'undefined' && window.marketplaceConfig?.brand) || '';
+    const brandClass = brand ? `brand-${brand.replace(/[^a-zA-Z0-9_-]/g, '')}` : '';
+
     const modal = (
-        <div className="gv-activated">
-            <div className="gv-modal gv-upgrade-modal" onClick={handleOutsideClick}>
+        <div className={brandClass}>
+            <div className="gv-activated">
+                <div className="gv-modal gv-upgrade-modal" onClick={handleOutsideClick}>
                 <div
                     className="gv-modal-content"
                     role="dialog"
@@ -58,15 +63,15 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                     <div className="gv-product-price">
                       {fullPrice && rebatePrice !== null && (
                         <div className="gv-price-discount">
-                          <span className="gv-price-old">{fullPrice}/{uiI18n?.labels?.timeMonth || 'mo'}</span>
+                          <span className="gv-price-old"><HtmlRenderer htmlString={fullPrice} />/{brand === 'rankmath' ? 'month' : (uiI18n?.labels?.timeMonth || 'mo')}</span>
                         </div>
                       )}
                       <div className="gv-price-current">
                                 <span className="gv-price">
-                                    {hasFreeTrialPeriod ? (uiI18n?.headings?.freeTrial || 'Free trial*') : price}
+                                    {hasFreeTrialPeriod ? (uiI18n?.headings?.freeTrial || 'Free trial*') : <HtmlRenderer htmlString={price} />}
                                 </span>
                         {!hasFreeTrialPeriod && price && price !== (uiI18n?.labels?.free || 'Free') && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && (
-                          <span className="gv-price-period">/{uiI18n?.labels?.timeMonth || 'mo'}</span>
+                          <span className="gv-price-period">/{brand === 'rankmath' ? 'month' : (uiI18n?.labels?.timeMonth || 'mo')}</span>
                         )}
                       </div>
                     </div>
@@ -104,6 +109,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                         </div>
                     )}
                 </div>
+            </div>
             </div>
         </div>
     );
