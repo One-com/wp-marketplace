@@ -233,6 +233,13 @@ export default function Addons() {
      *    - 'pending_cancellation' → persist to DB, mark as cancelling, start polling.
      */
     const handleCancelClick = (plugin, subscriptionId) => {
+        // Tracks "Cancel" subscription button click from the addons page
+        trackButtonClick({
+            buttonName: 'Cancel',
+            buttonAction: 'product_cancel',
+            plugin: plugin,
+        });
+
         const ajaxUrl = wpConfig?.ajaxUrl;
         if (!ajaxUrl || !subscriptionId) return;
 

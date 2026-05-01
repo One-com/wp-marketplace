@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { formatPluginPrice, getFullPrice, getRebatePrice } from '../utils/priceFormatter';
+import { trackButtonClick } from '../utils/mixpanelTracking';
 
 export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, onClose, onPurchase }) {
     const assetBase = assetsBaseUrl || '';
@@ -26,6 +27,17 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
 
     const handleOutsideClick = (e) => {
         if (e.target.classList.contains('gv-modal')) onClose();
+    };
+
+    // Tracks "Cancel" click inside the purchase confirmation modal
+    const handleCancelClick = () => {
+        trackButtonClick({
+            buttonName: 'Cancel',
+            buttonAction: 'product_buy_cancel',
+            plugin: plugin,
+            context: { action: 'Cancel' },
+        });
+        onClose();
     };
 
     const title = plugin.name || 'Product';
@@ -90,7 +102,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                     </p>
                   </div>
                   <div className="gv-button-group">
-                    <button type="button" className="gv-button gv-button-cancel" onClick={onClose}>
+                    <button type="button" className="gv-button gv-button-cancel" onClick={handleCancelClick}>
                       {uiI18n?.cancel || 'Close'}
                         </button>
                         <button type="button" className="gv-button gv-button-primary" onClick={onPurchase}>
