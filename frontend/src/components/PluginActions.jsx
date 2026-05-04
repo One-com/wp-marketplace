@@ -217,7 +217,11 @@ export default function PluginActions({ plugin }) {
 
                     if (downloadUrl) {
                         const installed = await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
-                        if (installed) acknowledgePluginDownload(subscriptionId);
+                        if (installed) {
+                            acknowledgePluginDownload(subscriptionId);
+                            // Tracks automatic plugin install after successful purchase via polling
+                            trackPluginAction({ action: 'install', plugin, result: 'success' });
+                        }
                     }
 
                     // Refetch subscriptions so addons page reflects the active subscription
@@ -348,11 +352,24 @@ export default function PluginActions({ plugin }) {
         document.dispatchEvent(event);
     };
 
-    const handleBuyNowClick = async () => {
+    // Tracks "Buy now" button click that opens the purchase confirmation modal
+    const handleOpenPurchaseModal = () => {
         trackButtonClick({
             buttonName: 'Buy now',
-            buttonAction: 'buy_now',
+            buttonAction: 'product_buy',
             plugin: plugin,
+            context: { action: 'buy' },
+        });
+        setPurchaseModalOpen(true);
+    };
+
+    const handleBuyNowClick = async () => {
+        // Tracks "Buy now" click inside the purchase confirmation modal
+        trackButtonClick({
+            buttonName: 'Buy now',
+            buttonAction: 'product_buy_confirmation',
+            plugin: plugin,
+            context: { action: 'buy' },
         });
 
         setBuyNowLoading(true);
@@ -442,7 +459,11 @@ export default function PluginActions({ plugin }) {
                 setLoadingAction('');
                 if (downloadUrl) {
                     const installed = await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
-                    if (installed) acknowledgePluginDownload(subscriptionId);
+                    if (installed) {
+                        acknowledgePluginDownload(subscriptionId);
+                        // Tracks automatic plugin install after immediate purchase success
+                        trackPluginAction({ action: 'install', plugin, result: 'success' });
+                    }
                 }
             } else if ((status === 'pending' || status === 'pending_provisioning') && subscriptionId) {
                 // Clear subscription list cache — external API will now include this
@@ -563,7 +584,7 @@ export default function PluginActions({ plugin }) {
                     type="button"
                     className="gv-button gv-button-primary"
                     disabled={buyNowLoading || !!pluginInAction[plugin.slug] || isPendingProcurement}
-                    onClick={() => setPurchaseModalOpen(true)}
+                    onClick={handleOpenPurchaseModal}
                 >
                     {(buyNowLoading || !!pluginInAction[plugin.slug] || isPendingProcurement) ? (
                       <>

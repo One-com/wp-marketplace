@@ -50,7 +50,6 @@ export default function Addons() {
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
-    const [featuredPlugins, setFeaturedPlugins] = useState([]);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const menuRef = useRef(null);
 
@@ -234,6 +233,13 @@ export default function Addons() {
      *    - 'pending_cancellation' → persist to DB, mark as cancelling, start polling.
      */
     const handleCancelClick = (plugin, subscriptionId) => {
+        // Tracks "Cancel" subscription button click from the addons page
+        trackButtonClick({
+            buttonName: 'Cancel',
+            buttonAction: 'product_cancel',
+            plugin: plugin,
+        });
+
         const ajaxUrl = wpConfig?.ajaxUrl;
         if (!ajaxUrl || !subscriptionId) return;
 
@@ -331,6 +337,52 @@ export default function Addons() {
     }));
   }, [plugins, subscriptionsList]);
 
+  // Derive featured (recommended) plugins from mergedPlugins so subscription data
+  // is always taken into account. Plugins that are already installed, subscribed,
+  // provisionable, pending procurement, or activated are excluded.
+  const featuredPlugins = useMemo(() => {
+    if (!mergedPlugins?.length) return [];
+
+    const rankMathActivated    = mergedPlugins.find(p => p.slug === "seo-by-rank-math")?.activated     === true;
+    const rankMathProActivated = mergedPlugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
+
+    return mergedPlugins
+      .filter(plugin => {
+        if (!shouldShowPlugin(plugin)) return false;
+        if (plugin.featured !== true && plugin.featured !== "true") return false;
+
+        // Skip already-activated plugins
+        if (plugin.activated === true) return false;
+
+        // Skip plugins the user has already installed, subscribed to, or purchased
+        if (plugin.installed) return false;
+        if (shouldShowProvision(plugin)) return false;
+        if (!!pendingProcurements?.[plugin.slug]) return false;
+        if (
+          plugin.hasSubscription &&
+          plugin.subscriptions.some(
+            s => s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date())
+          )
+        ) return false;
+
+        // Rank Math visibility rules
+        if (plugin.slug === "seo-by-rank-math") {
+          return !rankMathActivated && !rankMathProActivated;
+        }
+        if (plugin.slug === "seo-by-rank-math-pro") {
+          return rankMathActivated;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
+        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        return orderA - orderB;
+      })
+      .slice(0, 3);
+  }, [mergedPlugins, shouldShowPlugin, shouldShowProvision, pendingProcurements]);
+
     // Fetch plugins catalog from API and update all derived state.
     // Extracted into a useCallback so it can be called both on mount and from the
     // manual refresh button without duplicating the logic.
@@ -354,46 +406,6 @@ export default function Addons() {
                 if (data.success && data.data && data.data.catalog) {
                     const allPlugins = data.data.catalog;
                     setPlugins(allPlugins);
-
-                    // Check activation status of Rank Math plugins
-                    const rankMathActivated = allPlugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
-                    const rankMathProActivated = allPlugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
-
-                    // Filter featured plugins and get top 3
-                    // Hide if it is already active on the site
-                    const featured = allPlugins
-                        .filter(plugin => {
-                            // Apply visibility rules
-                            if (!shouldShowPlugin(plugin)) {
-                                return false;
-                            }
-
-                            // Skip activated plugins
-                            if (plugin.activated === true || (plugin.featured !== true && plugin.featured !== "true")) {
-                                return false;
-                            }
-
-                            // Handle Rank Math plugin visibility
-                            if (plugin.slug === "seo-by-rank-math") {
-                                // Show seo-by-rank-math only if BOTH plugins are NOT activated
-                                return !rankMathActivated && !rankMathProActivated;
-                            }
-
-                            if (plugin.slug === "seo-by-rank-math-pro") {
-                                // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
-                                return rankMathActivated;
-                            }
-
-                            return true;
-                        })
-                        .sort((a, b) => {
-                            const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
-                            const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
-                            return orderA - orderB;
-                        })
-                        .slice(0, 3);
-
-                    setFeaturedPlugins(featured);
 
                     // Set UI i18n if available
                     const uiI18nData = data.data.uiI18n || data.data.ui_i18n;
@@ -433,7 +445,7 @@ export default function Addons() {
             .finally(() => {
                 setCatalogLoading(false);
             });
-    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin, isOnecomBrand, isSpecialPlugin, fetchSubscriptionStatus]);
+    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, isOnecomBrand, isSpecialPlugin, fetchSubscriptionStatus]);
 
     // Fetch plugins on mount — guarded so it only runs once automatically.
     useEffect(() => {
