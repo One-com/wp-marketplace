@@ -1342,6 +1342,10 @@ class MarketplaceController {
 		//The default method is GET
 		$result = $this->get_model()->request( $payload);
 
+		// Diagnostic: log the full parsed response so we can confirm the shape of
+		// `subscriptions` (e.g. data.subscriptions vs data.data.subscriptions).
+		error_log( '[Marketplace] subscription-list response: ' . wp_json_encode( $result ) );
+
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
@@ -1350,9 +1354,16 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
-		$get_subscription_list = $result['data']["subscriptions"];
-		error_log( 'Caching subscriptions list' );
-		set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
+		$get_subscription_list = $result['data']["subscriptions"] ?? null;
+
+		if ( ! empty( $get_subscription_list ) && is_array( $get_subscription_list ) ) {
+			error_log( '[Marketplace] Caching subscriptions list (' . count( $get_subscription_list ) . ' items)' );
+			set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
+		} else {
+			error_log( '[Marketplace] Empty/missing subscriptions in response; skipping cache write.' );
+			$get_subscription_list = [];
+		}
+
 		wp_send_json_success($get_subscription_list);
 	}
 

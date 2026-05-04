@@ -303,7 +303,9 @@ body.one-com_page_onecom-marketplace{
     --color-button-bg-cta: #069de3;
     --color-button-fg-on-cta: #ffffff;
 }
-.brand-rankmath .gv-activated .gv-title, .brand-rankmath .gv-activated .gv-text-bold {
+.brand-rankmath .gv-activated .gv-title,
+.brand-rankmath .gv-activated .gv-text-bold,
+.brand-rankmath .gv-activated .gv-menu-item{
     color: #242628;
 }
 

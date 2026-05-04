@@ -1128,7 +1128,7 @@ export default function Addons() {
                                             handleCancelClick(plugin, latestSubscription.subscriptionId);
                                           }}
                                         >
-                                          <gv-icon aria-hidden="true" src={`${iconBase}cancel.svg`}></gv-icon>
+                                          <gv-icon aria-hidden="true" src={`${iconBase}free_cancellation.svg`}></gv-icon>
                                           <span>{uiI18n?.cancel || 'Cancel'}</span>
                                         </button>
                                       )}
