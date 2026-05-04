@@ -964,7 +964,7 @@ export default function Addons() {
                         {/* Image End */}
 
                         {/* Plugin name */}
-                        <td><p>{plugin.name}</p></td>
+                        <td><p className='gv-text-bold'>{plugin.name}</p></td>
                         {/* Plugin name end */}
 
                         {/* Plugin type */}

@@ -276,18 +276,13 @@ body.one-com_page_onecom-marketplace{
     font-style: normal;
     line-height: 1.5;
 }
-.brand-rankmath .gv-activated .gv-price span { display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-weight: 400;
-    gap: 6px;
-    color:#7f868d;
+.brand-rankmath .gv-activated .gv-price span {
+    color: #242628
 }
-.brand-rankmath .gv-activated span.gv-amount { font-size: 60px; color:#243b53; font-weight: 600; }
 
 
 .brand-rankmath .gv-activated .gv-modal .gv-modal-content p,
-.brand-rankmath .gv-activated .gv-modal .gv-modal-content .gv-price-period
+.brand-rankmath.gv-activated .gv-modal .gv-modal-content p
 {
     color: #7f868d;
     font-size: 14px;
@@ -308,17 +303,19 @@ body.one-com_page_onecom-marketplace{
     --color-button-bg-cta: #069de3;
     --color-button-fg-on-cta: #ffffff;
 }
-.brand-rankmath .gv-activated .gv-title {
+.brand-rankmath .gv-activated .gv-title, .brand-rankmath .gv-activated .gv-text-bold {
     color: #242628;
 }
 
 .brand-rankmath .gv-activated .gv-button.gv-button-cancel,
+.brand-rankmath .gv-button.gv-button-cancel,
 .brand-rankmath .gv-activated .gv-button.gv-button-secondary{
     color: #6b7278;
     border: 1px solid #7f868d;
 }
 
 .brand-rankmath .gv-activated .gv-button.gv-button-cancel:hover,
+.brand-rankmath .gv-button.gv-button-cancel:hover,
 .brand-rankmath .gv-activated .gv-button.gv-button-secondary:hover {
     border-color: #069de3;
     color: #069de3;
