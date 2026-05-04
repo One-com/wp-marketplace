@@ -30,11 +30,13 @@ export default function ProductDetailRankMath({
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+    const brand = (typeof window !== 'undefined' && window.marketplaceConfig?.brand) || '';
+    const brandClass = brand ? ` brand-${brand.replace(/[^a-zA-Z0-9_-]/g, '')}` : '';
 
     // Show skeleton loaders while loading (even if plugin is null)
     if (loading) {
         const skeletonContent = (
-            <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+            <div className={`gv-surface-dim${brandClass}`}>
                 <article className="gv-w-max-container gv-mx-auto">
                   <nav className="gv-breadcrumbs gv-area-nav gv-mb-lg">
                     <a
@@ -494,7 +496,7 @@ export default function ProductDetailRankMath({
     const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
-        <div className="gv-surface-dim">
+        <div className={`gv-surface-dim${brandClass}`}>
             <article className="gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid gv-p-0">
                 <Breadcrumbs
                     iconBase={iconBase}

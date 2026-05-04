@@ -458,7 +458,8 @@ class MarketplaceController {
 		// Localize JS with config
 		wp_localize_script( 'marketplace-addons-frontend', 'marketplaceConfig', $localized_config );
 
-		echo '<div id="marketplace-addons-root" class="gv-activated"></div>';
+		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
+		echo '<div id="marketplace-addons-root" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
 	}
 
 	public function render_admin_page() {
@@ -608,7 +609,8 @@ class MarketplaceController {
  	// Localize JS with config
  	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
 
-		echo '<div id="marketplace-root" class="gv-activated"></div>';
+		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
+		echo '<div id="marketplace-root" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
 	}
 
 	/**
