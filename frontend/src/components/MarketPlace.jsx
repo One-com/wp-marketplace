@@ -244,6 +244,20 @@ export default function Marketplace() {
         }
     }, [catalogLoading, catalogError, plugins.length, currentPluginSlug, visibleConditionalPlugins]);
 
+    // Auto-reload once if the catalog fetch errors out — works around transient
+    // API issues without trapping the user on the error screen. Guarded by
+    // sessionStorage so a persistent failure doesn't cause an infinite loop;
+    // the flag is cleared on a successful load.
+    useEffect(() => {
+        if (catalogError) {
+            if (sessionStorage.getItem('mp_catalog_error_reloaded')) return;
+            sessionStorage.setItem('mp_catalog_error_reloaded', '1');
+            const timer = setTimeout(() => window.location.reload(), 2000);
+            return () => clearTimeout(timer);
+        }
+        sessionStorage.removeItem('mp_catalog_error_reloaded');
+    }, [catalogError]);
+
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {
         if (selectedPlugin && currentPluginSlug && lastTrackedPluginSlug.current !== selectedPlugin.slug) {
