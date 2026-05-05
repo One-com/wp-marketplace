@@ -773,21 +773,25 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
 
-		// Check if the upgrader returned NULL or false (download/installation failed)
+		// Source of truth: is the plugin actually present on disk after the upgrader call?
+		// Plugin_Upgrader::install() can legitimately return false/null when the destination
+		// folder already exists (double-click, prior partial install, etc.) — in those cases
+		// the plugin IS installed and we should not surface a misleading error to the user.
+		if ( $this->is_installed( $slug ) ) {
+			wp_send_json_success([
+				'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
+				'installed' => true,
+				'activated' => false,
+			]);
+		}
+
+		// Plugin is not on disk — only now treat null/false as a real failure.
 		if ( $result === null || $result === false ) {
+			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url );
 			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
 		}
 
-		// Verify the plugin was actually installed by checking if it exists
-		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
-		}
-
-		wp_send_json_success([
-			'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
-			'installed' => true,
-			'activated' => false,
-		]);
+		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
 	}
 
 	/**
