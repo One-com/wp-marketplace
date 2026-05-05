@@ -764,20 +764,56 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin data.', 'text-domain' ) ] );
 		}
 
+		// Concurrency / idempotency: if the plugin is already on disk before we even
+		// touch the upgrader (sibling tab finished installing, another consumer plugin
+		// already installed it, prior install attempt, etc.), be honest with the user
+		// — return an informative error rather than fake success. The frontend can
+		// inspect 'installed: true' to update its UI without showing a "succeeded" toast.
+		if ( $this->is_installed( $slug ) ) {
+			wp_send_json_error( [
+				'message'   => __( 'Plugin is already installed.', 'onecom-wp' ),
+				'installed' => true,
+				'activated' => false,
+			] );
+		}
+
+		// Serialize concurrent installs of the same plugin. Without this, two parallel
+		// install requests can both pass the pre-check, both download the same package
+		// to /tmp, and race on cleanup — observed as duplicate "upgrader returned NULL"
+		// entries plus an "unlink: No such file or directory" warning at the same
+		// timestamp. The lock has a TTL so a crashed request can't permanently block
+		// future installs; we also delete it explicitly on every exit path.
+		$lock_key = "marketplace_install_lock_{$slug}";
+		if ( get_transient( $lock_key ) ) {
+			wp_send_json_error( [
+				'message' => __( 'An install is already in progress for this plugin. Please wait a moment and try again.', 'onecom-wp' ),
+			] );
+		}
+		set_transient( $lock_key, time(), 120 );
+
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
 		$result   = $upgrader->install( $download_url ); //  use URL from React
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+			delete_transient( $lock_key );
+			// Forward WP's actual error message (e.g. "Destination folder already exists"
+			// when a parallel install finished mid-flight). Include 'installed' so the
+			// frontend knows whether the plugin ended up on disk.
+			wp_send_json_error( [
+				'message'   => $result->get_error_message(),
+				'installed' => $this->is_installed( $slug ),
+				'activated' => false,
+			] );
 		}
 
-		// Source of truth: is the plugin actually present on disk after the upgrader call?
-		// Plugin_Upgrader::install() can legitimately return false/null when the destination
-		// folder already exists (double-click, prior partial install, etc.) — in those cases
-		// the plugin IS installed and we should not surface a misleading error to the user.
+		// No WP_Error: if the plugin is now on disk, this request's upgrader put it
+		// there. Plugin_Upgrader::install() can legitimately return false/null on
+		// benign hiccups (post-install hook noise, etc.), so is_installed() is the
+		// source of truth for "did our own install succeed".
 		if ( $this->is_installed( $slug ) ) {
+			delete_transient( $lock_key );
 			wp_send_json_success([
 				'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
 				'installed' => true,
@@ -787,10 +823,14 @@ class MarketplaceController {
 
 		// Plugin is not on disk — only now treat null/false as a real failure.
 		if ( $result === null || $result === false ) {
-			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url );
+			delete_transient( $lock_key );
+			$skin_messages = method_exists( $upgrader->skin, 'get_upgrade_messages' ) ? $upgrader->skin->get_upgrade_messages() : [];
+			$skin_errors   = isset( $upgrader->skin->errors ) ? $upgrader->skin->errors : null;
+			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url . '; skin messages: ' . wp_json_encode( $skin_messages ) . '; skin errors: ' . wp_json_encode( $skin_errors ) );
 			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
 		}
 
+		delete_transient( $lock_key );
 		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
 	}
 
