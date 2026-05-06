@@ -41,6 +41,7 @@ export default function Addons() {
         shouldShowPlugin,
         isWpVersionSupported,
         openDeleteModal,
+        openCancelSubsModal,
         wpConfig,
         setErrorState,
         pendingProcurements,
@@ -1125,7 +1126,12 @@ export default function Addons() {
                                           onClick={(e) => {
                                             e.preventDefault();
                                             setOpenMenuIndex(null);
-                                            handleCancelClick(plugin, latestSubscription.subscriptionId);
+                                            openCancelSubsModal(
+                                              plugin,
+                                              latestSubscription.subscriptionId,
+                                              latestSubscription.expiresAt,
+                                              () => handleCancelClick(plugin, latestSubscription.subscriptionId)
+                                            );
                                           }}
                                         >
                                           <gv-icon aria-hidden="true" src={`${iconBase}free_cancellation.svg`}></gv-icon>

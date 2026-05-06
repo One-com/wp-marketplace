@@ -57,6 +57,7 @@ export const MarketplaceProvider = ({
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
     const [deleteModalState, setDeleteModalState] = useState({ isOpen: false, plugin: null });
+    const [cancelSubsModalState, setCancelSubsModalState] = useState({ isOpen: false, plugin: null, subscriptionId: null, expiresAt: null, onConfirm: null });
     const [pendingProcurements, setPendingProcurements] = useState(() => {
         return typeof window !== "undefined" && window.marketplaceConfig?.pendingProcurements
             ? window.marketplaceConfig.pendingProcurements
@@ -275,6 +276,14 @@ export const MarketplaceProvider = ({
 
     const closeDeleteModal = useCallback(() => {
         setDeleteModalState({ isOpen: false, plugin: null });
+    }, []);
+
+    const openCancelSubsModal = useCallback((plugin, subscriptionId, expiresAt, onConfirm) => {
+        setCancelSubsModalState({ isOpen: true, plugin, subscriptionId, expiresAt, onConfirm });
+    }, []);
+
+    const closeCancelSubsModal = useCallback(() => {
+        setCancelSubsModalState({ isOpen: false, plugin: null, subscriptionId: null, expiresAt: null, onConfirm: null });
     }, []);
 
     const shouldShowProvision = useCallback((plugin) => {
@@ -754,6 +763,9 @@ export const MarketplaceProvider = ({
         deleteModalState,
         openDeleteModal,
         closeDeleteModal,
+        cancelSubsModalState,
+        openCancelSubsModal,
+        closeCancelSubsModal,
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
