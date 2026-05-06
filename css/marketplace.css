@@ -263,19 +263,22 @@ body.one-com_page_onecom-marketplace{
  * Scope: only applies when root mount has class `brand-rankmath`.
  * Touches: button colors, page background, font-family. Nothing else.
  * ============================================================ */
-.rank-math_page_rank-math-marketplace #wpwrap {
+.rank-math_page_rank-math-marketplace #wpwrap,
+.rank-math_page_marketplace-products #wpwrap
+{
     background: #f0f2f4;
 }
 .brand-rankmath .gv-activated {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    --color-surface-dim: transparent;
     /*background-color: #f8f9fa;*/
     color: #7f868d;
     font-size: 14px;
     font-style: normal;
     line-height: 1.5;
 }
+.brand-rankmath .gv-activated .marketplace-container.gv-surface-dim
+{background: transparent;}
 .brand-rankmath .gv-activated .gv-price span {
     color: #242628
 }
@@ -287,11 +290,18 @@ body.one-com_page_onecom-marketplace{
     color: #7f868d;
     font-size: 14px;
 }
+.brand-rankmath .gv-activated .gv-modal .gv-modal-content .gv-notice.gv-notice-info{
+    margin-bottom: 16px;
+    margin-top: 16px;
+}
 .brand-rankmath .gv-activated .gv-modal .gv-modal-content .gv-price-current{
     align-items: flex-end;
     display: flex;
     flex-wrap: wrap;
     gap: var(--size-sm);
+}
+.brand-rankmath .gv-activated .gv-data-table.gv-addons-table .gv-text-bold a{
+   text-decoration: none;
 }
 
 .brand-rankmath .gv-activated .gv-button.gv-button-primary {

@@ -87,32 +87,41 @@ const CancelSubscriptionModal = () => {
                                 ? labels.cancelSubscriptionBody.replace('{0}', formattedDate)
                                 : (
                                     <>
-                                        By cancelling, you will lose access to premium features after your current period ends on <strong>{formattedDate}</strong>.
+                                        By cancelling, you will lose access to premium features after your current period ends on <span className='gv-text-bold gv-white-space-nowrap'>{formattedDate}</span>.
                                     </>
                                 )}
                         </p>
                     )}
 
-                    <div className="gv-notice gv-notice-alert">
-                        <p className="gv-notice-content">
-                            <strong>
-                                {labels?.cancelSubscriptionIrreversible || 'IRREVERSIBLE ACTION'}
-                            </strong>
-                        </p>
-                    </div>
+                  <div className="gv-notice gv-notice-info gv-mt-md">
+                    <gv-icon
+                      className="gv-notice-icon"
+                      aria-hidden="true"
+                      src={`${iconBase}error.svg`}
+                    ></gv-icon>
+                    <p className="gv-notice-content">
+                      {labels?.cancelSubscriptionIrreversible ? (
+                        <strong>{labels.cancelSubscriptionIrreversible}</strong>
+                      ) : (
+                        <>
+                          <strong>Cannot be reactivated</strong>. Returning later means a new subscription at current price — license and settings won't carry over.
+                        </>
+                      )}
+                    </p>
+                  </div>
 
-                    <p>
-                        {labels?.cancelSubscriptionInfo || 'After the cancellation, you can continue using the plugin until the expiration date. No further charges will be applied.'}
+                  <p>
+                    {labels?.cancelSubscriptionInfo || 'After the cancellation, you can continue using the plugin until the expiration date. No further charges will be applied.'}
                     </p>
                 </div>
 
                 <div className="gv-button-group">
-                    <button type="button" className="gv-button gv-button-cancel" onClick={closeCancelSubsModal}>
-                        {labels?.cancelSubscriptionKeep || 'Keep subscription'}
-                    </button>
-                    <button type="button" className="gv-button gv-button-destructive" onClick={handleConfirm}>
+                    <button type="button" className="gv-button gv-button-cancel" onClick={handleConfirm}>
                         {labels?.cancelSubscriptionConfirm || 'Confirm cancellation'}
                     </button>
+                  <button type="button" className="gv-button gv-button-primary" onClick={closeCancelSubsModal}>
+                    {labels?.cancelSubscriptionKeep || 'Keep subscription'}
+                  </button>
                 </div>
             </div>
         </div>

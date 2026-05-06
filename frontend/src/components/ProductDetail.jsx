@@ -244,7 +244,7 @@ export default function ProductDetail({
     const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
-        <div className={`gv-surface-dim${brandClass}`}>
+        <div className={brandClass}>
             <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                 <Breadcrumbs
                     iconBase={iconBase}

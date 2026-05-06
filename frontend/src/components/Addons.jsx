@@ -977,15 +977,19 @@ export default function Addons() {
                         {/* Image End */}
 
                         {/* Plugin name */}
-                        <td><p className='gv-text-bold'>{plugin.name}</p></td>
+                        <td>
+                          <p className='gv-text-bold'>
+                            <a href={getMarketplaceUrl(plugin.slug)} className='gv-text-on-default'>{plugin.name}</a>
+                          </p>
+                        </td>
                         {/* Plugin name end */}
 
                         {/* Plugin type */}
                         <td>
                           {plugin.licenseType === 'free' ? (
-                            <div className="gv-badge gv-badge-generic">{uiI18n?.labels?.freeLabel || 'FREE'}</div>
+                            <div className="gv-badge gv-badge-generic">{uiI18n?.labels?.freeLabel || 'Free'}</div>
                           ) : (
-                            <div className="gv-badge gv-badge-info">{uiI18n?.labels?.premiumLabel || 'PREMIUM'}</div>
+                            <div className="gv-badge gv-badge-info">{uiI18n?.labels?.premiumLabel || 'Premium'}</div>
                           )}
                         </td>
                         {/* Plugin type end */}
