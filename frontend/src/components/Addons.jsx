@@ -990,7 +990,7 @@ export default function Addons() {
                         {/* Plugin type end */}
 
                         {/* Plugin subscription */}
-                        <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate !== '-' ? (
+                        <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate && latestSubsDate !== '-' ? (
                           <>
                             {latestSubscription?.status === 'expired' ? (
                               <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
@@ -998,18 +998,18 @@ export default function Addons() {
                               !isCancelledButValid ? (
                                 <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
                               ) : (
-                                <div className="gv-underline"><p class="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}</p></div>
+                                <div className="gv-underline"><p className="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}</p></div>
                               )
-                            ) : (
-                              <div className="gv-underline"><p class="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>
-                            )}
+                            ) : latestSubscription?.status === 'active' ? (
+                              <div className="gv-underline"><p className="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>
+                            ) : null}
                             {latestSubscription?.status === 'expired' ? (
                               <p>{uiI18n?.labels?.expiredOn || 'Expired on'}: {latestSubsDate}</p>
                             ) : latestSubscription?.status === 'canceled' ? (
                               <p>{uiI18n?.labels?.expiresOn || 'Expires'}: {latestSubsDate}</p>
-                            ) : (
+                            ) : latestSubscription?.status === 'active' ? (
                               <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
-                            )}
+                            ) : null}
                           </>
                         ) : (
                           <p>-</p>
