@@ -30,8 +30,6 @@ class MarketplaceModel {
 			'timeout' => 30,
 		];
 
-		error_log( '[Marketplace] ' . $method . ' ' . $this->api_url . ' | payload: ' . wp_json_encode( $payload ) );
-
 		if ( $method === 'POST' ) {
 			$response = wp_remote_post( $this->api_url, $args );
 		} elseif ( $method === 'DELETE' ) {

@@ -673,7 +673,6 @@ class MarketplaceController {
 			isset( $marketplace_catalog['data']['catalog'] ) &&
 			is_array( $marketplace_catalog['data']['catalog'] )
 		){
-			error_log( 'Using cached marketplace catalog' );
 			$plugins = $marketplace_catalog;
 			$is_cached = true;
 		} else {
@@ -690,7 +689,6 @@ class MarketplaceController {
 				isset( $plugins['data']['catalog'] ) &&
 				is_array( $plugins['data']['catalog'] )
 			){
-				error_log( 'Caching marketplace catalog' );
 				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 			} else {
 				error_log( 'Invalid catalog structure' );
@@ -1274,8 +1272,6 @@ class MarketplaceController {
 		$price_amount   = floatval( $_POST['priceAmount'] ?? 0 );
 		$price_currency = sanitize_text_field( $_POST['priceCurrency'] ?? '' );
 		$price_period   = sanitize_text_field( $_POST['pricePeriod'] ?? '' );
-		$domain         = sanitize_text_field( $_POST['domain'] ?? '' );
-		$subdomain      = sanitize_text_field( $_POST['subdomain'] ?? '' );
 
 		if ( empty( $product_id ) ) {
 			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
@@ -1287,14 +1283,6 @@ class MarketplaceController {
 			'currency'  => $price_currency,
 			'interval'  => $price_period,
 		];
-
-		if ( ! empty( $domain ) ) {
-			$data['domain'] = $domain;
-		}
-
-		if ( ! empty( $subdomain ) ) {
-			$data['subdomain'] = $subdomain;
-		}
 
 		// Merge config credentials (username, api_key, locale) with subscribe-specific fields.
 		// 'action' overwrites the one in config['payload'] since it comes second in array_merge.
@@ -1372,7 +1360,6 @@ class MarketplaceController {
 		$get_subscription_list = get_site_transient( $transient_name );
 
 		if ( is_array($get_subscription_list ) && ! empty( $get_subscription_list ) ) {
-			error_log( 'Return transient subscriptions list' );
 			wp_send_json_success( $get_subscription_list );
 		}
 
@@ -1386,10 +1373,6 @@ class MarketplaceController {
 		//The default method is GET
 		$result = $this->get_model()->request( $payload);
 
-		// Diagnostic: log the full parsed response so we can confirm the shape of
-		// `subscriptions` (e.g. data.subscriptions vs data.data.subscriptions).
-		error_log( '[Marketplace] subscription-list response: ' . wp_json_encode( $result ) );
-
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
@@ -1401,10 +1384,8 @@ class MarketplaceController {
 		$get_subscription_list = $result['data']["subscriptions"] ?? null;
 
 		if ( ! empty( $get_subscription_list ) && is_array( $get_subscription_list ) ) {
-			error_log( '[Marketplace] Caching subscriptions list (' . count( $get_subscription_list ) . ' items)' );
 			set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
 		} else {
-			error_log( '[Marketplace] Empty/missing subscriptions in response; skipping cache write.' );
 			$get_subscription_list = [];
 		}
 

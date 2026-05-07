@@ -397,19 +397,6 @@ export default function PluginActions({ plugin }) {
                 locale: window.marketplaceConfig?.locale || '',
             });
 
-            if (plugin.requiresDomain) {
-                try {
-                    const hostname = new URL(window.marketplaceConfig?.siteUrl || window.location.href).hostname;
-                    const parts = hostname.split('.');
-                    const subdomain = parts.length > 1 ? parts[0] : '';
-                    const domain = parts.length > 1 ? parts.slice(1).join('.') : hostname;
-                    formData.set('domain', domain);
-                    if (subdomain) formData.set('subdomain', subdomain);
-                } catch (e) {
-                    // ignore URL parse errors
-                }
-            }
-
             const response = await fetch(ajaxUrl, {
                 method: 'POST',
                 body: formData,

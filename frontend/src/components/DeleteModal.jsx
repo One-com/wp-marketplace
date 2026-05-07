@@ -43,6 +43,7 @@ const DeleteModal = () => {
 
   const isPremium = plugin.licenseType === "premium";
   const pluginName = plugin.name;
+  const brand = (typeof window !== 'undefined' && window.marketplaceConfig?.brand) || '';
 
   return (
     <div className="gv-modal" onClick={handleOutsideClick}>
@@ -64,7 +65,7 @@ const DeleteModal = () => {
           <p>
             {formatMessage(uiI18n?.notifications?.deleteModalConfirm, '{0}', pluginName)}
           </p>
-          {isPremium && (<div className="gv-notice gv-notice-info">
+          {isPremium && brand === 'onecom' && (<div className="gv-notice gv-notice-info">
             <gv-icon
               class="gv-notice-icon"
               aria-hidden="true"
