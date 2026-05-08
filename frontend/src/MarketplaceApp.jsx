@@ -12,7 +12,7 @@ const MarketplaceContent = () => {
         catalogError,
         catalogLoading,
         isWpVersionSupported,
-        currentPluginSlug
+        currentPluginSlug,
     } = useMarketplace();
 
     const isSupportedWpVersion = isWpVersionSupported('6.2');

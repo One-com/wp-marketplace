@@ -227,10 +227,15 @@ class MarketplaceController {
 	 *
 	 */
 	public function register_addons_menu() {
-		$menu_slug = $this->config['addons_menu_slug']?: 'onecom-marketplace-products';
-		$page_title = $this->config['addons_page_title'] ?: __( 'Marketplace Products', '' );
-		$menu_title = $this->config['addons_menu_title'] ?: __( 'Your add-ons', '' );
-		$parent_menu_slug = $this->config['parent_menu_slug'];
+		$menu_slug      = $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products';
+		$has_page_title = ! empty( $this->config['addons_page_title'] );
+		$has_menu_title = ! empty( $this->config['addons_menu_title'] );
+
+		$page_title = $has_page_title ? $this->config['addons_page_title'] : __( 'Marketplace Products', '' );
+		$menu_title = $has_menu_title ? $this->config['addons_menu_title'] : __( 'Your add-ons', '' );
+
+		// When neither title is supplied in config, register the page route only — no visible submenu entry.
+		$parent_menu_slug = ( $has_page_title || $has_menu_title ) ? $this->config['parent_menu_slug'] : null;
 
 		add_submenu_page(
 			$parent_menu_slug,
@@ -1293,6 +1298,13 @@ class MarketplaceController {
 				'data'   => wp_json_encode( $data ),
 			]
 		);
+
+		// Log the outgoing subscribe request. api_key is redacted to avoid leaking credentials in PHP error log.
+		$log_payload = $payload;
+		if ( isset( $log_payload['api_key'] ) ) {
+			$log_payload['api_key'] = '***';
+		}
+		error_log( '[marketplace] subscribe request POST payload: ' . wp_json_encode( $log_payload ) );
 
 		$result = $this->get_model()->request( $payload, 'POST' );
 

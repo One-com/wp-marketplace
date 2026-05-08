@@ -355,8 +355,7 @@ export default function Addons() {
         // Skip already-activated plugins
         if (plugin.activated === true) return false;
 
-        // Skip plugins the user has already installed, subscribed to, or purchased
-        if (plugin.installed) return false;
+        // Skip plugins the user has already subscribed to, or purchased
         if (shouldShowProvision(plugin)) return false;
         if (!!pendingProcurements?.[plugin.slug]) return false;
         if (

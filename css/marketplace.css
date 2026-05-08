@@ -334,4 +334,13 @@ body.one-com_page_onecom-marketplace{
     background: #f8f9fa;
 }
 
+/* Recolor SVG icons inside cancel/secondary buttons on hover to match the text. */
+/* `brightness(0) saturate(100%)` flattens the icon to pure black, then the remaining */
+/* filter chain colorizes it to ~#069de3 — works regardless of the source SVG's fill. */
+.brand-rankmath .gv-activated .gv-button.gv-button-cancel:hover gv-icon,
+.brand-rankmath .gv-button.gv-button-cancel:hover gv-icon,
+.brand-rankmath .gv-activated .gv-button.gv-button-secondary:hover gv-icon {
+    filter: brightness(0) saturate(100%) invert(48%) sepia(76%) saturate(2378%) hue-rotate(170deg) brightness(94%) contrast(98%);
+}
+
 /* END RANKMATH BRAND OVERRIDES */
