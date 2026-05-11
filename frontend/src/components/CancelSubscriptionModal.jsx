@@ -1,15 +1,6 @@
 import React, { useEffect } from 'react';
 import { useMarketplace } from '../context/MarketplaceContext';
-
-/**
- * Format a date string as "DD MMM YYYY" (e.g. "02 Aug 2026").
- */
-const formatExpiresAt = (dateString) => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return dateString;
-    return date.toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' });
-};
+import { formatDate } from '../utils/dateFormatter';
 
 const CancelSubscriptionModal = () => {
     const {
@@ -59,7 +50,7 @@ const CancelSubscriptionModal = () => {
     };
 
     const pluginName = plugin.name;
-    const formattedDate = formatExpiresAt(expiresAt);
+    const formattedDate = formatDate(expiresAt);
 
     return (
         <div className="gv-modal" onClick={handleOutsideClick}>

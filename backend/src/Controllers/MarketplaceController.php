@@ -458,6 +458,7 @@ class MarketplaceController {
 		'menuSlug'             => $this->config['menu_slug'],
 		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
 		'siteUrl'              => home_url(),
+		'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
 		];
 
 		// Localize JS with config
@@ -609,6 +610,7 @@ class MarketplaceController {
 		'menuSlug'             => $this->config['menu_slug'],
 		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
 		'siteUrl'              => home_url(),
+		'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
  	];
 
  	// Localize JS with config

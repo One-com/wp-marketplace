@@ -12,6 +12,7 @@ import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { getLatestSubscription, getAjaxAction } from "../utils/common.utils";
 import { startPolling } from "../utils/pollingHelper";
+import { formatDate } from "../utils/dateFormatter";
 
 export default function Addons() {
     const {
@@ -608,22 +609,6 @@ export default function Addons() {
 
 
 
-  /**
-   * Formats a date string to DD/MM/YYYY format.
-   * @param dateString
-   * @returns {string}
-   */
-  const formatDateDDMMYYYY = (dateString) => {
-    if (!dateString) return '';
-
-    const date = new Date(dateString);
-
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // months are 0-based
-    const year = date.getFullYear();
-
-    return `${day}/${month}/${year}`;
-  };
 
   /**
    * Get plugin status based on subscription status.
@@ -959,8 +944,8 @@ export default function Addons() {
 
                     //Get subscription details
                     const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
-                    const latestSubsDate = (latestSubscription !== null) ? formatDateDDMMYYYY(latestSubscription.expiresAt) : '-';
-                    const renewalDate = (latestSubscription !== null && latestSubscription.renewsAt != null) ? `Renews at: ${formatDateDDMMYYYY(latestSubscription.renewsAt)}` : null
+                    const latestSubsDate = (latestSubscription !== null) ? formatDate(latestSubscription.expiresAt) : '-';
+                    const renewalDate = (latestSubscription !== null && latestSubscription.renewsAt != null) ? `Renews at: ${formatDate(latestSubscription.renewsAt)}` : null
                     const isCancelledButValid = latestSubscription?.status === 'canceled' && latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>

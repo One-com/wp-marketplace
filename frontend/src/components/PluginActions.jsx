@@ -4,6 +4,7 @@ import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { startPolling } from "../utils/pollingHelper";
 import { getAjaxAction } from "../utils/common.utils";
+import { formatDate } from "../utils/dateFormatter";
 import PurchaseModal from "./PurchaseModal";
 
 /**
@@ -34,14 +35,6 @@ const getPluginPriceData = (plugin) => {
         currency: plugin.priceCurrency,
         period: 'month',
     };
-};
-
-/** Format an ISO date string into a human-readable locale date. */
-const formatDate = (isoString) => {
-    if (!isoString) return '';
-    return new Date(isoString).toLocaleDateString(undefined, {
-        year: 'numeric', month: 'short', day: 'numeric',
-    });
 };
 
 /** Terminal status that means the procurement succeeded and a license was issued. */
