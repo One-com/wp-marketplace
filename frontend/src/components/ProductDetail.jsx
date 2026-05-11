@@ -162,16 +162,6 @@ export default function ProductDetail({
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
     const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
-    // // --- MOCK DATA: Remove this block once API returns real values ---
-    if (!plugin.version) plugin = { ...plugin, version: '3.2.1' };
-    if (!plugin.testedUpTo) plugin = { ...plugin, testedUpTo: '6.7' };
-    if (!plugin.requiresPhpVersion) plugin = { ...plugin, requiresPhpVersion: '7.4' };
-    if (!plugin.requiresWpVersion) plugin = { ...plugin, requiresWpVersion: '5.8' };
-    if (plugin.rating === null || plugin.rating === undefined) plugin = { ...plugin, rating: 92 };
-    if (plugin.ratingCount === null || plugin.ratingCount === undefined) plugin = { ...plugin, ratingCount: 1247 };
-    if (plugin.activeInstalls === null || plugin.activeInstalls === undefined) plugin = { ...plugin, activeInstalls: 500000 };
-    if (!plugin.pluginLastUpdated) plugin = { ...plugin, pluginLastUpdated: '2026-03-15T10:30:00.000Z' };
-    // // --- END MOCK DATA ---
 
     // Extract data with fallbacks
     const title = plugin.name || 'Product';
@@ -385,14 +375,14 @@ export default function ProductDetail({
                           {plugin.requiresPhpVersion && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.php_version || 'PHP version'}</span><strong>{plugin.requiresPhpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.php_version || 'PHP version'}</span><strong>{plugin.requiresPhpVersion}</strong></span>
                               </div>
                             </div>
                           )}
                           {plugin.requiresWpVersion && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.wordpress_version || 'WordPress version'}</span><strong>{plugin.requiresWpVersion} {uiI18n?.labels?.orHigher || 'or higher'}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.wordpress_version || 'WordPress version'}</span><strong>{plugin.requiresWpVersion}</strong></span>
                               </div>
                             </div>
                           )}
@@ -413,7 +403,7 @@ export default function ProductDetail({
                           {plugin.rating !== null && (
                             <div className="gv-table-row" role="row">
                               <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.rating || 'Rating'}</span><strong>{(plugin.rating / 20).toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.rating || 'Rating'}</span><strong>{plugin.rating.toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
                               </div>
                             </div>
                           )}

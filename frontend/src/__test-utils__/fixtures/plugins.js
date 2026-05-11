@@ -28,7 +28,7 @@ const basePlugin = {
   activeInstalls: 10000,
   pluginLastUpdated: '2026-01-15T10:00:00.000Z',
   freeTrial: null,
-  rating: 80,
+  rating: 4.0,
   ratingCount: 150,
   requiresDomain: false,
   requiresWpVersion: '5.8',
