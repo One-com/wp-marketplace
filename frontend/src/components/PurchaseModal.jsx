@@ -68,8 +68,8 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                         <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
                     </button>
                   <div className="gv-modal-body">
-                    <h3 id="id-purchase-modal-title">Get superior
-                      website speed</h3>
+                    <h5 id="id-purchase-modal-title">Get superior
+                      website speed</h5>
                     {description && <p className="gv-product-intro">{description}</p>}
 
                     <div className="gv-product-price">
