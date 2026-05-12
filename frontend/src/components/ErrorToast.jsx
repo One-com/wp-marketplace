@@ -49,6 +49,14 @@ export default function ErrorToast({ plugin: propPlugin }) {
 
     const pluginName = plugin?.name || '';
 
+    // Raw API error codes (e.g. "upstream_error", "invalid_request") aren't user-friendly.
+    // A machine code looks like a single token: underscore present and no whitespace.
+    const isMachineCode = typeof errorState.message === 'string'
+        && errorState.message.includes('_')
+        && !/\s/.test(errorState.message);
+    const friendlyFallback = uiI18n?.notifications?.somethingWentWrong || 'Something went wrong; please try again.';
+    const displayMessage = errorState.message && !isMachineCode ? errorState.message : (isMachineCode ? friendlyFallback : null);
+
     return (
         <div className="gv-toast-container">
             <div className="gv-toast gv-toast-alert gv-visible">
@@ -58,8 +66,8 @@ export default function ErrorToast({ plugin: propPlugin }) {
                     src={`${iconBase}icons/error.svg`}
                 ></gv-icon>
                 <div className="gv-toast-content">
-                    {errorState.message
-                        ? errorState.message
+                    {displayMessage
+                        ? displayMessage
                         : (<>
                             {isActivateError && formatMessage(uiI18n?.notifications?.pluginActivationFailed || "Couldn't activate plugin.", pluginName)}
                             {isDeactivateError && formatMessage(uiI18n?.notifications?.pluginDeactivationFailed || "Couldn't deactivate plugin.", pluginName)}

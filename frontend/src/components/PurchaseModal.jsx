@@ -68,8 +68,8 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                         <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
                     </button>
                   <div className="gv-modal-body">
-                    <h2 id="id-purchase-modal-title" className="gv-modal-title">Get superior
-                      website speed</h2>
+                    <h3 id="id-purchase-modal-title">Get superior
+                      website speed</h3>
                     {description && <p className="gv-product-intro">{description}</p>}
 
                     <div className="gv-product-price">
@@ -111,7 +111,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                       {uiI18n?.cancel || 'Close'}
                         </button>
                         <button type="button" className="gv-button gv-button-primary" onClick={onPurchase}>
-                            {uiI18n?.labels?.buyNowButton || 'Buy now'}
+                            {uiI18n?.labels?.buyNowButton || 'Buy Now'}
                         </button>
                     </div>
 

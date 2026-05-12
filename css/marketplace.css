@@ -258,6 +258,32 @@ body.one-com_page_onecom-marketplace{
     }
 }
 
+/* Constrain the purchase modal to wp-admin's content area (#wpbody) so its
+   overlay doesn't cover the left admin menu. Mirrors WP's own behavior:
+   .folded (user-collapsed) → 36px at any width; .auto-fold (default body class)
+   only collapses to 36px under WP's ≤960px media query; ≤782px the menu is
+   offscreen so no constraint is needed. */
+.gv-modal.gv-upgrade-modal {
+    left: 160px;
+    width: calc(100% - 160px);
+}
+.folded .gv-modal.gv-upgrade-modal {
+    left: 36px;
+    width: calc(100% - 36px);
+}
+@media only screen and (max-width: 960px) {
+    .auto-fold .gv-modal.gv-upgrade-modal {
+        left: 36px;
+        width: calc(100% - 36px);
+    }
+}
+@media screen and (max-width: 782px) {
+    .gv-modal.gv-upgrade-modal {
+        left: 0;
+        width: 100%;
+    }
+}
+
 /* ============================================================
  * RANKMATH BRAND OVERRIDES — REMOVE THIS BLOCK TO REVERT
  * Scope: only applies when root mount has class `brand-rankmath`.
@@ -332,6 +358,9 @@ body.one-com_page_onecom-marketplace{
     border-color: #069de3;
     color: #069de3;
     background: #f8f9fa;
+}
+.brand-rankmath .gv-activated .gv-modal.gv-upgrade-modal .gv-modal-body .gv-product-intro{
+  font-size: 14px
 }
 
 /* Recolor SVG icons inside cancel/secondary buttons on hover to match the text. */
