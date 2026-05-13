@@ -339,9 +339,10 @@ export default function Addons() {
     }));
   }, [plugins, subscriptionsList]);
 
-  // Derive featured (recommended) plugins from mergedPlugins so subscription data
-  // is always taken into account. Plugins that are already installed, subscribed,
-  // provisionable, pending procurement, or activated are excluded.
+  // Derive featured (recommended) plugins from mergedPlugins. Only activation state
+  // hides a plugin here — subscription, installation, and pending-procurement state
+  // are intentionally ignored so the carousel keeps recommending things the user
+  // has bought but not yet turned on.
   const featuredPlugins = useMemo(() => {
     if (!mergedPlugins?.length) return [];
 
@@ -356,17 +357,7 @@ export default function Addons() {
         // Skip already-activated plugins
         if (plugin.activated === true) return false;
 
-        // Skip plugins the user has already subscribed to, or purchased
-        if (shouldShowProvision(plugin)) return false;
-        if (!!pendingProcurements?.[plugin.slug]) return false;
-        if (
-          plugin.hasSubscription &&
-          plugin.subscriptions.some(
-            s => s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date())
-          )
-        ) return false;
-
-        // Rank Math visibility rules
+        // Rank Math visibility rules (dependency semantics, not subscription state)
         if (plugin.slug === "seo-by-rank-math") {
           return !rankMathActivated && !rankMathProActivated;
         }
@@ -382,7 +373,7 @@ export default function Addons() {
         return orderA - orderB;
       })
       .slice(0, 3);
-  }, [mergedPlugins, shouldShowPlugin, shouldShowProvision, pendingProcurements]);
+  }, [mergedPlugins, shouldShowPlugin]);
 
     // Fetch plugins catalog from API and update all derived state.
     // Extracted into a useCallback so it can be called both on mount and from the

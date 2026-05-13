@@ -192,10 +192,10 @@ export default function FeaturedCarousel({ loading = false }) {
         );
     }
 
-    // If no featured plugins, don't render anything
-    if (!featuredPlugins || featuredPlugins.length === 0) {
-        return null;
-    }
+    // Even when there are no featured plugins to recommend, we still render the
+    // header so the "My Products" CTA stays visible — the carousel body and
+    // navigation below are gated separately.
+    const hasFeaturedPlugins = featuredPlugins && featuredPlugins.length > 0;
 
     const goToSlide = (index) => {
         setCurrentIndex(Math.min(index, maxIndex));
@@ -215,8 +215,10 @@ export default function FeaturedCarousel({ loading = false }) {
 
     return (
         <section className="gv-featured-carousel gv-w-full">
-            <div className="gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0 gv-flex gv-justify-between gv-items-center">
-                <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
+            <div className={`gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0 gv-flex gv-items-center ${hasFeaturedPlugins ? 'gv-justify-between' : 'gv-justify-end'}`}>
+                {hasFeaturedPlugins && (
+                    <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
+                )}
                 <a
                     className="gv-button gv-button-secondary gv-mode-condensed"
                     href={`${adminUrl}admin.php?page=${addonsMenuSlug}`}
@@ -226,6 +228,7 @@ export default function FeaturedCarousel({ loading = false }) {
                 </a>
             </div>
 
+            {hasFeaturedPlugins && (<>
             <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
                 <div
                     className="gv-carousel-track"
@@ -388,6 +391,7 @@ export default function FeaturedCarousel({ loading = false }) {
                     </button>
                 </div>
             )}
+            </>)}
         </section>
     );
 }

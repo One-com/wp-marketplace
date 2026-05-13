@@ -234,8 +234,11 @@ class MarketplaceController {
 		$page_title = $has_page_title ? $this->config['addons_page_title'] : __( 'Marketplace Products', '' );
 		$menu_title = $has_menu_title ? $this->config['addons_menu_title'] : __( 'Your add-ons', '' );
 
-		// When neither title is supplied in config, register the page route only — no visible submenu entry.
-		$parent_menu_slug = ( $has_page_title || $has_menu_title ) ? $this->config['parent_menu_slug'] : null;
+		// When neither title is supplied, self-parent the page so it's registered without
+		// a visible menu entry. WP's menu renderer only iterates $menu (top-level), so a
+		// self-parented submenu never renders. Access check still passes because
+		// $submenu[$menu_slug] contains our entry with its own capability.
+		$parent_menu_slug = ( $has_page_title || $has_menu_title ) ? $this->config['parent_menu_slug'] : $menu_slug;
 
 		add_submenu_page(
 			$parent_menu_slug,
