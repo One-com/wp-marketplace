@@ -1,12 +1,39 @@
- /frontend/standalone       export-ignore
- /frontend/node_modules       export-ignore
-/frontend/src                   export-ignore
-/frontend/package.json       export-ignore
-/frontend/package-lock.json      export-ignore
-/frontend/vite.config.js      export-ignore
-/frontend/webpack.wp.js      export-ignore
-/frontend/build/index.asset.php      export-ignore
-/frontend/README.md      export-ignore
-/frontend/.npmignore     export-ignore
-readme.md                           export-ignore
-/.gitignore                     export-ignore
+# Files and directories below are stripped from `composer install` of this
+# package via `git archive` export-ignore. They're dev-only and never needed
+# at runtime by consumers.
+
+# Dev tooling / metadata
+/.claude                            export-ignore
+/.github                            export-ignore
+/.gitignore                         export-ignore
+/.editorconfig                      export-ignore
+/.DS_Store                          export-ignore
+**/.DS_Store                        export-ignore
+/phpcs.xml                          export-ignore
+
+# Source CSS — only the minified output (assets/min-css/marketplace.min.css)
+# is needed at runtime.
+/css                                export-ignore
+
+# Documentation
+/readme.md                          export-ignore
+/CLAUDE.md                          export-ignore
+/ADDONS_USAGE.md                    export-ignore
+/GRAVITY_TILES_USAGE.md             export-ignore
+
+# Frontend sources, build configs, and test infra — only frontend/build/
+# (the webpack output) ships.
+/frontend/src                       export-ignore
+/frontend/standalone                export-ignore
+/frontend/node_modules              export-ignore
+/frontend/package.json              export-ignore
+/frontend/package-lock.json         export-ignore
+/frontend/vite.config.js            export-ignore
+/frontend/webpack.wp.js             export-ignore
+/frontend/copy-build.js             export-ignore
+/frontend/jest.config.js            export-ignore
+/frontend/test-price-formatter.js   export-ignore
+/frontend/MIXPANEL_TRACKING.md      export-ignore
+/frontend/README.md                 export-ignore
+/frontend/.npmignore                export-ignore
+/frontend/build/index.asset.php     export-ignore
