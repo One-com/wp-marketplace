@@ -61,7 +61,7 @@ const CancelSubscriptionModal = () => {
                 aria-modal="true"
                 onClick={(e) => e.stopPropagation()}
             >
-                <button type="button" className="gv-modal-close" aria-label="Close" onClick={closeCancelSubsModal}>
+                <button type="button" className="gv-modal-close" aria-label={uiI18n?.labels?.close || 'Close'} onClick={closeCancelSubsModal}>
                     <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
                 </button>
 

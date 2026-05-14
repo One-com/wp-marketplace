@@ -568,7 +568,7 @@ export default function ProductDetailRankMath({
                                                 </div>
                                             </div>
                                           <div className="gv-product gv-p-0" role="columnheader">
-                                            <div className="gv-recommended-label">Recommended</div>
+                                            <div className="gv-recommended-label">{uiI18n?.labels?.recommended || 'Recommended'}</div>
                                             <div className="gv-content">
                                               <h3 className="gv-title">{proTitle}</h3>
                                               <p>{proDescription.substring(0, 120)}{proDescription.length > 120 ? '…' : ''}</p>
@@ -590,7 +590,7 @@ export default function ProductDetailRankMath({
                                                 />
                                               ) : (
                                                 <button type="button"
-                                                        className="gv-button gv-button-primary">Select</button>
+                                                        className="gv-button gv-button-primary">{uiI18n?.selectButton || 'Select'}</button>
                                               )}
                                             </div>
                                           </div>

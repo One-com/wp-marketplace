@@ -165,7 +165,7 @@ export default function ProductDetail({
 
     // Extract data with fallbacks
     const title = plugin.name || 'Product';
-    const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || 'No description available.';
+    const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || (uiI18n?.labels?.noDescription || 'No description available.');
     const subTitle = plugin.i18n?.subtitle;
     const isFree = plugin.licenseType === "free";
     const freeTrialText = plugin.i18n?.freeTrialText || '';

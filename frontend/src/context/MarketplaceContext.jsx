@@ -689,7 +689,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else {
-                    alert(result.data?.message || "Failed to perform action");
+                    alert(result.data?.message || uiI18n?.notifications?.actionFailed || "Failed to perform action");
                 }
             }
         } catch (err) {

@@ -64,12 +64,11 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                     aria-modal="true"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <button type="button" className="gv-modal-close" aria-label="Close" onClick={onClose}>
+                    <button type="button" className="gv-modal-close" aria-label={uiI18n?.labels?.close || 'Close'} onClick={onClose}>
                         <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
                     </button>
                   <div className="gv-modal-body">
-                    <h5 id="id-purchase-modal-title">Get superior
-                      website speed</h5>
+                    <h5 id="id-purchase-modal-title">{uiI18n?.labels?.purchaseModalTitle || 'Get superior website speed'}</h5>
                     {description && <p className="gv-product-intro">{description}</p>}
 
                     <div className="gv-product-price">

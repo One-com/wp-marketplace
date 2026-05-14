@@ -61,7 +61,7 @@ export default function SuccessToast({ plugin: propPlugin }) {
                     {isDeactivated && formatMessage(uiI18n?.notifications?.pluginDeactivated || "Plugin deactivated.", pluginName)}
                     {isDeleted && formatMessage(uiI18n?.notifications?.pluginDeleted || "Plugin deleted successfully.", pluginName)}
                 </div>
-                <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
+                <button type="button" className="gv-toast-close" aria-label={uiI18n?.labels?.close || 'Close'} onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>
                 </button>
             </div>

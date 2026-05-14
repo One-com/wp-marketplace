@@ -78,7 +78,7 @@ export default function ErrorToast({ plugin: propPlugin }) {
                         </>)
                     }
                 </div>
-                <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
+                <button type="button" className="gv-toast-close" aria-label={uiI18n?.labels?.close || 'Close'} onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>
                 </button>
             </div>

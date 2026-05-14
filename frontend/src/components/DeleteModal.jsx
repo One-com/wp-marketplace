@@ -55,7 +55,7 @@ const DeleteModal = () => {
         onClick={(e) => e.stopPropagation()}
       >
 
-        <button type="button" className="gv-modal-close" aria-label="Close" onClick={closeDeleteModal}>
+        <button type="button" className="gv-modal-close" aria-label={uiI18n?.labels?.close || 'Close'} onClick={closeDeleteModal}>
           <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
         </button>
         <div className="gv-modal-body">

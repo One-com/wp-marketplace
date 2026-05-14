@@ -432,7 +432,7 @@ export default function Addons() {
                     itemName: 'Addons Page',
                     isContentRendered: false,
                 });
-                setCatalogError(err.message || "Failed to load plugins");
+                setCatalogError(err.message || uiI18n?.notifications?.catalogLoadFailed || "Failed to load plugins");
             })
             .finally(() => {
                 setCatalogLoading(false);
@@ -1025,7 +1025,7 @@ export default function Addons() {
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
-                                aria-label="Toggle menu"
+                                aria-label={uiI18n?.labels?.toggleMenu || 'Toggle menu'}
                                 className="gv-reset-button"
                                 onClick={() => setOpenMenuIndex(openMenuIndex === index ? null : index)}
                               >
@@ -1038,7 +1038,7 @@ export default function Addons() {
                                   <button
                                     type="button"
                                     className="gv-btn-close"
-                                    aria-label="Close"
+                                    aria-label={uiI18n?.labels?.close || 'Close'}
                                     onClick={() => setOpenMenuIndex(null)}
                                   >
                                     <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>

@@ -348,7 +348,7 @@ export default function FeaturedCarousel({ loading = false }) {
                             cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
                             opacity: currentIndex === 0 ? 0.5 : 1
                         }}
-                        aria-label="Previous slide"
+                        aria-label={uiI18n?.labels?.previousSlide || 'Previous slide'}
                     >
                         <img src={`${iconBase}chevron_left.svg`} alt="Previous" style={{ width: '24px', height: '24px' }} />
                     </button>
@@ -385,7 +385,7 @@ export default function FeaturedCarousel({ loading = false }) {
                             cursor: currentIndex >= maxIndex ? 'not-allowed' : 'pointer',
                             opacity: currentIndex >= maxIndex ? 0.5 : 1
                         }}
-                        aria-label="Next slide"
+                        aria-label={uiI18n?.labels?.nextSlide || 'Next slide'}
                     >
                         <img src={`${iconBase}chevron_right.svg`} alt="Next" style={{ width: '24px', height: '24px' }} />
                     </button>
