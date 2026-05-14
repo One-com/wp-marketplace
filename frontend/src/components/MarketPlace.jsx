@@ -244,18 +244,17 @@ export default function Marketplace() {
         }
     }, [catalogLoading, catalogError, plugins.length, currentPluginSlug, visibleConditionalPlugins]);
 
-    // Auto-reload once if the catalog fetch errors out — works around transient
-    // API issues without trapping the user on the error screen. Guarded by
-    // sessionStorage so a persistent failure doesn't cause an infinite loop;
-    // the flag is cleared on a successful load.
+    // Auto-reload at most once per browser tab if the catalog fetch errors out —
+    // works around transient API issues without trapping the user on the error
+    // screen. The sessionStorage flag is set on the first attempt and never
+    // cleared during the tab's lifetime; if the reload doesn't recover, the
+    // user stays on the error screen instead of looping forever.
     useEffect(() => {
-        if (catalogError) {
-            if (sessionStorage.getItem('mp_catalog_error_reloaded')) return;
-            sessionStorage.setItem('mp_catalog_error_reloaded', '1');
-            const timer = setTimeout(() => window.location.reload(), 2000);
-            return () => clearTimeout(timer);
-        }
-        sessionStorage.removeItem('mp_catalog_error_reloaded');
+        if (!catalogError) return;
+        if (sessionStorage.getItem('mp_catalog_error_reloaded')) return;
+        sessionStorage.setItem('mp_catalog_error_reloaded', '1');
+        const timer = setTimeout(() => window.location.reload(), 2000);
+        return () => clearTimeout(timer);
     }, [catalogError]);
 
     // Track plugin detail page visit when selectedPlugin changes
