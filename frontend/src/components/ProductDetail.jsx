@@ -6,6 +6,7 @@ import ErrorToast from "./ErrorToast";
 import Breadcrumbs from "./Breadcrumbs";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getFullPrice, getRebatePrice } from "../utils/priceFormatter";
+import { HtmlRenderer } from "../utils/common.utils";
 
 export default function ProductDetail({
     plugin,
@@ -24,11 +25,13 @@ export default function ProductDetail({
 
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
+    const brand = (typeof window !== 'undefined' && window.marketplaceConfig?.brand) || '';
+    const brandClass = brand ? ` brand-${brand.replace(/[^a-zA-Z0-9_-]/g, '')}` : '';
 
     // Show skeleton loaders while loading (even if plugin is null)
     if (loading) {
         const skeletonContent = (
-            <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+            <div className={`gv-surface-dim${brandClass}`}>
                 <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                     {/* Breadcrumbs skeleton */}
                     <nav className="gv-breadcrumbs gv-area-nav gv-flex-col gv-items-start">
@@ -159,9 +162,10 @@ export default function ProductDetail({
     const iconSrc = plugin.thumbnail || `${assetBase}assets/icons/placeholder.svg`;
     const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
+
     // Extract data with fallbacks
     const title = plugin.name || 'Product';
-    const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || 'No description available.';
+    const description = plugin.i18n?.description || plugin.i18n?.subtitle || plugin.description || plugin.shortDescription || (uiI18n?.labels?.noDescription || 'No description available.');
     const subTitle = plugin.i18n?.subtitle;
     const isFree = plugin.licenseType === "free";
     const freeTrialText = plugin.i18n?.freeTrialText || '';
@@ -171,14 +175,23 @@ export default function ProductDetail({
 
     const price = (hasFreeTrialPeriod || hasFreeTrialText)
         ? (uiI18n?.headings?.freeTrial || 'Free trial*')
-        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n);
+        : formatPluginPrice(plugin, uiI18n?.labels?.free || 'Free', uiI18n, true);
 
     // Check if price is "Free until renewal" (rebate amount is 0)
     const isFreeUntilRenewal = price === (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal');
 
     // Extract full and rebate prices using common utility functions
-    const fullPriceAmount = getFullPrice(plugin);
-    const rebatePriceAmount = getRebatePrice(plugin);
+    const fullPriceAmount = getFullPrice(plugin, true);
+    const rebatePriceAmount = getRebatePrice(plugin, true);
+
+    const getTimeAgo = (dateStr) => {
+        const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+        if (days < 7) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+        const weeks = Math.floor(days / 7);
+        if (weeks < 52) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+        const years = Math.floor(weeks / 52);
+        return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+    };
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -221,7 +234,7 @@ export default function ProductDetail({
     const coreFeatures = coreFeaturesFromI18n;
 
     const content = (
-        <div className={usePortal ? "gv-surface-dim" : "gv-surface-dim"}>
+        <div className={brandClass}>
             <article className="gv-layout-product gv-p-0 gv-product-single gv-w-max-container gv-mx-auto gv-p-fluid">
                 <Breadcrumbs
                     iconBase={iconBase}
@@ -275,12 +288,12 @@ export default function ProductDetail({
                                                     ) : (
                                                         <>
                                                             <span className="gv-price-text">
-                                                                {plugin.licenseType === "premium" && rebatePriceAmount !== null
+                                                                <HtmlRenderer htmlString={plugin.licenseType === "premium" && rebatePriceAmount !== null
                                                                     ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
-                                                                    : price}
+                                                                    : price} />
                                                             </span>
                                                             {!isFree && !isFreeUntilRenewal && price && (
-                                                                <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>
+                                                                <span className="gv-period">/{window.marketplaceConfig?.brand === 'rankmath' ? ' month' : uiI18n?.labels?.timeMonth}</span>
                                                             )}
                                                         </>
                                                     )}
@@ -292,8 +305,8 @@ export default function ProductDetail({
                                                 ) : (
                                                     !isFree && price && fullPriceAmount && rebatePriceAmount !== null &&
                                                     <div className="gv-price-info">
-                                                        <div className="gv-info">{uiI18n.labels.untilRenewal} [{rebatePriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
-                                                        <div className="gv-info">{uiI18n.labels.afterThat} [{fullPriceAmount}]/{uiI18n?.labels?.timeMonth}</div>
+                                                        <div className="gv-info">{uiI18n.labels.untilRenewal} [<HtmlRenderer htmlString={rebatePriceAmount} />]/{uiI18n?.labels?.timeMonth}</div>
+                                                        <div className="gv-info">{uiI18n.labels.afterThat} [<HtmlRenderer htmlString={fullPriceAmount} />]/{uiI18n?.labels?.timeMonth}</div>
                                                     </div>
                                                 )}
                                             </div>
@@ -319,29 +332,92 @@ export default function ProductDetail({
 
                             {keyFeatures.length > 0 && (
                                 <div className="gv-section oc-left-border-0" role="rowgroup">
-                                    <div className="gv-section-header gv-table-row" role="row">
-                                        <div className="gv-cell" role="cell">
-                                            <h4 className="gv-title">{uiI18n?.headings?.key_features || 'Key features'}</h4>
-                                        </div>
+                                  <div className="gv-section-header gv-table-row" role="row">
+                                    <div className="gv-cell" role="cell">
+                                      <h4 className="gv-title">{uiI18n?.headings?.key_features || plugin.i18n?.keyFeatureHeading || 'Key features'}</h4>
                                     </div>
-                                    {keyFeatures.map((f, i) => (
-                                        <div className="gv-table-row" role="row" key={i}>
-                                            <div className="gv-cell" role="cell">
-                                                <span className="gv-cell-text">{f}</span>
-                                            </div>
-                                        </div>
-                                    ))}
+                                  </div>
+                                  {keyFeatures.map((f, i) => (
+                                      <div className="gv-table-row" role="row" key={i}>
+                                          <div className="gv-cell" role="cell">
+                                              <span className="gv-cell-text">{f}</span>
+                                          </div>
+                                      </div>
+                                  ))}
                                 </div>
                             )}
                         </div>
                     </div>
+                  {/* Plugin Meta — rendered outside gv-layout-product grid to avoid area conflicts */}
+                  {(plugin.version || plugin.testedUpTo || plugin.requiresPhpVersion || plugin.requiresWpVersion || plugin.pluginLastUpdated || plugin.activeInstalls !== null || plugin.rating !== null) && (
+                    <div className="gv-table-container gv-mt-fluid">
+                      <div className="gv-table" role="table">
+                        <div className="gv-section oc-left-border-0" role="rowgroup">
+                          <div className="gv-section-header gv-table-row" role="row">
+                            <div className="gv-cell" role="cell" style={{ borderTop: '1px solid #E0E0E0'}}>
+                              <h4 className="gv-title">{uiI18n?.headings?.plugin_meta || 'Plugin Meta'}</h4>
+                            </div>
+                          </div>
+                          {plugin.version && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.version || 'Version'}</span><strong>{plugin.version}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.testedUpTo && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.tested_upto || 'Tested up to'}</span><strong>{plugin.testedUpTo}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.requiresPhpVersion && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.php_version || 'PHP version'}</span><strong>{plugin.requiresPhpVersion}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.requiresWpVersion && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.wordpress_version || 'WordPress version'}</span><strong>{plugin.requiresWpVersion}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.pluginLastUpdated && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.lastUpdated || 'Last updated'}</span><strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.activeInstalls !== null && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.active_installs || 'Active installations'}</span><strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
+                              </div>
+                            </div>
+                          )}
+                          {plugin.rating !== null && (
+                            <div className="gv-table-row" role="row">
+                              <div className="gv-cell" role="cell">
+                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.rating || 'Rating'}</span><strong>{plugin.rating.toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </section>
 
                 {/* Details / Benefits */}
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     {benefits.length > 0 && (
                         <section className="gv-stack-space-md">
-                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.headings?.benefit || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
                             <ul className="gv-list-items gv-list-check gv-mode-condensed">
                                 {benefits.map((b, i) => <li key={i}>{b}</li>)}
                             </ul>
@@ -353,7 +429,7 @@ export default function ProductDetail({
                 {coreFeatures.length > 0 && (
                     <div className="gv-area-content gv-grid gv-gap-fluid">
                         <section className="gv-text-sm gv-stack-space-md">
-                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.headings?.feature_overview || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
                             <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                                 {coreFeatures.map((cf, i) => (
                                     <div className="gv-item gv-stack-space-sm" key={i}>
@@ -366,6 +442,8 @@ export default function ProductDetail({
                     </div>
                 )}
             </article>
+
+
         </div>
     );
 

@@ -1,6 +1,8 @@
 const defaultConfig = require("@wordpress/scripts/config/webpack.config");
 const path = require("path");
 
+const isDev = process.env.NODE_ENV === "development";
+
 module.exports = {
 	...defaultConfig,
 	entry: {
@@ -16,7 +18,8 @@ module.exports = {
 		},
 		clean: true,
 	},
-	mode: "production",
+	mode: isDev ? "development" : "production",
+	devtool: isDev ? "eval-source-map" : false,
 	resolve: {
 		extensions: [".js", ".jsx"],
 		alias: {

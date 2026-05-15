@@ -34,6 +34,7 @@ export default function SuccessToast({ plugin: propPlugin }) {
         setSuccessState({ visible: false, type: null, pluginSlug: null });
     };
 
+    const isInstalled = successState.type === 'install';
     const isActivated = successState.type === 'activate';
     const isDeactivated = successState.type === 'deactivate';
     const isDeleted = successState.type === 'delete';
@@ -55,11 +56,12 @@ export default function SuccessToast({ plugin: propPlugin }) {
                     src={`${iconBase}icons/check_circle.svg`}
                 ></gv-icon>
                 <div className="gv-toast-content">
+                    {isInstalled && formatMessage(uiI18n?.notifications?.pluginInstalled || "Plugin installed successfully.", pluginName)}
                     {isActivated && formatMessage(uiI18n?.notifications?.pluginActivatedShort || "Plugin activated.", pluginName)}
                     {isDeactivated && formatMessage(uiI18n?.notifications?.pluginDeactivated || "Plugin deactivated.", pluginName)}
                     {isDeleted && formatMessage(uiI18n?.notifications?.pluginDeleted || "Plugin deleted successfully.", pluginName)}
                 </div>
-                <button type="button" className="gv-toast-close" aria-label="Close" onClick={handleClose}>
+                <button type="button" className="gv-toast-close" aria-label={uiI18n?.labels?.close || 'Close'} onClick={handleClose}>
                     <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>
                 </button>
             </div>

@@ -1,4 +1,5 @@
 import { trackButtonClick } from "./mixpanelTracking";
+import { getAjaxAction } from "./common.utils";
 
 /**
  * Handles the special case of Imagify plugin activation which involves a 302 redirect.
@@ -23,7 +24,7 @@ export const handleImagifyActivation = async ({
     const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
 
     if (useWPHandlers) {
-        url = `${wpConfig.ajaxUrl}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
+        url = `${wpConfig.ajaxUrl}?action=${getAjaxAction(`${action}_plugin`)}&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
     } else {
         url = url + (url.includes('?') ? '&' : '?') + downloadParam;
     }

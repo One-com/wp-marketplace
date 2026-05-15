@@ -40,19 +40,41 @@ export function normalizePlugins(rawResponse) {
       ? plugin.price.currency
       : undefined;
 
+    // Normalize licenseType — handle both camelCase and snake_case from API
+    const licenseType = plugin?.licenseType || plugin?.license_type || '';
+
     return {
       ...plugin,
       name: plugin?.name || "Unknown",
       slug: plugin?.slug || "",
       thumbnail: plugin?.thumbnail || "",
+      iconUrl: plugin?.iconUrl || "",
       description,
       download,
       author: authorName,
       authorUrl,
       priceAmount,
       priceCurrency,
+      licenseType,
       installed: plugin?.installed ?? false,
       activated: plugin?.activated ?? false,
+      featured: plugin?.featured ?? false,
+      hasSubscription: plugin?.hasSubscription ?? false,
+      subscriptions: plugin?.subscriptions || [],
+      productId: plugin?.productId || null,
+      onboardingUrl: plugin?.onboardingUrl || null,
+      redirectUrl: plugin?.redirectUrl || null,
+      rules: plugin?.rules || null,
+      version: plugin?.productMeta?.version || "",
+      activeInstalls: plugin?.productMeta?.activeInstallations ?? null,
+      pluginLastUpdated: plugin?.productMeta?.lastUpdated || null,
+      freeTrial: plugin?.freeTrial || null,
+      rating: plugin?.productMeta?.rating ?? null,
+      ratingCount: plugin?.productMeta?.ratingCount ?? null,
+      requiresDomain: plugin?.requiresDomain ?? false,
+      requiresWpVersion: plugin?.productMeta?.wordpressVersion || "",
+      requiresPhpVersion: plugin?.productMeta?.phpVersion || "",
+      testedUpTo: plugin?.productMeta?.testedUpTo || "",
       i18n: plugin?.i18n || {},
     };
   });

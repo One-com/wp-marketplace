@@ -96,7 +96,7 @@ export default function SuccessNotice({ plugin }) {
             <button
                 type="button"
                 className="gv-notice-close"
-                aria-label="Close"
+                aria-label={uiI18n?.labels?.close || 'Close'}
                 onClick={handleClose}
             >
                 <gv-icon aria-hidden="true" src={`${iconBase}icons/close.svg`}></gv-icon>

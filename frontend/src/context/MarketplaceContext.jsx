@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
 import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
 import { handleImagifyActivation } from '../utils/imagifyHandler';
+import { getAjaxAction } from '../utils/common.utils';
 
 const MarketplaceContext = createContext(null);
 
@@ -42,6 +43,7 @@ export const MarketplaceProvider = ({
     assetsBaseUrl
 }) => {
     const [pluginInAction, setPluginInAction] = useState({});
+    const [subscriptionsList, setSubscriptionsList] = useState([]);
     const [subscriptionStatus, setSubscriptionStatus] = useState({});
     const [isCheckingSubscription, setIsCheckingSubscription] = useState({});
     const [plugins, setPlugins] = useState([]);
@@ -55,6 +57,12 @@ export const MarketplaceProvider = ({
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
     const [deleteModalState, setDeleteModalState] = useState({ isOpen: false, plugin: null });
+    const [cancelSubsModalState, setCancelSubsModalState] = useState({ isOpen: false, plugin: null, subscriptionId: null, expiresAt: null, onConfirm: null });
+    const [pendingProcurements, setPendingProcurements] = useState(() => {
+        return typeof window !== "undefined" && window.marketplaceConfig?.pendingProcurements
+            ? window.marketplaceConfig.pendingProcurements
+            : {};
+    });
     const [currentPluginSlug, setCurrentPluginSlug] = useState(() => {
         return typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("plugin") : null;
     });
@@ -270,6 +278,14 @@ export const MarketplaceProvider = ({
         setDeleteModalState({ isOpen: false, plugin: null });
     }, []);
 
+    const openCancelSubsModal = useCallback((plugin, subscriptionId, expiresAt, onConfirm) => {
+        setCancelSubsModalState({ isOpen: true, plugin, subscriptionId, expiresAt, onConfirm });
+    }, []);
+
+    const closeCancelSubsModal = useCallback(() => {
+        setCancelSubsModalState({ isOpen: false, plugin: null, subscriptionId: null, expiresAt: null, onConfirm: null });
+    }, []);
+
     const shouldShowProvision = useCallback((plugin) => {
         if (!plugin || !isOnecomBrand) return false;
         return isSpecialPlugin(plugin.slug) && !plugin.installed && subscriptionStatus[plugin.slug] === true;
@@ -314,12 +330,98 @@ export const MarketplaceProvider = ({
         return true;
     }, [activePlugins, activeThemeAuthor]);
 
+
+    // Fetch the full subscriptions list (used on both Marketplace and Addons pages)
+    const fetchPartnerSubscriptions = useCallback(async () => {
+        try {
+            const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
+            if (!ajaxUrl) {
+                console.error('ajaxUrl is missing');
+                return;
+            }
+
+            const formData = new URLSearchParams({
+                action: getAjaxAction('get_subscriptions_list'),
+                nonce: window.marketplaceConfig?.wpConfig?.nonce,
+            });
+
+            const response = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                setSubscriptionsList([]);
+                return;
+            }
+            console.log('Subscriptions list:', result?.data || []);
+            setSubscriptionsList(result?.data || []);
+        } catch (error) {
+            console.error('Error during fetch subscription list', error);
+            setSubscriptionsList([]);
+        }
+    }, []);
+
+    // Handle "Cancel Subscription" action
+    const handleCancelSubsAction = useCallback(async (action, plugin, subscription_id) => {
+        try {
+            const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
+
+            if (!ajaxUrl) {
+                console.error('ajaxUrl is missing');
+                return;
+            }
+
+            const formData = new URLSearchParams({
+                action: getAjaxAction('cancel_subscription'),
+                nonce: window.marketplaceConfig?.wpConfig?.nonce,
+                plugin_slug: plugin.slug,
+                locale: window.marketplaceConfig?.locale || '',
+                ...(subscription_id ? { subscription_id } : {}),
+            });
+
+            const response = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: formData,
+            });
+
+            const result = await response.json();
+
+            if (!result.success) {
+                console.error('Cancel subscription failed:', result?.data?.message || 'Unknown error');
+                return;
+            }
+
+            // Refresh subscriptions list after successful cancellation
+            const refreshFormData = new URLSearchParams({
+                action: getAjaxAction('get_subscriptions_list'),
+                nonce: window.marketplaceConfig?.wpConfig?.nonce,
+            });
+
+            const refreshResponse = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: refreshFormData,
+            });
+
+            const refreshResult = await refreshResponse.json();
+
+            if (refreshResult.success) {
+                setSubscriptionsList(refreshResult?.data || []);
+            }
+        } catch (error) {
+            console.error('Error during cancel subscription', error);
+        }
+    }, []);
+
     // Handle plugin actions (install, activate, deactivate)
-    const handlePluginAction = useCallback(async (action, plugin, source = '') => {
+    // downloadUrl (4th arg) overrides plugin.download for install; omit to keep existing behaviour
+    const handlePluginAction = useCallback(async (action, plugin, source = '', downloadUrl = '') => {
         // Check if this is Imagify plugin activation (handles 302 redirect case)
         const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
 
-        setPluginInAction(prev => ({ ...prev, [plugin.slug]: true }));
+        setPluginInAction(prev => ({ ...prev, [plugin.slug]: action }));
 
         // Use ref to track if action was successful (to prevent finally block from clearing pluginInAction)
         let actionSuccessful = false;
@@ -354,12 +456,12 @@ export const MarketplaceProvider = ({
         try {
             let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
 
-            // prepare encoded download param (safe if plugin.download is undefined)
-            const downloadParam = `download_url=${encodeURIComponent(plugin.download || '')}`;
+            // prefer explicit downloadUrl arg, fall back to plugin.download, then empty string
+            const downloadParam = `download_url=${encodeURIComponent(downloadUrl || plugin.download || '')}`;
 
             if (useWPHandlers) {
                 // original WP-AJAX URL + download_url appended
-                url = `${wpConfig.ajaxUrl}?action=marketplace_${action}_plugin&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
+                url = `${wpConfig.ajaxUrl}?action=${getAjaxAction(`${action}_plugin`)}&_wpnonce=${wpConfig.nonce}&nonce=${wpConfig.nonce}&slug=${plugin.slug}&${downloadParam}`;
             } else {
                 // append download_url to non-WP URL (adds ? or & correctly)
                 url = url + (url.includes('?') ? '&' : '?') + downloadParam;
@@ -391,8 +493,6 @@ export const MarketplaceProvider = ({
 
                 // Show success notice for install, activate and delete actions
                 if (action === 'install' && result.data.installed) {
-                    setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
-
                     // Track successful install
                     trackButtonClick({
                         buttonName: 'Install',
@@ -403,6 +503,46 @@ export const MarketplaceProvider = ({
                             result: 'success',
                         }
                     });
+
+                    if (source === 'buy_now') {
+                        // Buy Now flow: show notice but no reload — let the state update
+                        // naturally show the Activate button. actionSuccessful stays false
+                        // so the finally block releases the pluginInAction lock.
+                        setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
+                        setSuccessState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+                        return true;
+                    }
+
+                    actionSuccessful = true; // keep pluginInAction locked until reload
+
+                    if (source === 'product_detail') {
+                        // Quick reload for product detail page
+                        sessionStorage.setItem('mp_skip_page_view', 'true');
+                        sessionStorage.setItem('mp_success_notice', JSON.stringify({
+                            visible: true,
+                            type: 'installed',
+                            pluginSlug: plugin.slug,
+                            successType: 'install'
+                        }));
+                        reloadTimeoutRef.current = setTimeout(() => {
+                            window.location.reload();
+                        }, 500);
+                    } else {
+                        // Addons page: show success toast, reload after a short delay
+                        setNoticeState({ visible: true, type: 'installed', pluginSlug: plugin.slug });
+                        setSuccessState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+
+                        reloadTimeoutRef.current = setTimeout(() => {
+                            sessionStorage.setItem('mp_skip_page_view', 'true');
+                            window.location.reload();
+                        }, 3000);
+
+                        // Explicitly clear loading state so loader hides immediately
+                        setLoadingAction('');
+                        setLoadingPlugin('');
+                    }
+
+                    return;
                 } else if (action === 'delete' && !result.data.installed) {
                     setNoticeState({ visible: true, type: 'deleted', pluginSlug: plugin.slug });
                     setSuccessState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
@@ -493,7 +633,7 @@ export const MarketplaceProvider = ({
             } else {
                 // Show error toast for activation and installation errors
                 if (action === 'activate') {
-                    setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track activation error
                     trackButtonClick({
@@ -507,7 +647,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'deactivate') {
-                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track deactivation error
                     trackButtonClick({
@@ -521,7 +661,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'install') {
-                    setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track installation error
                     trackButtonClick({
@@ -535,7 +675,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'delete') {
-                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug });
+                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
 
                     // Track deletion error
                     trackButtonClick({
@@ -549,7 +689,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else {
-                    alert(result.data?.message || "Failed to perform action");
+                    alert(result.data?.message || uiI18n?.notifications?.actionFailed || "Failed to perform action");
                 }
             }
         } catch (err) {
@@ -588,8 +728,11 @@ export const MarketplaceProvider = ({
         assetsBaseUrl,
         pluginInAction,
         setPluginInAction,
+        subscriptionsList,
+        setSubscriptionsList,
         subscriptionStatus,
         isCheckingSubscription,
+        fetchPartnerSubscriptions,
         fetchSubscriptionStatus,
         isOnecomBrand,
         plugins,
@@ -597,9 +740,12 @@ export const MarketplaceProvider = ({
         uiI18n,
         setUiI18n,
         handlePluginAction,
+        handleCancelSubsAction,
         cancelReload,
         loadingAction,
+        setLoadingAction,
         loadingPlugin,
+        setLoadingPlugin,
         noticeState,
         setNoticeState,
         errorState,
@@ -617,13 +763,18 @@ export const MarketplaceProvider = ({
         deleteModalState,
         openDeleteModal,
         closeDeleteModal,
+        cancelSubsModalState,
+        openCancelSubsModal,
+        closeCancelSubsModal,
         shouldShowProvision,
         isSpecialPlugin,
         shouldShowPlugin,
         isWpVersionSupported,
         wpVersion,
         activePlugins,
-        activeThemeAuthor
+        activeThemeAuthor,
+        pendingProcurements,
+        setPendingProcurements
     };
 
     return (

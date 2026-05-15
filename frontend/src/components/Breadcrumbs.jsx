@@ -1,6 +1,8 @@
 import React from "react";
+import { useMarketplace } from "../context/MarketplaceContext";
 
 const Breadcrumbs = ({ iconBase, label, onClose, className = "", disabled = false, children }) => {
+    const { uiI18n } = useMarketplace();
     const handleBack = (e) => {
         e.preventDefault();
         if (disabled) return;
@@ -27,7 +29,7 @@ const Breadcrumbs = ({ iconBase, label, onClose, className = "", disabled = fals
                 onClick={handleBack}
                 className="gv-flex gv-items-center gv-gap-xs"
                 role="button"
-                aria-label="Go back"
+                aria-label={uiI18n?.labels?.goBack || 'Go back'}
                 style={{
                     opacity: disabled ? 0.5 : 1,
                     pointerEvents: disabled ? 'none' : 'auto',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, {useState, useEffect, useRef, useMemo, useCallback} from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getRebatePrice, getFullPrice } from "../utils/priceFormatter";
 import ProductDetail from "./ProductDetail";
@@ -10,6 +10,9 @@ import ErrorState from "./ErrorState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
+import { getLatestSubscription, getAjaxAction } from "../utils/common.utils";
+import { startPolling } from "../utils/pollingHelper";
+import { formatDate } from "../utils/dateFormatter";
 
 export default function Addons() {
     const {
@@ -25,6 +28,10 @@ export default function Addons() {
         uiI18n,
         setUiI18n,
         handlePluginAction,
+        handleCancelSubsAction,
+        subscriptionsList,
+        setSubscriptionsList,
+        fetchPartnerSubscriptions,
         catalogError,
         setCatalogError,
         catalogLoading,
@@ -34,13 +41,30 @@ export default function Addons() {
         isSpecialPlugin,
         shouldShowPlugin,
         isWpVersionSupported,
-        openDeleteModal
+        openDeleteModal,
+        openCancelSubsModal,
+        wpConfig,
+        setErrorState,
+        pendingProcurements,
+        setPendingProcurements,
+        setLoadingAction,
+        setLoadingPlugin,
     } = useMarketplace();
 
     const [selectedPlugin, setSelectedPlugin] = useState(null);
-    const [featuredPlugins, setFeaturedPlugins] = useState([]);
     const [openMenuIndex, setOpenMenuIndex] = useState(null);
     const menuRef = useRef(null);
+
+    // Track which plugin slugs have a cancellation in flight (hides Cancel button).
+    // Pre-populated from DB-persisted pendingCancellations so the state survives page reloads.
+    const [refreshing, setRefreshing] = useState(false);
+
+    const [cancellingSubscriptions, setCancellingSubscriptions] = useState(() => {
+        const persisted = (typeof window !== 'undefined' && window.marketplaceConfig?.pendingCancellations) || {};
+        return Object.fromEntries(Object.keys(persisted).map(slug => [slug, true]));
+    });
+    // Store stop-functions for each in-flight cancellation poll, keyed by slug
+    const cancelPollingRefs = useRef({});
 
     // Use ref to track if plugins have already been fetched
     const hasFetchedPlugins = useRef(false);
@@ -67,7 +91,59 @@ export default function Addons() {
         const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
             ? window.marketplaceConfig.wpConfig.adminUrl
             : '/wp-admin/';
-        return `${adminUrl}admin.php?page=onecom-marketplace&plugin=${slug}`;
+        const menuSlug = typeof window !== "undefined" && window.marketplaceConfig?.menuSlug
+            ? window.marketplaceConfig.menuSlug
+            : 'onecom-marketplace';
+        return `${adminUrl}admin.php?page=${menuSlug}&plugin=${slug}`;
+    };
+
+    // Clear subscription list transient and refetch fresh data from API
+    const handleRefreshSubscriptions = async () => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl) return;
+
+        setRefreshing(true);
+        setLoadingAction(uiI18n?.notifications?.refreshing || 'Refreshing subscriptions...');
+        setLoadingPlugin('');
+        try {
+            // Clear the server-side transient so the next fetch hits the API
+            await fetch(ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: getAjaxAction('clear_subscription_list'),
+                    nonce: wpConfig.nonce,
+                }),
+            });
+
+            // Re-sync pending procurements from DB so entries added after the last page
+            // load (e.g. a just-purchased plugin whose save_pending_procurement AJAX
+            // completed after navigation) are reflected in the UI immediately.
+            const pendingResponse = await fetch(ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: getAjaxAction('get_pending_procurements'),
+                    nonce: wpConfig.nonce,
+                }),
+            });
+            const pendingResult = await pendingResponse.json();
+            if (pendingResult.success) {
+                setPendingProcurements(pendingResult.data || {});
+            }
+
+            // Fetch fresh subscriptions — backend will call the API and store new results
+            await fetchPartnerSubscriptions();
+
+            // Re-fetch the plugin catalog so installed/activated flags are current.
+            // This must come last so subscriptions are already in state when the
+            // catalog re-render happens.
+            fetchPluginCatalog();
+        } catch (err) {
+            console.error('[Marketplace] Refresh subscriptions error', err);
+        } finally {
+            setRefreshing(false);
+            setLoadingAction('');
+            setLoadingPlugin('');
+        }
     };
 
     // Handle "Manage" action
@@ -90,11 +166,219 @@ export default function Addons() {
         navigateToPluginUrl(redirectUrl);
     };
 
-    // Fetch plugins from API
-    useEffect(() => {
-        if (hasFetchedPlugins.current) return;
-        hasFetchedPlugins.current = true;
+    /**
+     * Start polling track-status for a cancellation.
+     * Used both when the user clicks Cancel and on mount to resume persisted cancellations.
+     */
+    const startCancellationPolling = (slug, subscriptionId) => {
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl || !subscriptionId) return;
 
+        if (cancelPollingRefs.current[slug]) {
+            cancelPollingRefs.current[slug]();
+        }
+
+        const stopPolling = () => {
+            fetch(ajaxUrl, {
+                method: 'POST',
+                body: new URLSearchParams({
+                    action: getAjaxAction('clear_pending_cancellation'),
+                    nonce: wpConfig.nonce,
+                    slug,
+                }),
+            });
+            setCancellingSubscriptions(prev => {
+                const next = { ...prev };
+                delete next[slug];
+                return next;
+            });
+        };
+
+        cancelPollingRefs.current[slug] = startPolling({
+            ajaxUrl,
+            nonce: wpConfig.nonce,
+            action: getAjaxAction('track_status'),
+            params: { subscriptionId, resourceType: 'cancellation', locale: window.marketplaceConfig?.locale || '' },
+            interval: 10000,
+            onResult: (pollResult) => {
+                const data = pollResult?.data?.data;
+                const status = data?.status;
+
+                if (status === 'canceled') {
+                    stopPolling();
+                    fetchPartnerSubscriptions();
+                    return true;
+                }
+
+                if (status === 'pending' || status === 'pending_cancellation') {
+                    return false; // keep polling
+                }
+
+                // Unknown / error status
+                stopPolling();
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug, message: pollResult?.error || pollResult?.data?.message || pollResult?.data?.error || null });
+                return true;
+            },
+            onError: (error) => {
+                console.error('[Marketplace] Cancel polling error', error);
+                stopPolling();
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: slug, message: error.message || null });
+            },
+        });
+    };
+
+    /**
+     * Handle "Cancel subscription" click:
+     * 1. Call marketplace_unsubscribe (DELETE via PHP proxy).
+     * 2. Check response status:
+     *    - 'canceled' immediately → refresh subscription list.
+     *    - 'pending_cancellation' → persist to DB, mark as cancelling, start polling.
+     */
+    const handleCancelClick = (plugin, subscriptionId) => {
+        // Tracks "Cancel" subscription button click from the addons page
+        trackButtonClick({
+            buttonName: 'Cancel',
+            buttonAction: 'product_cancel',
+            plugin: plugin,
+        });
+
+        const ajaxUrl = wpConfig?.ajaxUrl;
+        if (!ajaxUrl || !subscriptionId) return;
+
+        fetch(ajaxUrl, {
+            method: 'POST',
+            body: new URLSearchParams({
+                action: getAjaxAction('unsubscribe'),
+                nonce: wpConfig.nonce,
+                subscriptionId,
+                locale: window.marketplaceConfig?.locale || '',
+            }),
+        })
+            .then(r => r.json())
+            .then(result => {
+                if (!result.success) {
+                    setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug, message: result?.error || result?.error || result?.data?.message || result?.data?.error || null });
+                    return;
+                }
+
+                const responseData = result?.data?.data;
+                const status = responseData?.status;
+
+                if (status === 'canceled') {
+                    // Immediately canceled — refresh list, no polling needed
+                    fetchPartnerSubscriptions();
+                    return;
+                }
+
+                if (status === 'pending_cancellation') {
+                    // Persist to DB and start polling
+                    setCancellingSubscriptions(prev => ({ ...prev, [plugin.slug]: true }));
+
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: new URLSearchParams({
+                            action: getAjaxAction('save_pending_cancellation'),
+                            nonce: wpConfig.nonce,
+                            slug: plugin.slug,
+                            subscriptionId,
+                        }),
+                    });
+
+                    startCancellationPolling(plugin.slug, subscriptionId);
+                    return;
+                }
+
+                // Any other status — show error and exit
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
+            })
+            .catch(err => {
+                console.error('[Marketplace] Unsubscribe error', err);
+                setErrorState({ visible: true, type: 'cancel_subscription', pluginSlug: plugin.slug, message: err.message || null });
+            });
+    };
+
+    // On mount: resume polling for any DB-persisted pending cancellations,
+    // and stop all polls on unmount.
+    useEffect(() => {
+        const persisted = (typeof window !== 'undefined' && window.marketplaceConfig?.pendingCancellations) || {};
+        Object.entries(persisted).forEach(([slug, data]) => {
+            if (data?.subscriptionId) {
+                startCancellationPolling(slug, data.subscriptionId);
+            }
+        });
+
+        const refs = cancelPollingRefs.current;
+        return () => { Object.values(refs).forEach(stop => stop()); };
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    //Get a subscription list
+  useEffect(() => {
+    fetchPartnerSubscriptions();
+  }, [fetchPartnerSubscriptions]);
+
+  // Synchronously merge plugins with subscriptions — no extra render cycle.
+  // Works even when subscriptionsList is empty (plugins without subscriptions
+  // still appear; they just get subscriptions:[] and hasSubscription:false).
+  const mergedPlugins = useMemo(() => {
+    if (!plugins?.length) return [];
+
+    // Group subscriptions by productId (safe when subscriptionsList is empty)
+    const subscriptionMap = (subscriptionsList || []).reduce((acc, sub) => {
+      if (!acc[sub.productId]) {
+        acc[sub.productId] = [];
+      }
+      acc[sub.productId].push(sub);
+      return acc;
+    }, {});
+
+    // Merge subscription data into every plugin
+    return plugins.map((plugin) => ({
+      ...plugin,
+      subscriptions: subscriptionMap[plugin.productId] || [],
+      hasSubscription: !!subscriptionMap[plugin.productId]?.length,
+    }));
+  }, [plugins, subscriptionsList]);
+
+  // Derive featured (recommended) plugins from mergedPlugins. Only activation state
+  // hides a plugin here — subscription, installation, and pending-procurement state
+  // are intentionally ignored so the carousel keeps recommending things the user
+  // has bought but not yet turned on.
+  const featuredPlugins = useMemo(() => {
+    if (!mergedPlugins?.length) return [];
+
+    const rankMathActivated    = mergedPlugins.find(p => p.slug === "seo-by-rank-math")?.activated     === true;
+    const rankMathProActivated = mergedPlugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
+
+    return mergedPlugins
+      .filter(plugin => {
+        if (!shouldShowPlugin(plugin)) return false;
+        if (plugin.featured !== true && plugin.featured !== "true") return false;
+
+        // Skip already-activated plugins
+        if (plugin.activated === true) return false;
+
+        // Rank Math visibility rules (dependency semantics, not subscription state)
+        if (plugin.slug === "seo-by-rank-math") {
+          return !rankMathActivated && !rankMathProActivated;
+        }
+        if (plugin.slug === "seo-by-rank-math-pro") {
+          return rankMathActivated;
+        }
+
+        return true;
+      })
+      .sort((a, b) => {
+        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
+        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        return orderA - orderB;
+      })
+      .slice(0, 3);
+  }, [mergedPlugins, shouldShowPlugin]);
+
+    // Fetch plugins catalog from API and update all derived state.
+    // Extracted into a useCallback so it can be called both on mount and from the
+    // manual refresh button without duplicating the logic.
+    const fetchPluginCatalog = useCallback(() => {
         setCatalogLoading(true);
         setCatalogError(null);
 
@@ -114,46 +398,6 @@ export default function Addons() {
                 if (data.success && data.data && data.data.catalog) {
                     const allPlugins = data.data.catalog;
                     setPlugins(allPlugins);
-
-                    // Check activation status of Rank Math plugins
-                    const rankMathActivated = allPlugins.find(p => p.slug === "seo-by-rank-math")?.activated === true;
-                    const rankMathProActivated = allPlugins.find(p => p.slug === "seo-by-rank-math-pro")?.activated === true;
-
-                    // Filter featured plugins and get top 3
-                    // Hide if it is already active on the site
-                    const featured = allPlugins
-                        .filter(plugin => {
-                            // Apply visibility rules
-                            if (!shouldShowPlugin(plugin)) {
-                                return false;
-                            }
-
-                            // Skip activated plugins
-                            if (plugin.activated === true || (plugin.featured !== true && plugin.featured !== "true")) {
-                                return false;
-                            }
-
-                            // Handle Rank Math plugin visibility
-                            if (plugin.slug === "seo-by-rank-math") {
-                                // Show seo-by-rank-math only if BOTH plugins are NOT activated
-                                return !rankMathActivated && !rankMathProActivated;
-                            }
-
-                            if (plugin.slug === "seo-by-rank-math-pro") {
-                                // Show seo-by-rank-math-pro only if seo-by-rank-math IS activated
-                                return rankMathActivated;
-                            }
-
-                            return true;
-                        })
-                        .sort((a, b) => {
-                            const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
-                            const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
-                            return orderA - orderB;
-                        })
-                        .slice(0, 3);
-
-                    setFeaturedPlugins(featured);
 
                     // Set UI i18n if available
                     const uiI18nData = data.data.uiI18n || data.data.ui_i18n;
@@ -188,12 +432,19 @@ export default function Addons() {
                     itemName: 'Addons Page',
                     isContentRendered: false,
                 });
-                setCatalogError(err.message || "Failed to load plugins");
+                setCatalogError(err.message || uiI18n?.notifications?.catalogLoadFailed || "Failed to load plugins");
             })
             .finally(() => {
                 setCatalogLoading(false);
             });
-    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, shouldShowPlugin]);
+    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, isOnecomBrand, isSpecialPlugin, fetchSubscriptionStatus]);
+
+    // Fetch plugins on mount — guarded so it only runs once automatically.
+    useEffect(() => {
+        if (hasFetchedPlugins.current) return;
+        hasFetchedPlugins.current = true;
+        fetchPluginCatalog();
+    }, [fetchPluginCatalog]);
 
     // After plugins load, select plugin from URL if present
     useEffect(() => {
@@ -333,9 +584,208 @@ export default function Addons() {
     );
   }
 
-
     // Filter plugins for the table: installed OR special plugins with subscription
-    const installedPlugins = plugins.filter(p => p.installed || shouldShowProvision(p));
+    // Exclude plugins that only have canceled subscriptions and are not installed
+    // Show plugin if it has a subscription that is either active OR canceled but not yet expired
+    const hasValidSubscription = (p) => p.hasSubscription && p.subscriptions.some(
+        s => s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date())
+    );
+    const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
+    const rankMathSlugs = ['seo-by-rank-math', 'seo-by-rank-math-pro'];
+    const installedPlugins = mergedPlugins.filter(p => {
+        // Hide Rank Math plugins from addons list when brand is rankmath
+        if (brand === 'rankmath' && rankMathSlugs.includes(p.slug)) return false;
+        return p.installed || shouldShowProvision(p) || hasValidSubscription(p) || !!pendingProcurements?.[p.slug];
+    });
+
+
+
+
+  /**
+   * Get plugin status based on subscription status.
+   * @param plugin
+   * @param latestSubscription
+   * @param uiI18n
+   * @param isProvisionable
+   * @returns {boolean|number|string|ServiceWorker|string|*|SyncHook<Error>}
+   */
+  const getPluginStatus = (plugin, latestSubscription, uiI18n, isProvisionable) => {
+    const labels = uiI18n?.labels || {};
+
+    // 0. Pending procurement (Buy Now triggered, waiting for subscription to activate)
+    if (pendingProcurements?.[plugin.slug]) {
+      return labels?.orderBeingProcessed || 'Order being processed…';
+    }
+
+    // 1. If subscription exists
+    if (latestSubscription) {
+      const status = latestSubscription.status;
+
+      // Pending → highest priority
+      if (status === 'pending') {
+        return labels?.subscriptionInProgress || 'Subscription in progress';
+      }
+
+      // Failed → show failure
+      if (status === 'failed') {
+        return labels?.failed || 'Failed';
+      }
+
+      // Active subscription
+      if (status === 'active') {
+        if (!plugin.installed) {
+          return labels?.notInstalled || 'Not Installed';
+        }
+
+        if (plugin.activated) {
+          return labels?.active || 'Active';
+        }
+
+        return labels?.notActive || 'Not Active';
+      }
+
+    }
+
+    // 2. Fallback (no subscription)
+    if (plugin.activated) {
+      return labels?.active || 'Active';
+    }
+
+    if (isProvisionable) {
+      return labels?.notInstalled || 'Not Installed';
+    }
+
+    return labels?.notActive || 'Not Active';
+  };
+
+  const renderPluginAction = (
+    plugin,
+    latestSubscription,
+    isProvisionable,
+    uiI18n,
+    handleProvisionClick,
+    handlePluginAction
+  ) => {
+    const labels = uiI18n || {};
+
+    if (latestSubscription) {
+      const status = latestSubscription.status;
+
+      // 1. Pending → no action
+      if (status === 'pending') {
+        return null;
+      }
+
+      // 2. Failed → no action (updated)
+      if (status === 'failed') {
+        return null;
+      }
+
+      // 3. Active subscription
+      if (status === 'active') {
+        const download_url = latestSubscription?.accessDetails?.downloadUrl;
+        if (!plugin.installed) {
+          return (
+            <a
+              href="#"
+              className="gv-action"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePluginAction('install', plugin, 'addons', download_url);
+              }}
+            >
+              {labels?.installButton || 'Install'}
+            </a>
+          );
+        }
+
+        if (!plugin.activated) {
+          return (
+            <a
+              href="#"
+              className="gv-action"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePluginAction('activate', plugin, 'addons');
+              }}
+            >
+              {labels?.activateButton || 'Activate'}
+            </a>
+          );
+        }
+
+        return null;
+      }
+
+      // 4. Cancelled but still within the valid period
+      if (status === 'canceled') {
+        const isStillValid = latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
+        if (isStillValid) {
+          if (!plugin.installed) {
+            return (
+              <a
+                href="#"
+                className="gv-action"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePluginAction('install', plugin, 'addons', latestSubscription?.accessDetails?.downloadUrl);
+                }}
+              >
+                {labels?.installButton || 'Install'}
+              </a>
+            );
+          }
+
+          if (!plugin.activated) {
+            return (
+              <a
+                href="#"
+                className="gv-action"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePluginAction('activate', plugin, 'addons');
+                }}
+              >
+                {labels?.activateButton || 'Activate'}
+              </a>
+            );
+          }
+        }
+
+        return null;
+      }
+    }
+
+    // 4. Fallback (no subscription)
+    if (isProvisionable) {
+      return (
+        <a
+          href="#"
+          className="gv-action"
+          onClick={handleProvisionClick}
+        >
+          {labels?.installAndActivate || 'Install and activate'}
+        </a>
+      );
+    }
+
+    if (!plugin.activated) {
+      return (
+        <a
+          href="#"
+          className="gv-action"
+          onClick={(e) => {
+            e.preventDefault();
+            handlePluginAction('activate', plugin, 'addons');
+          }}
+        >
+          {labels?.activateButton || 'Activate'}
+        </a>
+      );
+    }
+
+    return null;
+  };
 
     return (
         <div className="marketplace-container gv-flex gv-flex-col">
@@ -351,19 +801,24 @@ export default function Addons() {
                     className="gv-text-bold gv-text-lg gv-mb-xs">{uiI18n?.headings?.recommendedProducts}</p>
                   <p className="gv-text-sm gv-mb-md">{uiI18n?.text?.recommendedText}</p>
                 </div>
-                <button
-                  className="gv-button gv-button-primary gv-mode-condensed gv-flex-shrink-0"
-                  onClick={() => {
-                    // Navigate to the main marketplace page
-                    const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
-                      ? window.marketplaceConfig.wpConfig.adminUrl
-                      : '/wp-admin/';
-                    window.location.href = `${adminUrl}admin.php?page=onecom-marketplace`;
-                  }}
-                >
-                  {uiI18n.seeAllProducts}
-                  <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`} alt="See all products"></gv-icon>
-                </button>
+                <div className="gv-flex gv-gap-sm gv-flex-shrink-0">
+                  <button
+                    className="gv-button gv-button-primary gv-mode-condensed"
+                    onClick={() => {
+                      // Navigate to the main marketplace page
+                      const adminUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl
+                        ? window.marketplaceConfig.wpConfig.adminUrl
+                        : '/wp-admin/';
+                      const menuSlug = typeof window !== "undefined" && window.marketplaceConfig?.menuSlug
+                        ? window.marketplaceConfig.menuSlug
+                        : 'onecom-marketplace';
+                      window.location.href = `${adminUrl}admin.php?page=${menuSlug}`;
+                    }}
+                  >
+                    {uiI18n.seeAllProducts}
+                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`} alt="See all products"></gv-icon>
+                  </button>
+                </div>
 
               </div>
                 <div
@@ -433,15 +888,27 @@ export default function Addons() {
               </section>
           )}
 
+          {/* Entry point for addons list */}
           {installedPlugins.length > 0 && (
             <section className="addons-section gv-mt-fluid">
+              <div className="gv-flex gv-justify-end gv-mt-0">
+                <button
+                  className="gv-button gv-button-secondary gv-mode-condensed"
+                  disabled={refreshing}
+                  onClick={handleRefreshSubscriptions}
+                >
+                  <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
+                  <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
+                </button>
+              </div>
               <div className="gv-data-table gv-mt-lg gv-addons-table">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>
                   <tr>
                     <th scope="col"></th>
                     <th scope="col">{uiI18n?.labels?.name}</th>
-                    <th scope="col">{uiI18n?.labels?.type}</th>
+                    <th scope="col">{uiI18n?.labels?.type || 'Type'}</th>
+                    <th scope="col">{uiI18n?.labels?.subscriptions || 'Subscription'}</th>
                     <th scope="col">{uiI18n?.labels?.status}</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
@@ -466,8 +933,14 @@ export default function Addons() {
                       document.dispatchEvent(event);
                     };
 
+                    //Get subscription details
+                    const latestSubscription = (plugin.hasSubscription) ? getLatestSubscription(plugin.subscriptions) : null;
+                    const latestSubsDate = (latestSubscription !== null) ? formatDate(latestSubscription.expiresAt) : '-';
+                    const renewalDate = (latestSubscription !== null && latestSubscription.renewsAt != null) ? `Renews at: ${formatDate(latestSubscription.renewsAt)}` : null
+                    const isCancelledButValid = latestSubscription?.status === 'canceled' && latestSubscription?.expiresAt && new Date(latestSubscription.expiresAt) > new Date();
                     return (
                       <tr id={plugin.slug} key={plugin.slug}>
+                        {/* Image */}
                         <td style={{width: "80px"}}>
                           <img
                             src={plugin.iconUrl || `${iconBase}add_box.svg`}
@@ -476,43 +949,83 @@ export default function Addons() {
                             style={{maxWidth: "auto"}}
                           />
                         </td>
-                        <td>{plugin.name}</td>
-                        <td>{plugin.licenseType === 'free' ? uiI18n?.labels?.freePlugin : uiI18n?.labels?.premiumPlugin}</td>
+                        {/* Image End */}
+
+                        {/* Plugin name */}
                         <td>
-                          <div className="gv-text-indicator">
-                            <span
-                              className={plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
-                            <span> {plugin.activated ? (uiI18n?.labels?.active || 'Active') : (isProvisionable ? (uiI18n?.labels?.notInstalled || 'Not Installed') : (uiI18n?.labels?.notActive || 'Not Active'))}</span>
-                          </div>
+                          <p className='gv-text-bold'>
+                            <a href={getMarketplaceUrl(plugin.slug)} className='gv-text-on-default'>{plugin.name}</a>
+                          </p>
                         </td>
+                        {/* Plugin name end */}
+
+                        {/* Plugin type */}
                         <td>
-                          {isProvisionable ? (
-                            <a
-                              href="#"
-                              className="gv-action"
-                              onClick={handleProvisionClick}
-                            >
-                              {uiI18n?.installAndActivate || 'Install and activate'}
-                            </a>
-                          ) : !plugin.activated && (
-                            <a
-                              href="#"
-                              className="gv-action"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                handlePluginAction('activate', plugin, 'addons');
-                              }}
-                            >
-                              {uiI18n?.activateButton || 'Activate'}
-                            </a>
+                          {plugin.licenseType === 'free' ? (
+                            <div className="gv-badge gv-badge-generic">{uiI18n?.labels?.freeLabel || 'Free'}</div>
+                          ) : (
+                            <div className="gv-badge gv-badge-info">{uiI18n?.labels?.premiumLabel || 'Premium'}</div>
                           )}
                         </td>
+                        {/* Plugin type end */}
+
+                        {/* Plugin subscription */}
+                        <td>{!pendingProcurements?.[plugin.slug] && latestSubscription?.status !== 'pending' && latestSubsDate && latestSubsDate !== '-' ? (
+                          <>
+                            {latestSubscription?.status === 'expired' ? (
+                              <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
+                            ) : latestSubscription?.status === 'canceled' ? (
+                              !isCancelledButValid ? (
+                                <div className="gv-underline"><p style={{ color: 'red' }}>{uiI18n?.labels?.subscriptionExpired || 'Subscription expired'}</p></div>
+                              ) : (
+                                <div className="gv-underline"><p className="gv-text-on-alternative">{uiI18n?.labels?.subscriptionCanceled || 'Subscription cancelled'}</p></div>
+                              )
+                            ) : latestSubscription?.status === 'active' ? (
+                              <div className="gv-underline"><p className="gv-text-secondary">{uiI18n?.labels?.subscriptionActive || 'Subscription active'}</p></div>
+                            ) : null}
+                            {latestSubscription?.status === 'expired' ? (
+                              <p>{uiI18n?.labels?.expiredOn || 'Expired on'}: {latestSubsDate}</p>
+                            ) : latestSubscription?.status === 'canceled' ? (
+                              <p>{uiI18n?.labels?.expiresOn || 'Expires'}: {latestSubsDate}</p>
+                            ) : latestSubscription?.status === 'active' ? (
+                              <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
+                            ) : null}
+                          </>
+                        ) : (
+                          <p>-</p>
+                        )}</td>
+                        {/* Plugin subscription end */}
+
+                        {/* Plugin status */}
                         <td>
-                          {(plugin.activated || (plugin.installed && !isProvisionable)) && (
+                          {cancellingSubscriptions[plugin.slug] ? (
+                            <div className="gv-text-indicator">
+                              <span className="gv-indicator gv-state-attention"></span>
+                              <span> {uiI18n?.labels?.cancellationInProgress || 'Cancellation in progress..'}</span>
+                            </div>
+                          ) : (
+                            <div className="gv-text-indicator">
+                              <span
+                                className={pendingProcurements?.[plugin.slug] || plugin.activated ? "gv-indicator gv-state-positive" : "gv-indicator gv-state-informative"}></span>
+                              <span> {getPluginStatus(plugin, latestSubscription, uiI18n, isProvisionable)}</span>
+                            </div>
+                          )}
+                        </td>
+                        {/* Plugin status end */}
+
+                        {/* Plugin actions */}
+                        <td>
+                          {!pendingProcurements?.[plugin.slug] && renderPluginAction(plugin, latestSubscription, isProvisionable, uiI18n, handleProvisionClick, handlePluginAction)}
+                        </td>
+                        {/* Plugin actions end */}
+
+                        {/* Menu actions */}
+                        <td>
+                          {(plugin.activated || (plugin.installed && !isProvisionable) || (latestSubscription?.status === 'active')) && (
                             <div className="gv-pos-relative" ref={openMenuIndex === index ? menuRef : null}>
                               <button
                                 type="button"
-                                aria-label="Toggle menu"
+                                aria-label={uiI18n?.labels?.toggleMenu || 'Toggle menu'}
                                 className="gv-reset-button"
                                 onClick={() => setOpenMenuIndex(openMenuIndex === index ? null : index)}
                               >
@@ -525,7 +1038,7 @@ export default function Addons() {
                                   <button
                                     type="button"
                                     className="gv-btn-close"
-                                    aria-label="Close"
+                                    aria-label={uiI18n?.labels?.close || 'Close'}
                                     onClick={() => setOpenMenuIndex(null)}
                                   >
                                     <gv-icon aria-hidden="true" src={`${iconBase}close.svg`}></gv-icon>
@@ -583,12 +1096,35 @@ export default function Addons() {
                                         </a>
                                       )}
                                     </li>
+
+
+                                    <li className="gv-mb-0">
+                                      {latestSubscription?.status === 'active' && !cancellingSubscriptions[plugin.slug] && (
+                                        <button
+                                          className="gv-menu-item"
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            setOpenMenuIndex(null);
+                                            openCancelSubsModal(
+                                              plugin,
+                                              latestSubscription.subscriptionId,
+                                              latestSubscription.expiresAt,
+                                              () => handleCancelClick(plugin, latestSubscription.subscriptionId)
+                                            );
+                                          }}
+                                        >
+                                          <gv-icon aria-hidden="true" src={`${iconBase}free_cancellation.svg`}></gv-icon>
+                                          <span>{uiI18n?.cancel || 'Cancel'}</span>
+                                        </button>
+                                      )}
+                                    </li>
                                   </ul>
                                 </div>
                               </div>
                             </div>
                           )}
                         </td>
+                        {/* Menu actions end */}
                       </tr>
                     );
                   })}

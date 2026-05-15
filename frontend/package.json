@@ -17,15 +17,23 @@
   "scripts": {
     "start": "npm run minify-css && node copy-build.js --watch & wp-scripts start",
     "build": "npm run minify-css && webpack --config webpack.wp.js && node copy-build.js",
+    "build:dev": "npm run minify-css && cross-env NODE_ENV=development webpack --config webpack.wp.js && node copy-build.js",
+    "watch:dev": "npm run minify-css && cross-env NODE_ENV=development webpack --config webpack.wp.js --watch & node copy-build.js --watch",
     "build:standalone": "vite build",
     "copy": "node copy-build.js",
-    "minify-css": "cleancss -o ../assets/min-css/marketplace.min.css ../css/marketplace.css"
+    "minify-css": "cleancss -o ../assets/min-css/marketplace.min.css ../css/marketplace.css",
+    "test": "wp-scripts test-unit-js",
+    "test:watch": "wp-scripts test-unit-js --watch",
+    "test:coverage": "wp-scripts test-unit-js --coverage"
   },
   "peerDependencies": {
     "react": ">=18 || >=19",
     "react-dom": ">=18 || >=19"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.0.0",
     "@wordpress/scripts": "^26.0.0",
     "clean-css-cli": "^5.6.3",
@@ -44,7 +52,7 @@
   "author": "One.com",
   "license": "GPL-2.0-or-later",
   "dependencies": {
-    "@group.one/gravity": "^5.22.1",
+    "@group.one/gravity": "^5.36.1",
     "mixpanel-browser": "^2.72.0",
     "react-i18next": "^15.7.3"
   }

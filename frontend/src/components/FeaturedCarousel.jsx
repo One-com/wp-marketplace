@@ -105,6 +105,10 @@ export default function FeaturedCarousel({ loading = false }) {
     const assetBase = assetsBaseUrl || (typeof window.marketplaceConfig !== "undefined" && window.marketplaceConfig?.assetsBaseUrl) || "";
     const iconBase = assetBase ? `${assetBase}assets/icons/` : "";
 
+    const adminUrl = (typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl) || '/wp-admin/';
+    const addonsMenuSlug = (typeof window !== "undefined" && window.marketplaceConfig?.addonsMenuSlug) || 'onecom-marketplace-products';
+    const myProductsLabel = uiI18n?.labels?.myProduct || 'My Products';
+
     const totalSlides = featuredPlugins.length;
     const maxIndex = Math.max(0, totalSlides - slidesPerView);
 
@@ -188,10 +192,10 @@ export default function FeaturedCarousel({ loading = false }) {
         );
     }
 
-    // If no featured plugins, don't render anything
-    if (!featuredPlugins || featuredPlugins.length === 0) {
-        return null;
-    }
+    // Even when there are no featured plugins to recommend, we still render the
+    // header so the "My Products" CTA stays visible — the carousel body and
+    // navigation below are gated separately.
+    const hasFeaturedPlugins = featuredPlugins && featuredPlugins.length > 0;
 
     const goToSlide = (index) => {
         setCurrentIndex(Math.min(index, maxIndex));
@@ -211,10 +215,20 @@ export default function FeaturedCarousel({ loading = false }) {
 
     return (
         <section className="gv-featured-carousel gv-w-full">
-            <div className="gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0">
-                <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
+            <div className={`gv-carousel-header gv-mb-lg gv-tab-mt-md gv-max-mob-mt-0 gv-flex gv-items-center ${hasFeaturedPlugins ? 'gv-justify-between' : 'gv-justify-end'}`}>
+                {hasFeaturedPlugins && (
+                    <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
+                )}
+                <a
+                    className="gv-button gv-button-secondary gv-mode-condensed"
+                    href={`${adminUrl}admin.php?page=${addonsMenuSlug}`}
+                >
+                    {myProductsLabel}
+                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right_dark.svg`}></gv-icon>
+                </a>
             </div>
 
+            {hasFeaturedPlugins && (<>
             <div className="gv-carousel-container" style={{ position: 'relative', overflow: 'hidden' }}>
                 <div
                     className="gv-carousel-track"
@@ -334,7 +348,7 @@ export default function FeaturedCarousel({ loading = false }) {
                             cursor: currentIndex === 0 ? 'not-allowed' : 'pointer',
                             opacity: currentIndex === 0 ? 0.5 : 1
                         }}
-                        aria-label="Previous slide"
+                        aria-label={uiI18n?.labels?.previousSlide || 'Previous slide'}
                     >
                         <img src={`${iconBase}chevron_left.svg`} alt="Previous" style={{ width: '24px', height: '24px' }} />
                     </button>
@@ -371,12 +385,13 @@ export default function FeaturedCarousel({ loading = false }) {
                             cursor: currentIndex >= maxIndex ? 'not-allowed' : 'pointer',
                             opacity: currentIndex >= maxIndex ? 0.5 : 1
                         }}
-                        aria-label="Next slide"
+                        aria-label={uiI18n?.labels?.nextSlide || 'Next slide'}
                     >
                         <img src={`${iconBase}chevron_right.svg`} alt="Next" style={{ width: '24px', height: '24px' }} />
                     </button>
                 </div>
             )}
+            </>)}
         </section>
     );
 }

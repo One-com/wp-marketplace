@@ -19,6 +19,7 @@ export default function Marketplace() {
         assetsBaseUrl,
         pluginInAction,
         setPluginInAction,
+        fetchPartnerSubscriptions,
         fetchSubscriptionStatus,
         isOnecomBrand,
         plugins,
@@ -132,6 +133,9 @@ export default function Marketplace() {
                 setPlugins(normalizedPlugins);
                 setUiI18n(apiUiI18n);
 
+                // Fetch full subscriptions list so subscription data is available on the Marketplace page
+                fetchPartnerSubscriptions();
+
                 // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
                 if (isOnecomBrand) {
                     const specialPlugins = normalizedPlugins.filter(p => isSpecialPlugin(p.slug));
@@ -155,7 +159,7 @@ export default function Marketplace() {
         }
 
         fetchPlugins();
-    }, [apiBaseUrl, isOnecomBrand, fetchSubscriptionStatus, setPlugins]);
+    }, [apiBaseUrl, isOnecomBrand, fetchPartnerSubscriptions, fetchSubscriptionStatus, setPlugins]);
 
     // Use useMemo to filter plugins based on rules and activation status
     const { visiblePlugins, visibleConditionalPlugins } = React.useMemo(() => {
@@ -239,6 +243,19 @@ export default function Marketplace() {
             hasTrackedMarketplaceVisit.current = true;
         }
     }, [catalogLoading, catalogError, plugins.length, currentPluginSlug, visibleConditionalPlugins]);
+
+    // Auto-reload at most once per browser tab if the catalog fetch errors out —
+    // works around transient API issues without trapping the user on the error
+    // screen. The sessionStorage flag is set on the first attempt and never
+    // cleared during the tab's lifetime; if the reload doesn't recover, the
+    // user stays on the error screen instead of looping forever.
+    useEffect(() => {
+        if (!catalogError) return;
+        if (sessionStorage.getItem('mp_catalog_error_reloaded')) return;
+        sessionStorage.setItem('mp_catalog_error_reloaded', '1');
+        const timer = setTimeout(() => window.location.reload(), 2000);
+        return () => clearTimeout(timer);
+    }, [catalogError]);
 
     // Track plugin detail page visit when selectedPlugin changes
     useEffect(() => {

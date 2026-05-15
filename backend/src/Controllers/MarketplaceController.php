@@ -34,6 +34,7 @@ class MarketplaceController {
 			'css_handle'       => 'marketplace-frontend-style',
 			'assets_path'      => '', //  Optional: explicit path to package root containing frontend/ directory
 			'payload'          => [], //  Optional: key-value array passed as headers for API authentication
+			'placed_menu_after' => '', // Optional: submenu slug after which marketplace and Your products menus should appear
 		] );
 
 		// Defer model and asset initialization until needed (optimization for multi-plugin installs)
@@ -130,6 +131,17 @@ class MarketplaceController {
 	}
 
 	/**
+	 * Get the brand-specific AJAX action prefix to avoid conflicts when multiple
+	 * plugins embed the marketplace module simultaneously.
+	 *
+	 * @return string e.g. 'onecom_marketplace' or 'rankmath_marketplace'
+	 */
+	private function get_ajax_prefix(): string {
+		$brand = $this->config['brand'] ?? '';
+		return $brand ? "{$brand}_marketplace" : 'marketplace';
+	}
+
+	/**
 	 * Convert filesystem path to URL
 	 *
 	 * @param string $path Absolute filesystem path
@@ -165,10 +177,31 @@ class MarketplaceController {
 			add_action( 'admin_menu', [ $this, 'register_addons_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_addons_menu' ] );
-			add_action( 'wp_ajax_marketplace_install_plugin', [ $this, 'ajax_install_plugin' ] );
-			add_action( 'wp_ajax_marketplace_activate_plugin', [ $this, 'ajax_activate_plugin' ] );
-			add_action( 'wp_ajax_marketplace_deactivate_plugin', [ $this, 'ajax_deactivate_plugin' ] );
-			add_action( 'wp_ajax_marketplace_delete_plugin', [ $this, 'ajax_delete_plugin' ] );
+
+			// If placed_menu_after is configured, reorder submenus after all menus are registered.
+			if ( ! empty( $this->config['placed_menu_after'] ) ) {
+				add_action( 'admin_menu', [ $this, 'reorder_submenus' ], 999 );
+				add_action( 'network_admin_menu', [ $this, 'reorder_submenus' ], 999 );
+			}
+			$prefix = $this->get_ajax_prefix();
+			add_action( "wp_ajax_{$prefix}_install_plugin", [ $this, 'ajax_install_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_activate_plugin", [ $this, 'ajax_activate_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_deactivate_plugin", [ $this, 'ajax_deactivate_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_delete_plugin", [ $this, 'ajax_delete_plugin' ] );
+			add_action( "wp_ajax_{$prefix}_save_pending_procurement", [ $this, 'ajax_save_pending_procurement' ] );
+			add_action( "wp_ajax_{$prefix}_clear_pending_procurement", [ $this, 'ajax_clear_pending_procurement' ] );
+			add_action( "wp_ajax_{$prefix}_get_pending_procurements", [ $this, 'ajax_get_pending_procurements' ] );
+			add_action( "wp_ajax_{$prefix}_subscribe", [ $this, 'ajax_subscribe' ] );
+			add_action( "wp_ajax_{$prefix}_track_status", [ $this, 'ajax_track_status' ] );
+
+			add_action( "wp_ajax_{$prefix}_get_subscriptions_list", [ $this, 'get_subscriptions_list' ] );
+
+			add_action( "wp_ajax_{$prefix}_cancel_subscription", [ $this, 'cancel_subscriptions' ] );
+			add_action( "wp_ajax_{$prefix}_unsubscribe", [ $this, 'ajax_unsubscribe' ] );
+			add_action( "wp_ajax_{$prefix}_clear_subscription_list", [ $this, 'ajax_clear_subscription_list' ] );
+			add_action( "wp_ajax_{$prefix}_save_pending_cancellation", [ $this, 'ajax_save_pending_cancellation' ] );
+			add_action( "wp_ajax_{$prefix}_clear_pending_cancellation", [ $this, 'ajax_clear_pending_cancellation' ] );
+
 
 			//reset transient for marketplace catalog
 			add_action('upgrader_process_complete', [$this, 'reset_transient_on_core_update'], 10, 2);
@@ -194,10 +227,18 @@ class MarketplaceController {
 	 *
 	 */
 	public function register_addons_menu() {
-		$menu_slug = $this->config['addons_menu_slug']?: 'onecom-marketplace-products';
-		$page_title = $this->config['addons_page_title'] ?: __( 'Marketplace Products', '' );
-		$menu_title = $this->config['addons_menu_title'] ?: __( 'Your add-ons', '' );
-		$parent_menu_slug = $this->config['parent_menu_slug'];
+		$menu_slug      = $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products';
+		$has_page_title = ! empty( $this->config['addons_page_title'] );
+		$has_menu_title = ! empty( $this->config['addons_menu_title'] );
+
+		$page_title = $has_page_title ? $this->config['addons_page_title'] : __( 'Marketplace Products', '' );
+		$menu_title = $has_menu_title ? $this->config['addons_menu_title'] : __( 'Your add-ons', '' );
+
+		// When neither title is supplied, self-parent the page so it's registered without
+		// a visible menu entry. WP's menu renderer only iterates $menu (top-level), so a
+		// self-parented submenu never renders. Access check still passes because
+		// $submenu[$menu_slug] contains our entry with its own capability.
+		$parent_menu_slug = ( $has_page_title || $has_menu_title ) ? $this->config['parent_menu_slug'] : $menu_slug;
 
 		add_submenu_page(
 			$parent_menu_slug,
@@ -207,6 +248,75 @@ class MarketplaceController {
 			$menu_slug,
 			[ $this, 'render_addons_page' ]
 		);
+	}
+
+	/**
+	 * Reorder the parent menu's submenu entries so that the marketplace page
+	 * and the addons page both appear immediately after the item whose slug
+	 * matches $config['placed_menu_after'].
+	 *
+	 * Called on admin_menu / network_admin_menu at priority 999, after every
+	 * other plugin has had a chance to register its own submenu items.
+	 * If the target slug is not found in the submenu the array is left untouched.
+	 */
+	public function reorder_submenus() {
+		global $submenu;
+
+		$parent      = $this->config['parent_menu_slug'];
+		$after_slug  = $this->config['placed_menu_after'];
+		$market_slug = $this->config['menu_slug'];
+		$addons_slug = $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products';
+
+		// Nothing to do if the parent has no submenu yet.
+		if ( empty( $submenu[ $parent ] ) || ! is_array( $submenu[ $parent ] ) ) {
+			return;
+		}
+
+		$items = array_values( $submenu[ $parent ] );
+
+		// Check that placed_menu_after exists; bail without touching anything if not.
+		$after_found = false;
+		foreach ( $items as $item ) {
+			if ( isset( $item[2] ) && $item[2] === $after_slug ) {
+				$after_found = true;
+				break;
+			}
+		}
+
+		if ( ! $after_found ) {
+			return;
+		}
+
+		// Separate our two items from the rest, preserving their registration data.
+		$market_item = null;
+		$addons_item = null;
+		$rest        = [];
+
+		foreach ( $items as $item ) {
+			if ( isset( $item[2] ) && $item[2] === $market_slug ) {
+				$market_item = $item;
+			} elseif ( isset( $item[2] ) && $item[2] === $addons_slug ) {
+				$addons_item = $item;
+			} else {
+				$rest[] = $item;
+			}
+		}
+
+		// Re-build the submenu: insert our items right after placed_menu_after.
+		$reordered = [];
+		foreach ( $rest as $item ) {
+			$reordered[] = $item;
+			if ( isset( $item[2] ) && $item[2] === $after_slug ) {
+				if ( $market_item !== null ) {
+					$reordered[] = $market_item;
+				}
+				if ( $addons_item !== null ) {
+					$reordered[] = $addons_item;
+				}
+			}
+		}
+
+		$submenu[ $parent ] = $reordered;
 	}
 
 	public function render_addons_page() {
@@ -307,7 +417,7 @@ class MarketplaceController {
 
 		// Build base localized config
 		$localized_config = [
-			'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+			'apiBaseUrl' => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
 			'apiUrl'     => $this->config['api_url'],
 			'locale' => $locale,
 			'brand' => $this->config['brand'],
@@ -316,6 +426,7 @@ class MarketplaceController {
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'adminUrl' => admin_url(),
 				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'ajaxActionPrefix' => $this->get_ajax_prefix(),
 				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
 			],
 			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
@@ -345,12 +456,19 @@ class MarketplaceController {
 				'globalProperties' => $global_properties,
 				'distinctId' => $distinct_id,
 			],
+			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
+		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
+		'menuSlug'             => $this->config['menu_slug'],
+		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
+		'siteUrl'              => home_url(),
+		'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
 		];
 
 		// Localize JS with config
 		wp_localize_script( 'marketplace-addons-frontend', 'marketplaceConfig', $localized_config );
 
-		echo '<div id="marketplace-addons-root" class="gv-activated"></div>';
+		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
+		echo '<div id="marketplace-addons-root" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
 	}
 
 	public function render_admin_page() {
@@ -451,7 +569,7 @@ class MarketplaceController {
 
  	// Build base localized config
  	$localized_config = [
- 		'apiBaseUrl' => trailingslashit( rest_url( 'marketplace/v1/plugins' ) ),
+ 		'apiBaseUrl' => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
  		'apiUrl'     => $this->config['api_url'],
  		'locale' => $locale,
  		'brand' => $this->config['brand'],
@@ -460,6 +578,7 @@ class MarketplaceController {
  			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
  			'adminUrl' => admin_url(),
  			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
+				'ajaxActionPrefix' => $this->get_ajax_prefix(),
  			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
  		],
  		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
@@ -489,12 +608,19 @@ class MarketplaceController {
  			'globalProperties' => $global_properties,
  			'distinctId' => $distinct_id,
  		],
+ 		'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
+		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
+		'menuSlug'             => $this->config['menu_slug'],
+		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
+		'siteUrl'              => home_url(),
+		'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
  	];
 
  	// Localize JS with config
  	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
 
-		echo '<div id="marketplace-root" class="gv-activated"></div>';
+		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
+		echo '<div id="marketplace-root" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
 	}
 
 	/**
@@ -511,13 +637,16 @@ class MarketplaceController {
 	}
 
 	public function register_rest_routes() {
-		register_rest_route( 'marketplace/v1', '/plugins', [
+		$brand = $this->config['brand'] ?: 'marketplace';
+		$namespace = "{$brand}-marketplace/v1";
+
+		register_rest_route( $namespace, '/plugins', [
 			'methods'             => 'GET',
 			'callback'            => [ $this, 'get_plugins' ],
 			'permission_callback' => '__return_true',
 		] );
 
-		register_rest_route( 'marketplace/v1', '/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)', [
+		register_rest_route( $namespace, '/plugins/active/(?P<slug>[a-zA-Z0-9-_]+)', [
 			'methods'             => 'GET',
 			'callback'            => [ $this, 'check_plugin_activation' ],
 			'permission_callback' => '__return_true',
@@ -554,7 +683,6 @@ class MarketplaceController {
 			isset( $marketplace_catalog['data']['catalog'] ) &&
 			is_array( $marketplace_catalog['data']['catalog'] )
 		){
-			error_log( 'Using cached marketplace catalog' );
 			$plugins = $marketplace_catalog;
 			$is_cached = true;
 		} else {
@@ -571,7 +699,6 @@ class MarketplaceController {
 				isset( $plugins['data']['catalog'] ) &&
 				is_array( $plugins['data']['catalog'] )
 			){
-				error_log( 'Caching marketplace catalog' );
 				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 			} else {
 				error_log( 'Invalid catalog structure' );
@@ -645,30 +772,74 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => __( 'Invalid plugin data.', 'text-domain' ) ] );
 		}
 
+		// Concurrency / idempotency: if the plugin is already on disk before we even
+		// touch the upgrader (sibling tab finished installing, another consumer plugin
+		// already installed it, prior install attempt, etc.), be honest with the user
+		// — return an informative error rather than fake success. The frontend can
+		// inspect 'installed: true' to update its UI without showing a "succeeded" toast.
+		if ( $this->is_installed( $slug ) ) {
+			wp_send_json_error( [
+				'message'   => __( 'Plugin is already installed.', 'onecom-wp' ),
+				'installed' => true,
+				'activated' => false,
+			] );
+		}
+
+		// Serialize concurrent installs of the same plugin. Without this, two parallel
+		// install requests can both pass the pre-check, both download the same package
+		// to /tmp, and race on cleanup — observed as duplicate "upgrader returned NULL"
+		// entries plus an "unlink: No such file or directory" warning at the same
+		// timestamp. The lock has a TTL so a crashed request can't permanently block
+		// future installs; we also delete it explicitly on every exit path.
+		$lock_key = "marketplace_install_lock_{$slug}";
+		if ( get_transient( $lock_key ) ) {
+			wp_send_json_error( [
+				'message' => __( 'An install is already in progress for this plugin. Please wait a moment and try again.', 'onecom-wp' ),
+			] );
+		}
+		set_transient( $lock_key, time(), 120 );
+
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
 		$result   = $upgrader->install( $download_url ); //  use URL from React
 
 		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+			delete_transient( $lock_key );
+			// Forward WP's actual error message (e.g. "Destination folder already exists"
+			// when a parallel install finished mid-flight). Include 'installed' so the
+			// frontend knows whether the plugin ended up on disk.
+			wp_send_json_error( [
+				'message'   => $result->get_error_message(),
+				'installed' => $this->is_installed( $slug ),
+				'activated' => false,
+			] );
 		}
 
-		// Check if the upgrader returned NULL or false (download/installation failed)
+		// No WP_Error: if the plugin is now on disk, this request's upgrader put it
+		// there. Plugin_Upgrader::install() can legitimately return false/null on
+		// benign hiccups (post-install hook noise, etc.), so is_installed() is the
+		// source of truth for "did our own install succeed".
+		if ( $this->is_installed( $slug ) ) {
+			delete_transient( $lock_key );
+			wp_send_json_success([
+				'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
+				'installed' => true,
+				'activated' => false,
+			]);
+		}
+
+		// Plugin is not on disk — only now treat null/false as a real failure.
 		if ( $result === null || $result === false ) {
+			delete_transient( $lock_key );
+			$skin_messages = method_exists( $upgrader->skin, 'get_upgrade_messages' ) ? $upgrader->skin->get_upgrade_messages() : [];
+			$skin_errors   = isset( $upgrader->skin->errors ) ? $upgrader->skin->errors : null;
+			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url . '; skin messages: ' . wp_json_encode( $skin_messages ) . '; skin errors: ' . wp_json_encode( $skin_errors ) );
 			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
 		}
 
-		// Verify the plugin was actually installed by checking if it exists
-		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
-		}
-
-		wp_send_json_success([
-			'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
-			'installed' => true,
-			'activated' => false,
-		]);
+		delete_transient( $lock_key );
+		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
 	}
 
 	/**
@@ -1055,5 +1226,317 @@ class MarketplaceController {
 		if ( $deleted ) {
 			error_log( 'Reset marketplace catalog transient on locale change' );
 		}
+	}
+
+	/**
+	 * Save a pending procurement entry for a plugin.
+	 * Called when subscription API returns success but no accessUrl yet.
+	 */
+	public function ajax_save_pending_procurement() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug            = sanitize_text_field( $_POST['slug'] ?? '' );
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+		$product_id      = sanitize_text_field( $_POST['product_id'] ?? '' );
+
+		if ( empty( $slug ) || empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		$brand_name = $this->config['brand'];
+		$option_name = "{$brand_name}_marketplace_pending_procurements";
+		$pending = get_option( $option_name, [] );
+
+		$pending[ $slug ] = [
+			'subscriptionId' => $subscription_id,
+			'product_id'     => $product_id,
+			'timestamp'      => time(),
+		];
+
+		update_option( $option_name, $pending, false );
+
+		wp_send_json_success( [ 'message' => 'Pending procurement saved.' ] );
+	}
+
+	/**
+	 * Return the current pending procurements from the DB.
+	 * Called by the frontend refresh button to re-sync React state with the server.
+	 */
+	public function ajax_get_pending_procurements(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$brand_name = $this->config['brand'];
+		$pending    = get_option( "{$brand_name}_marketplace_pending_procurements", [] );
+
+		wp_send_json_success( $pending );
+	}
+
+	/**
+	 * Proxy a subscription creation request to the external marketplace API.
+	 * Avoids CORS issues by making the request server-side and keeps the API key out of the browser.
+	 */
+	public function ajax_subscribe() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$product_id     = sanitize_text_field( $_POST['productId'] ?? '' );
+		$price_amount   = floatval( $_POST['priceAmount'] ?? 0 );
+		$price_currency = sanitize_text_field( $_POST['priceCurrency'] ?? '' );
+		$price_period   = sanitize_text_field( $_POST['pricePeriod'] ?? '' );
+
+		if ( empty( $product_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		$data = [
+			'productId' => $product_id,
+			'price'     => $price_amount,
+			'currency'  => $price_currency,
+			'interval'  => $price_period,
+		];
+
+		// Merge config credentials (username, api_key, locale) with subscribe-specific fields.
+		// 'action' overwrites the one in config['payload'] since it comes second in array_merge.
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action' => 'wp-marketplace-subscribe',
+				'data'   => wp_json_encode( $data ),
+			]
+		);
+
+		// Log the outgoing subscribe request. api_key is redacted to avoid leaking credentials in PHP error log.
+		$log_payload = $payload;
+		if ( isset( $log_payload['api_key'] ) ) {
+			$log_payload['api_key'] = '***';
+		}
+		error_log( '[marketplace] subscribe request POST payload: ' . wp_json_encode( $log_payload ) );
+
+		$result = $this->get_model()->request( $payload, 'POST' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Poll the external API to track subscription/procurement status.
+	 * Proxies wp-marketplace-track-status calls server-side to keep credentials out of browser.
+	 */
+	public function ajax_track_status() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+		$resource_type   = sanitize_text_field( $_POST['resourceType'] ?? 'procurement' );
+
+		if ( empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action'        => 'wp-marketplace-track-status',
+				'resource_type' => $resource_type,
+				'resource_id'   => $subscription_id,
+			]
+		);
+
+		$result = $this->get_model()->request( $payload, 'POST' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		wp_send_json_success( $result );
+	}
+
+	/**
+	 *
+	 * @return void
+	 */
+	public function get_subscriptions_list(): void
+	{
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+		}
+
+		$brand_name = $this->config['brand'];
+		$transient_name = "{$brand_name}_subscription_list";
+		$get_subscription_list = get_site_transient( $transient_name );
+
+		if ( is_array($get_subscription_list ) && ! empty( $get_subscription_list ) ) {
+			wp_send_json_success( $get_subscription_list );
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action' => 'wp-marketplace-subscription-list'
+			]
+		);
+
+		//The default method is GET
+		$result = $this->get_model()->request( $payload);
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		$get_subscription_list = $result['data']["subscriptions"] ?? null;
+
+		if ( ! empty( $get_subscription_list ) && is_array( $get_subscription_list ) ) {
+			set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
+		} else {
+			$get_subscription_list = [];
+		}
+
+		wp_send_json_success($get_subscription_list);
+	}
+
+	public function cancel_subscriptions() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		wp_send_json_success( [ 'message' => 'Subscriptions cancelled successfully.' ] );
+	}
+
+	/**
+	 * Proxy a cancellation (unsubscribe) request to the external marketplace API.
+	 * Sends a DELETE request with action wp-marketplace-unsubscribe.
+	 * Clears the cached subscription list so the next fetch reflects the cancellation.
+	 */
+	public function ajax_unsubscribe(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+
+		if ( empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[
+				'action' => 'wp-marketplace-unsubscribe',
+				'data'   => wp_json_encode( [ 'subscriptionID' => $subscription_id ] ),
+			]
+		);
+
+		$result = $this->get_model()->request( $payload, 'DELETE' );
+
+		if ( is_wp_error( $result ) ) {
+			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			wp_send_json_error( $result );
+		}
+
+		// Clear cached subscription list so next fetch returns fresh data
+		$brand_name = $this->config['brand'];
+		delete_site_transient( "{$brand_name}_subscription_list" );
+
+		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Delete the cached subscription list transient so the next fetch returns fresh data from the API.
+	 * Called by the frontend after a new subscription is initiated or completed.
+	 */
+	public function ajax_clear_subscription_list(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$brand_name = $this->config['brand'];
+		delete_site_transient( "{$brand_name}_subscription_list" );
+
+		wp_send_json_success( [ 'message' => 'Subscription list cache cleared.' ] );
+	}
+
+	/**
+	 * Persist a pending cancellation to the DB so the cancelling state survives page reloads.
+	 */
+	public function ajax_save_pending_cancellation(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug            = sanitize_text_field( $_POST['slug'] ?? '' );
+		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
+
+		if ( empty( $slug ) || empty( $subscription_id ) ) {
+			wp_send_json_error( [ 'message' => 'Missing required fields.' ] );
+		}
+
+		$brand_name       = $this->config['brand'];
+		$option_name      = "{$brand_name}_marketplace_pending_cancellations";
+		$pending          = get_option( $option_name, [] );
+		$pending[ $slug ] = [
+			'subscriptionId' => $subscription_id,
+			'timestamp'      => time(),
+		];
+		update_option( $option_name, $pending, false );
+
+		wp_send_json_success( [ 'message' => 'Pending cancellation saved.' ] );
+	}
+
+	/**
+	 * Remove a pending cancellation entry from the DB once cancellation is confirmed.
+	 */
+	public function ajax_clear_pending_cancellation(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug = sanitize_text_field( $_POST['slug'] ?? '' );
+
+		if ( empty( $slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing slug.' ] );
+		}
+
+		$brand_name  = $this->config['brand'];
+		$option_name = "{$brand_name}_marketplace_pending_cancellations";
+		$pending     = get_option( $option_name, [] );
+		if ( isset( $pending[ $slug ] ) ) {
+			unset( $pending[ $slug ] );
+			update_option( $option_name, $pending, false );
+		}
+
+		wp_send_json_success( [ 'message' => 'Pending cancellation cleared.' ] );
+	}
+
+	/**
+	 * Clear a pending procurement entry for a plugin.
+	 * Called when procurement completes and plugin is installed, or on manual cleanup.
+	 */
+	public function ajax_clear_pending_procurement() {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$slug = sanitize_text_field( $_POST['slug'] ?? '' );
+
+		if ( empty( $slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing slug.' ] );
+		}
+
+		$brand_name  = $this->config['brand'];
+		$option_name = "{$brand_name}_marketplace_pending_procurements";
+		$pending     = get_option( $option_name, [] );
+
+		if ( isset( $pending[ $slug ] ) ) {
+			unset( $pending[ $slug ] );
+			update_option( $option_name, $pending, false );
+		}
+
+		wp_send_json_success( [ 'message' => 'Pending procurement cleared.' ] );
 	}
 }

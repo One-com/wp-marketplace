@@ -46,13 +46,15 @@ const formatPriceWithSymbol = (amount, symbol, currencyCode) => {
  * @param {Object} plugin - The plugin object containing prices array
  * @returns {string|null} - Formatted full price with currency symbol or null if not found
  */
-export const getFullPrice = (plugin) => {
+export const getFullPrice = (plugin, wrapAmount = false) => {
     if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
         const fullPrice = plugin.prices.find(p => p.priceType === 'full');
         if (fullPrice && fullPrice.amount && fullPrice.currency) {
             const symbol = getCurrencySymbol(fullPrice.currency);
             const formattedAmount = Number(fullPrice.amount).toFixed(2);
-            return formatPriceWithSymbol(formattedAmount, symbol, fullPrice.currency);
+            const isRankMath = wrapAmount && typeof window !== 'undefined' && window.marketplaceConfig?.brand === 'rankmath';
+            const displayAmount = isRankMath ? `<span class="gv-amount">${formattedAmount}</span>` : formattedAmount;
+            return formatPriceWithSymbol(displayAmount, symbol, fullPrice.currency);
         }
     }
     return null;
@@ -63,13 +65,15 @@ export const getFullPrice = (plugin) => {
  * @param {Object} plugin - The plugin object containing prices array
  * @returns {string|null} - Formatted rebate price with currency symbol or null if not found
  */
-export const getRebatePrice = (plugin) => {
+export const getRebatePrice = (plugin, wrapAmount = false) => {
     if (plugin.prices && Array.isArray(plugin.prices) && plugin.prices.length > 0) {
         const rebatePrice = plugin.prices.find(p => p.priceType === 'rebate');
         if (rebatePrice && rebatePrice.amount !== undefined && rebatePrice.amount !== null && rebatePrice.currency) {
             const symbol = getCurrencySymbol(rebatePrice.currency);
             const formattedAmount = Number(rebatePrice.amount).toFixed(2);
-            return formatPriceWithSymbol(formattedAmount, symbol, rebatePrice.currency);
+            const isRankMath = wrapAmount && typeof window !== 'undefined' && window.marketplaceConfig?.brand === 'rankmath';
+            const displayAmount = isRankMath ? `<span class="gv-amount">${formattedAmount}</span>` : formattedAmount;
+            return formatPriceWithSymbol(displayAmount, symbol, rebatePrice.currency);
         }
     }
     return null;
@@ -82,7 +86,7 @@ export const getRebatePrice = (plugin) => {
  * @param {Object} uiI18n - Optional UI internationalization object containing labels
  * @returns {string} - Formatted price string ('Free', 'Symbol Amount', or blank)
  */
-export const formatPluginPrice = (plugin, freeLabel = 'Free', uiI18n = null) => {
+export const formatPluginPrice = (plugin, freeLabel = 'Free', uiI18n = null, wrapAmount = false) => {
     const isFree = plugin.licenseType === "free";
 
     if (isFree) {
@@ -103,7 +107,9 @@ export const formatPluginPrice = (plugin, freeLabel = 'Free', uiI18n = null) => 
             if (rebatePrice.amount && rebatePrice.currency) {
                 const symbol = getCurrencySymbol(rebatePrice.currency);
                 const formattedAmount = Number(rebatePrice.amount).toFixed(2);
-                const priceWithSymbol = formatPriceWithSymbol(formattedAmount, symbol, rebatePrice.currency);
+                const isRankMath = wrapAmount && typeof window !== 'undefined' && window.marketplaceConfig?.brand === 'rankmath';
+                const displayAmount = isRankMath ? `<span class="gv-amount">${formattedAmount}</span>` : formattedAmount;
+                const priceWithSymbol = formatPriceWithSymbol(displayAmount, symbol, rebatePrice.currency);
                 return `${priceWithSymbol} `;
             }
         }
@@ -125,7 +131,9 @@ export const formatPluginPrice = (plugin, freeLabel = 'Free', uiI18n = null) => 
             const symbol = getCurrencySymbol(priceToUse.currency);
             // Format amount to 2 decimal places
             const formattedAmount = Number(priceToUse.amount).toFixed(2);
-            return formatPriceWithSymbol(formattedAmount, symbol, priceToUse.currency);
+            const isRankMath = wrapAmount && typeof window !== 'undefined' && window.marketplaceConfig?.brand === 'rankmath';
+            const displayAmount = isRankMath ? `<span class="gv-amount">${formattedAmount}</span>` : formattedAmount;
+            return formatPriceWithSymbol(displayAmount, symbol, priceToUse.currency);
         }
     }
 
