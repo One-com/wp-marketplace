@@ -417,7 +417,7 @@ export default function ProductDetail({
                 <div className="gv-area-details gv-grid gv-gap-fluid">
                     {benefits.length > 0 && (
                         <section className="gv-stack-space-md">
-                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.benefitHeading || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.headings?.benefit || plugin.i18n?.benefitHeading || 'Key benefits'}</h2>
                             <ul className="gv-list-items gv-list-check gv-mode-condensed">
                                 {benefits.map((b, i) => <li key={i}>{b}</li>)}
                             </ul>
@@ -429,7 +429,7 @@ export default function ProductDetail({
                 {coreFeatures.length > 0 && (
                     <div className="gv-area-content gv-grid gv-gap-fluid">
                         <section className="gv-text-sm gv-stack-space-md">
-                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.featureOverviewHeading || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
+                            <h2 className="gv-title gv-text-bold gv-text-lg">{uiI18n?.headings?.feature_overview || plugin.i18n?.featureOverviewHeading || 'Core features overview'}</h2>
                             <div className="gv-grid gv-gap-lg gv-tab-grid-cols-2 gv-desk-lg-grid-cols-3">
                                 {coreFeatures.map((cf, i) => (
                                     <div className="gv-item gv-stack-space-sm" key={i}>
