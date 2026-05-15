@@ -1,13 +1,34 @@
 {
   "name": "groupone/marketplace",
-  "description": "Marketplace Module for WordPress plugins",
+  "description": "Embeddable React-based marketplace UI for WordPress plugins. Consumed via Composer + Mozart; ships a webpack-built frontend and an MVC PHP backend.",
   "type": "library",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "wordpress",
+    "marketplace",
+    "plugins",
+    "react",
+    "mozart",
+    "embeddable",
+    "admin-ui"
+  ],
+  "homepage": "https://github.com/One-com/wp-marketplace",
+  "authors": [
+    {
+      "name": "group.one",
+      "homepage": "https://www.group.one"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/One-com/wp-marketplace/issues",
+    "source": "https://github.com/One-com/wp-marketplace"
+  },
+  "require": {
+    "php": ">=7.4"
+  },
   "autoload": {
     "psr-4": {
       "Groupone\\Marketplace\\": "backend/src/"
     }
-  },
-  "require": {
-    "php": ">=7.4"
   }
 }
