@@ -37,3 +37,7 @@
 /frontend/README.md                 export-ignore
 /frontend/.npmignore                export-ignore
 /frontend/build/index.asset.php     export-ignore
+/frontend/.eslintrc.json            export-ignore
+/frontend/.prettierrc               export-ignore
+/frontend/.prettierignore           export-ignore
+/frontend/.npmrc.example            export-ignore
