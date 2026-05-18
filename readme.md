@@ -30,8 +30,8 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 
 ## Requirements
 
-- PHP >= 8.0
-- WordPress >= 5.8
+- PHP >= 7.4
+- WordPress >= 6.2
 - Composer (for development and building)
 - Mozart (for wrapping namespaces and copying assets)
 
