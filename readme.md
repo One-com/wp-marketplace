@@ -52,7 +52,7 @@ Step-by-step
   "name": "<YourPlugin>",
   "type": "<wordpress-plugin>",
   "require": {
-    "php": ">=8.0",
+    "php": ">=7.4",
     "groupone/marketplace": "^1.0"
   },
   "repositories": [

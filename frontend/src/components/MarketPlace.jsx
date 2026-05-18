@@ -436,24 +436,29 @@ export default function Marketplace() {
 
     const categories = Array.from(categoryMap.entries()).filter(([catKey, { plugins: list }]) => list.length > 0);
 
-    // If all plugins are activated, show the "You've got all our plugins!" message
+    // If all plugins are activated, show the "You've got all our plugins!" message.
+    // The "View products" CTA is only rendered when the consumer plugin has
+    // configured `addonsMenuSlug` — without a target slug there's nowhere to send the user.
     if (allPluginsActivated) {
+        const addonsMenuSlug = typeof window !== "undefined" && window.marketplaceConfig?.addonsMenuSlug;
+        const adminUrl = (typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl) || '/wp-admin/';
         return (
             <div className="marketplace-container gv-flex gv-flex-col gv-flex-wrap gv-gap-lg gv-items-center gv-justify-center gv-p-fluid">
                 <div className="gv-text-center">
                     <h5 className="gv-header-md gv-mb-sm">{uiI18n?.notifications?.allPluginsOwned}</h5>
                     <p className="gv-text-md gv-mb-lg">{uiI18n?.text?.managePlugins}</p>
-                    <button
-                        type="button"
-                        className="gv-button gv-button-primary  buttons-min-width"
-                        onClick={() => {
-                            // Navigate to plugins page
-                            window.location.href = '/wp-admin/plugins.php';
-                        }}
-                    >
-                        <span>{uiI18n.viewProductsButton}</span>
-                        <gv-icon aria-hidden="true" src={`${iconBase}/arrow_right.svg`}></gv-icon>
-                    </button>
+                    {addonsMenuSlug && (
+                        <button
+                            type="button"
+                            className="gv-button gv-button-primary  buttons-min-width"
+                            onClick={() => {
+                                window.location.href = `${adminUrl}admin.php?page=${addonsMenuSlug}`;
+                            }}
+                        >
+                            <span>{uiI18n.viewProductsButton}</span>
+                            <gv-icon aria-hidden="true" src={`${iconBase}/arrow_right.svg`}></gv-icon>
+                        </button>
+                    )}
                 </div>
             </div>
         );
