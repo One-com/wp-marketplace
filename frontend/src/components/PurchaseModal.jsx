@@ -74,7 +74,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                     <div className="gv-product-price">
                       {fullPrice && rebatePrice !== null && (
                         <div className="gv-price-discount">
-                          <span className="gv-price-old"><HtmlRenderer htmlString={fullPrice} />/{' '}{brand === 'rankmath' ? 'month' : (uiI18n?.labels?.timeMonth || 'mo')}</span>
+                          <span className="gv-price-old"><HtmlRenderer htmlString={fullPrice} />/{uiI18n?.labels?.timeMonth }</span>
                         </div>
                       )}
                       <div className="gv-price-current">
@@ -82,7 +82,7 @@ export default function PurchaseModal({ isOpen, plugin, uiI18n, assetsBaseUrl, o
                                     {hasFreeTrialPeriod ? (uiI18n?.headings?.freeTrial || 'Free trial*') : <HtmlRenderer htmlString={price} />}
                                 </span>
                         {!hasFreeTrialPeriod && price && price !== (uiI18n?.labels?.free || 'Free') && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && (
-                          <span className="gv-price-period">/{' '}{brand === 'rankmath' ? 'month' : (uiI18n?.labels?.timeMonth || 'mo')}</span>
+                          <span className="gv-price-period">/{uiI18n?.labels?.timeMonth || 'mo'}</span>
                         )}
                       </div>
                     </div>
