@@ -184,15 +184,6 @@ export default function ProductDetail({
     const fullPriceAmount = getFullPrice(plugin, true);
     const rebatePriceAmount = getRebatePrice(plugin, true);
 
-    const getTimeAgo = (dateStr) => {
-        const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
-        if (days < 7) return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-        const weeks = Math.floor(days / 7);
-        if (weeks < 52) return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
-        const years = Math.floor(weeks / 52);
-        return `${years} ${years === 1 ? 'year' : 'years'} ago`;
-    };
-
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
         if (!obj || typeof obj !== 'object') return [];
@@ -348,69 +339,7 @@ export default function ProductDetail({
                             )}
                         </div>
                     </div>
-                  {/* Plugin Meta — rendered outside gv-layout-product grid to avoid area conflicts */}
-                  {(plugin.version || plugin.testedUpTo || plugin.requiresPhpVersion || plugin.requiresWpVersion || plugin.pluginLastUpdated || plugin.activeInstalls !== null || plugin.rating !== null) && (
-                    <div className="gv-table-container gv-mt-fluid">
-                      <div className="gv-table" role="table">
-                        <div className="gv-section oc-left-border-0" role="rowgroup">
-                          <div className="gv-section-header gv-table-row" role="row">
-                            <div className="gv-cell" role="cell" style={{ borderTop: '1px solid #E0E0E0'}}>
-                              <h4 className="gv-title">{uiI18n?.headings?.plugin_meta || 'Plugin Meta'}</h4>
-                            </div>
-                          </div>
-                          {plugin.version && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.version || 'Version'}</span><strong>{plugin.version}</strong></span>
-                              </div>
-                            </div>
-                          )}
-                          {plugin.testedUpTo && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.tested_upto || 'Tested up to'}</span><strong>{plugin.testedUpTo}</strong></span>
-                              </div>
-                            </div>
-                          )}
-                          {plugin.requiresPhpVersion && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.php_version || 'PHP version'}</span><strong>{plugin.requiresPhpVersion}</strong></span>
-                              </div>
-                            </div>
-                          )}
-                          {plugin.requiresWpVersion && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.wordpress_version || 'WordPress version'}</span><strong>{plugin.requiresWpVersion}</strong></span>
-                              </div>
-                            </div>
-                          )}
-                          {plugin.pluginLastUpdated && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.lastUpdated || 'Last updated'}</span><strong>{getTimeAgo(plugin.pluginLastUpdated)}</strong></span>
-                              </div>
-                            </div>
-                          )}
-                          {plugin.activeInstalls !== null && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.headings?.active_installs || 'Active installations'}</span><strong>{plugin.activeInstalls.toLocaleString()}+</strong></span>
-                              </div>
-                            </div>
-                          )}
-                          {plugin.rating !== null && (
-                            <div className="gv-table-row" role="row">
-                              <div className="gv-cell" role="cell">
-                                <span className="gv-cell-text gv-flex gv-justify-between gv-w-full"><span>{uiI18n?.labels?.rating || 'Rating'}</span><strong>{plugin.rating.toFixed(1)}/5{plugin.ratingCount !== null && ` (${plugin.ratingCount})`}</strong></span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
+
                 </section>
 
                 {/* Details / Benefits */}
