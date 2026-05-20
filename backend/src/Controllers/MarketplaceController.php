@@ -678,6 +678,12 @@ class MarketplaceController {
 		$marketplace_catalog = get_site_transient( $transient_name );
 		$is_cached = false;
 
+		// Maintenance-mode passthrough from cache. Return the response as-is so the React
+		// frontend can render MaintenanceState; skip the catalog enrichment that follows.
+		if ( is_array( $marketplace_catalog ) && ! empty( $marketplace_catalog['data']['maintenanceMode'] ) ) {
+			return new WP_REST_Response( $marketplace_catalog, 200 );
+		}
+
 		if ( is_array( $marketplace_catalog ) &&
 			! empty( $marketplace_catalog['success'] ) &&
 			isset( $marketplace_catalog['data']['catalog'] ) &&
@@ -691,6 +697,13 @@ class MarketplaceController {
 
 			if ( is_wp_error( $plugins ) ) {
 				return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
+			}
+
+			// Maintenance-mode passthrough from upstream. Intentionally NOT cached:
+			// every Retry click triggers a fresh upstream check so users recover as soon
+			// as the API is back, instead of waiting for a transient to expire.
+			if ( is_array( $plugins ) && ! empty( $plugins['data']['maintenanceMode'] ) ) {
+				return new WP_REST_Response( $plugins, 200 );
 			}
 
 			// Cache the catalog for 15 minutes if not already cached

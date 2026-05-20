@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {normalizePlugins} from "./normalised-plugins";
 import "@group.one/gravity";
 import { useTranslation } from "react-i18next";
 import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorState from "./ErrorState";
+import MaintenanceState from "./MaintenanceState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getRebatePrice,getFullPrice } from "../utils/priceFormatter";
@@ -33,6 +34,8 @@ export default function Marketplace() {
         setCatalogError,
         catalogLoading,
         setCatalogLoading,
+        maintenanceState,
+        setMaintenanceState,
         currentPluginSlug,
         shouldShowProvision,
         isSpecialPlugin,
@@ -86,80 +89,94 @@ export default function Marketplace() {
 
     const {t} = useTranslation();
 
-    useEffect(() => {
-        // Only fetch once
-        if (hasFetchedPlugins.current) {
-            return;
-        }
+    // Wrapped in useCallback so Retry (from MaintenanceState) can re-invoke without
+    // a page reload. The hasFetchedPlugins ref only guards the on-mount call.
+    const fetchPlugins = useCallback(async () => {
+        setCatalogLoading(true);
+        setCatalogError(false);
+        setMaintenanceState({ isOn: false, message: '', buttonLabel: '' });
+        try {
+            const res = await fetch(`${apiBaseUrl}`);
+            const json = await res.json();
 
-        async function fetchPlugins() {
-            try {
-                hasFetchedPlugins.current = true;
-                const res = await fetch(`${apiBaseUrl}`);
-                const json = await res.json();
+            // Capture timestamp when API content is received
+            contentReceivedTimestamp.current = Date.now();
 
-                // Capture timestamp when API content is received
-                contentReceivedTimestamp.current = Date.now();
+            // Extract is_cached flag from API response
+            isCachedRef.current = json.is_cached || false;
 
-                // Extract is_cached flag from API response
-                isCachedRef.current = json.is_cached || false;
+            // Maintenance mode — planned downtime, surface a Retry UI without
+            // tripping the catalogError auto-reload. Both message and button label
+            // are server-supplied; falsy values cause the corresponding element to be hidden.
+            if (json?.data?.maintenanceMode === true) {
+                setMaintenanceState({
+                    isOn: true,
+                    message: json?.data?.message || '',
+                    buttonLabel: json?.data?.buttonLabel || '',
+                });
+                setCatalogLoading(false);
+                return;
+            }
 
-                // Check for API error response (success: false)
-                if (json && json.success === false) {
-                    // Track page view with content render failure
-                    trackPageView({
-                        category: 'marketplace_home',
-                        isContentRendered: false,
-                    });
-                    setCatalogError(true);
-                    setCatalogLoading(false);
-                    return;
-                }
-
-                // Check for blank/empty response
-                if (!json || !json.data || !json.data.catalog || (Array.isArray(json.data.catalog) && json.data.catalog.length === 0)) {
-                    console.error("API returned empty or blank response");
-                    // Track page view with content render failure
-                    trackPageView({
-                        category: 'marketplace_home',
-                        isContentRendered: false,
-                    });
-                    setCatalogError(true);
-                    setCatalogLoading(false);
-                    return;
-                }
-
-                const { plugins: normalizedPlugins, uiI18n: apiUiI18n } = normalizePlugins(json);
-                setPlugins(normalizedPlugins);
-                setUiI18n(apiUiI18n);
-
-                // Fetch full subscriptions list so subscription data is available on the Marketplace page
-                fetchPartnerSubscriptions();
-
-                // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
-                if (isOnecomBrand) {
-                    const specialPlugins = normalizedPlugins.filter(p => isSpecialPlugin(p.slug));
-
-                    // Fetch subscription status for each special plugin
-                    specialPlugins.forEach(plugin => {
-                        fetchSubscriptionStatus(plugin.slug);
-                    });
-                }
-            } catch (e) {
+            // Check for API error response (success: false)
+            if (json && json.success === false) {
                 // Track page view with content render failure
                 trackPageView({
                     category: 'marketplace_home',
                     isContentRendered: false,
-                    visibleConditionalProducts: [],
                 });
                 setCatalogError(true);
-            } finally {
                 setCatalogLoading(false);
+                return;
             }
-        }
 
+            // Check for blank/empty response
+            if (!json || !json.data || !json.data.catalog || (Array.isArray(json.data.catalog) && json.data.catalog.length === 0)) {
+                console.error("API returned empty or blank response");
+                // Track page view with content render failure
+                trackPageView({
+                    category: 'marketplace_home',
+                    isContentRendered: false,
+                });
+                setCatalogError(true);
+                setCatalogLoading(false);
+                return;
+            }
+
+            const { plugins: normalizedPlugins, uiI18n: apiUiI18n } = normalizePlugins(json);
+            setPlugins(normalizedPlugins);
+            setUiI18n(apiUiI18n);
+
+            // Fetch full subscriptions list so subscription data is available on the Marketplace page
+            fetchPartnerSubscriptions();
+
+            // Fetch subscription status for special plugins (wp-rocket, rank-math-pro)
+            if (isOnecomBrand) {
+                const specialPlugins = normalizedPlugins.filter(p => isSpecialPlugin(p.slug));
+
+                // Fetch subscription status for each special plugin
+                specialPlugins.forEach(plugin => {
+                    fetchSubscriptionStatus(plugin.slug);
+                });
+            }
+        } catch (e) {
+            // Track page view with content render failure
+            trackPageView({
+                category: 'marketplace_home',
+                isContentRendered: false,
+                visibleConditionalProducts: [],
+            });
+            setCatalogError(true);
+        } finally {
+            setCatalogLoading(false);
+        }
+    }, [apiBaseUrl, isOnecomBrand, fetchPartnerSubscriptions, fetchSubscriptionStatus, isSpecialPlugin, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, setMaintenanceState]);
+
+    useEffect(() => {
+        if (hasFetchedPlugins.current) return;
+        hasFetchedPlugins.current = true;
         fetchPlugins();
-    }, [apiBaseUrl, isOnecomBrand, fetchPartnerSubscriptions, fetchSubscriptionStatus, setPlugins]);
+    }, [fetchPlugins]);
 
     // Use useMemo to filter plugins based on rules and activation status
     const { visiblePlugins, visibleConditionalPlugins } = React.useMemo(() => {
@@ -379,6 +396,18 @@ export default function Marketplace() {
                     </div>
                 </section>
             </div>
+        );
+    }
+
+    // Maintenance mode takes priority over the generic error state — it's a
+    // planned downtime signal from the API, not an unexpected failure.
+    if (maintenanceState.isOn) {
+        return (
+            <MaintenanceState
+                message={maintenanceState.message}
+                buttonLabel={maintenanceState.buttonLabel}
+                onRetry={fetchPlugins}
+            />
         );
     }
 
