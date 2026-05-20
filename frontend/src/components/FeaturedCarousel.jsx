@@ -220,11 +220,11 @@ export default function FeaturedCarousel({ loading = false }) {
                     <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
                 )}
                 <a
-                    className="gv-button gv-button-secondary gv-mode-condensed"
+                    className="gv-button gv-button-primary gv-mode-condensed"
                     href={`${adminUrl}admin.php?page=${addonsMenuSlug}`}
                 >
                     {myProductsLabel}
-                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right_dark.svg`}></gv-icon>
+                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`}></gv-icon>
                 </a>
             </div>
 
