@@ -34,7 +34,7 @@ class MarketplaceController {
 			'css_handle'       => 'marketplace-frontend-style',
 			'assets_path'      => '', //  Optional: explicit path to package root containing frontend/ directory
 			'payload'          => [], //  Optional: key-value array passed as headers for API authentication
-			'placed_menu_after' => '', // Optional: submenu slug after which marketplace and Your products menus should appear
+			'insert_menu_before_slug' => '', // Optional: submenu slug before which marketplace menu should appear
 		] );
 
 		// Defer model and asset initialization until needed (optimization for multi-plugin installs)
@@ -178,8 +178,8 @@ class MarketplaceController {
 			add_action( 'network_admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'network_admin_menu', [ $this, 'register_addons_menu' ] );
 
-			// If placed_menu_after is configured, reorder submenus after all menus are registered.
-			if ( ! empty( $this->config['placed_menu_after'] ) ) {
+			// If insert_menu_before_slug is configured, reorder submenus after all menus are registered.
+			if ( ! empty( $this->config['insert_menu_before_slug'] ) ) {
 				add_action( 'admin_menu', [ $this, 'reorder_submenus' ], 999 );
 				add_action( 'network_admin_menu', [ $this, 'reorder_submenus' ], 999 );
 			}
@@ -252,8 +252,8 @@ class MarketplaceController {
 
 	/**
 	 * Reorder the parent menu's submenu entries so that the marketplace page
-	 * and the addons page both appear immediately after the item whose slug
-	 * matches $config['placed_menu_after'].
+	 * and the addons page both appear immediately before the item whose slug
+	 * matches $config['insert_menu_before_slug'].
 	 *
 	 * Called on admin_menu / network_admin_menu at priority 999, after every
 	 * other plugin has had a chance to register its own submenu items.
@@ -263,7 +263,7 @@ class MarketplaceController {
 		global $submenu;
 
 		$parent      = $this->config['parent_menu_slug'];
-		$after_slug  = $this->config['placed_menu_after'];
+		$before_slug = $this->config['insert_menu_before_slug'];
 		$market_slug = $this->config['menu_slug'];
 		$addons_slug = $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products';
 
@@ -274,16 +274,16 @@ class MarketplaceController {
 
 		$items = array_values( $submenu[ $parent ] );
 
-		// Check that placed_menu_after exists; bail without touching anything if not.
-		$after_found = false;
+		// Check that insert_menu_before_slug exists; bail without touching anything if not.
+		$before_found = false;
 		foreach ( $items as $item ) {
-			if ( isset( $item[2] ) && $item[2] === $after_slug ) {
-				$after_found = true;
+			if ( isset( $item[2] ) && $item[2] === $before_slug ) {
+				$before_found = true;
 				break;
 			}
 		}
 
-		if ( ! $after_found ) {
+		if ( ! $before_found ) {
 			return;
 		}
 
@@ -302,11 +302,10 @@ class MarketplaceController {
 			}
 		}
 
-		// Re-build the submenu: insert our items right after placed_menu_after.
+		// Re-build the submenu: insert our items right before insert_menu_before_slug.
 		$reordered = [];
 		foreach ( $rest as $item ) {
-			$reordered[] = $item;
-			if ( isset( $item[2] ) && $item[2] === $after_slug ) {
+			if ( isset( $item[2] ) && $item[2] === $before_slug ) {
 				if ( $market_item !== null ) {
 					$reordered[] = $market_item;
 				}
@@ -314,6 +313,7 @@ class MarketplaceController {
 					$reordered[] = $addons_item;
 				}
 			}
+			$reordered[] = $item;
 		}
 
 		$submenu[ $parent ] = $reordered;
