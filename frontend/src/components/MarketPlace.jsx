@@ -479,7 +479,7 @@ export default function Marketplace() {
                     {addonsMenuSlug && (
                         <button
                             type="button"
-                            className="gv-button gv-button-primary  buttons-min-width"
+                            className="gv-button gv-button-primary"
                             onClick={() => {
                                 window.location.href = `${adminUrl}admin.php?page=${addonsMenuSlug}`;
                             }}
