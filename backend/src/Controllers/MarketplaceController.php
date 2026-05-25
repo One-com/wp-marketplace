@@ -353,6 +353,18 @@ class MarketplaceController {
 				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
 			);
 
+			// If the package ships without bundled font files (e.g. RM Pro vendor copy),
+			// redeclare the @font-face rules with `src: local()` only so the browser
+			// never tries to fetch the missing URLs. Later @font-face wins the cascade.
+			if ( ! file_exists( $base_path . 'assets/fonts/PlusJakartaSans.woff2' ) ) {
+				wp_add_inline_style(
+					'marketplace-one-css',
+					"@font-face{font-display:swap;font-family:PlusJakartaSans;font-style:normal;font-weight:400 700;src:local('PlusJakartaSans')}"
+					. "@font-face{font-display:swap;font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;src:local('JetBrains Mono')}"
+					. "@font-face{font-display:swap;font-family:Gellix;font-style:normal;font-weight:400 700;src:local('Gellix')}"
+				);
+			}
+
 			// Enqueue marketplace custom CSS (marketplace.min.css)
 			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
 			$marketplace_css_path = $base_path . $marketplace_css_file;
@@ -504,6 +516,18 @@ class MarketplaceController {
 				[],
 				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
 			);
+
+			// If the package ships without bundled font files (e.g. RM Pro vendor copy),
+			// redeclare the @font-face rules with `src: local()` only so the browser
+			// never tries to fetch the missing URLs. Later @font-face wins the cascade.
+			if ( ! file_exists( $base_path . 'assets/fonts/PlusJakartaSans.woff2' ) ) {
+				wp_add_inline_style(
+					'marketplace-one-css',
+					"@font-face{font-display:swap;font-family:PlusJakartaSans;font-style:normal;font-weight:400 700;src:local('PlusJakartaSans')}"
+					. "@font-face{font-display:swap;font-family:'JetBrains Mono';font-style:normal;font-weight:400 700;src:local('JetBrains Mono')}"
+					. "@font-face{font-display:swap;font-family:Gellix;font-style:normal;font-weight:400 700;src:local('Gellix')}"
+				);
+			}
 
 			// Enqueue marketplace custom CSS (marketplace.min.css)
 			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
@@ -1305,6 +1329,7 @@ class MarketplaceController {
 			'price'     => $price_amount,
 			'currency'  => $price_currency,
 			'interval'  => $price_period,
+			'locale'    => $this->config['payload']['locale'] ?? get_locale(),
 		];
 
 		// Merge config credentials (username, api_key, locale) with subscribe-specific fields.
@@ -1357,6 +1382,9 @@ class MarketplaceController {
 				'action'        => 'wp-marketplace-track-status',
 				'resource_type' => $resource_type,
 				'resource_id'   => $subscription_id,
+				'data'          => wp_json_encode( [
+					'locale' => $this->config['payload']['locale'] ?? get_locale(),
+				] ),
 			]
 		);
 
@@ -1446,9 +1474,19 @@ class MarketplaceController {
 			$this->config['payload'] ?? [],
 			[
 				'action' => 'wp-marketplace-unsubscribe',
-				'data'   => wp_json_encode( [ 'subscriptionID' => $subscription_id ] ),
+				'data'   => wp_json_encode( [
+					'subscriptionID' => $subscription_id,
+					'locale'         => $this->config['payload']['locale'] ?? get_locale(),
+				] ),
 			]
 		);
+
+		// Log the outgoing unsubscribe request. api_key is redacted to avoid leaking credentials in PHP error log.
+		$log_payload = $payload;
+		if ( isset( $log_payload['api_key'] ) ) {
+			$log_payload['api_key'] = '***';
+		}
+		error_log( '[marketplace] unsubscribe request DELETE payload: ' . wp_json_encode( $log_payload ) );
 
 		$result = $this->get_model()->request( $payload, 'DELETE' );
 
