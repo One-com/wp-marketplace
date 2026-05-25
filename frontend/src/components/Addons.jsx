@@ -371,8 +371,8 @@ export default function Addons() {
         return true;
       })
       .sort((a, b) => {
-        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
-        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        const orderA = a.featuredOrder !== undefined ? parseInt(a.featuredOrder) : Infinity;
+        const orderB = b.featuredOrder !== undefined ? parseInt(b.featuredOrder) : Infinity;
         return orderA - orderB;
       })
       .slice(0, 3);

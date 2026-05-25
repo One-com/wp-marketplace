@@ -97,8 +97,8 @@ export default function FeaturedCarousel({ loading = false }) {
         // For all other plugins, apply normal filtering
         return shouldShowPlugin(plugin);
     }).sort((a, b) => {
-        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
-        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        const orderA = a.carouselOrder !== undefined ? parseInt(a.carouselOrder) : Infinity;
+        const orderB = b.carouselOrder !== undefined ? parseInt(b.carouselOrder) : Infinity;
         return orderA - orderB;
     });
 
