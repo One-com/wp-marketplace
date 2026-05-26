@@ -107,7 +107,7 @@ export default function FeaturedCarousel({ loading = false }) {
 
     const adminUrl = (typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.adminUrl) || '/wp-admin/';
     const addonsMenuSlug = (typeof window !== "undefined" && window.marketplaceConfig?.addonsMenuSlug) || 'onecom-marketplace-products';
-    const myProductsLabel = uiI18n?.labels?.myProduct || 'My Products';
+    const myProductsLabel = uiI18n?.labels?.myProducts || 'My Products';
 
     const totalSlides = featuredPlugins.length;
     const maxIndex = Math.max(0, totalSlides - slidesPerView);

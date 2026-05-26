@@ -284,7 +284,7 @@ export default function ProductDetail({
                                                                     : price} />
                                                             </span>
                                                             {!isFree && !isFreeUntilRenewal && price && (
-                                                                <span className="gv-period gv-p-0">/ {uiI18n?.labels?.timeMonth}</span>
+                                                                <span className="gv-period gv-max-mob-p-0">/ {uiI18n?.labels?.timeMonth}</span>
                                                             )}
                                                         </>
                                                     )}
