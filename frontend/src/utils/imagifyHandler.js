@@ -35,7 +35,8 @@ export const handleImagifyActivation = async ({
         try {
             await fetch(url, { method: "POST" });
         } catch (err) {
-            console.log("Imagify activation request initiated");
+            // Imagify returns a 302 redirect which fetch rejects as a network error.
+            // The request still reaches the server, so swallow the error and let polling confirm activation.
         }
 
         // Poll for activation status

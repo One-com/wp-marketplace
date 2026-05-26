@@ -359,7 +359,6 @@ export const MarketplaceProvider = ({
                 setSubscriptionsList([]);
                 return;
             }
-            console.log('Subscriptions list:', result?.data || []);
             setSubscriptionsList(result?.data || []);
         } catch (error) {
             console.error('Error during fetch subscription list', error);
