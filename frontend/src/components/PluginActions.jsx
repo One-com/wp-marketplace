@@ -118,7 +118,6 @@ export default function PluginActions({ plugin }) {
                 nonce: wpConfig.nonce,
                 resourceType: 'acknowledge-plugin-download',
                 subscriptionId: subscriptionId || '',
-                locale: window.marketplaceConfig?.locale || '',
             }),
         });
     };
@@ -149,7 +148,7 @@ export default function PluginActions({ plugin }) {
             ajaxUrl,
             nonce: wpConfig.nonce,
             action: getAjaxAction('track_status'),
-            params: { subscriptionId, locale: window.marketplaceConfig?.locale || '' },
+            params: { subscriptionId },
             interval: 10000,
             onResult: async (result) => {
                 if (!result.success) return false; // keep polling
@@ -387,7 +386,6 @@ export default function PluginActions({ plugin }) {
                 priceAmount: priceData.amount || '',
                 priceCurrency: priceData.currency || '',
                 pricePeriod: priceData.period || '',
-                locale: window.marketplaceConfig?.locale || '',
             });
 
             const response = await fetch(ajaxUrl, {

@@ -1329,7 +1329,6 @@ class MarketplaceController {
 			'price'     => $price_amount,
 			'currency'  => $price_currency,
 			'interval'  => $price_period,
-			'locale'    => $this->config['payload']['locale'] ?? get_locale(),
 		];
 
 		// Merge config credentials (username, api_key, locale) with subscribe-specific fields.
@@ -1382,9 +1381,6 @@ class MarketplaceController {
 				'action'        => 'wp-marketplace-track-status',
 				'resource_type' => $resource_type,
 				'resource_id'   => $subscription_id,
-				'data'          => wp_json_encode( [
-					'locale' => $this->config['payload']['locale'] ?? get_locale(),
-				] ),
 			]
 		);
 
@@ -1474,10 +1470,7 @@ class MarketplaceController {
 			$this->config['payload'] ?? [],
 			[
 				'action' => 'wp-marketplace-unsubscribe',
-				'data'   => wp_json_encode( [
-					'subscriptionID' => $subscription_id,
-					'locale'         => $this->config['payload']['locale'] ?? get_locale(),
-				] ),
+				'data'   => wp_json_encode( [ 'subscriptionID' => $subscription_id ] ),
 			]
 		);
 

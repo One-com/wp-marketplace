@@ -201,7 +201,7 @@ export default function Addons() {
             ajaxUrl,
             nonce: wpConfig.nonce,
             action: getAjaxAction('track_status'),
-            params: { subscriptionId, resourceType: 'cancellation', locale: window.marketplaceConfig?.locale || '' },
+            params: { subscriptionId, resourceType: 'cancellation' },
             interval: 10000,
             onResult: (pollResult) => {
                 const data = pollResult?.data?.data;
@@ -254,7 +254,6 @@ export default function Addons() {
                 action: getAjaxAction('unsubscribe'),
                 nonce: wpConfig.nonce,
                 subscriptionId,
-                locale: window.marketplaceConfig?.locale || '',
             }),
         })
             .then(r => r.json())
