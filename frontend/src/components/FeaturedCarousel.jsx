@@ -97,8 +97,8 @@ export default function FeaturedCarousel({ loading = false }) {
         // For all other plugins, apply normal filtering
         return shouldShowPlugin(plugin);
     }).sort((a, b) => {
-        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
-        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        const orderA = a.carouselOrder !== undefined ? parseInt(a.carouselOrder) : Infinity;
+        const orderB = b.carouselOrder !== undefined ? parseInt(b.carouselOrder) : Infinity;
         return orderA - orderB;
     });
 
@@ -220,11 +220,11 @@ export default function FeaturedCarousel({ loading = false }) {
                     <h5 className="gv-title gv-heading-sm gv-recommended-heading">{uiI18n?.headings?.recommendedHeading}</h5>
                 )}
                 <a
-                    className="gv-button gv-button-secondary gv-mode-condensed"
+                    className="gv-button gv-button-primary gv-mode-condensed gv-w-auto"
                     href={`${adminUrl}admin.php?page=${addonsMenuSlug}`}
                 >
                     {myProductsLabel}
-                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right_dark.svg`}></gv-icon>
+                    <gv-icon aria-hidden="true" src={`${iconBase}arrow_right.svg`}></gv-icon>
                 </a>
             </div>
 

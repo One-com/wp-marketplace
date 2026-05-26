@@ -7,6 +7,7 @@ import ErrorToast from "./ErrorToast";
 import SuccessToast from "./SuccessToast";
 import "@group.one/gravity";
 import ErrorState from "./ErrorState";
+import MaintenanceState from "./MaintenanceState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
@@ -35,6 +36,8 @@ export default function Addons() {
         catalogError,
         setCatalogError,
         catalogLoading,
+        maintenanceState,
+        setMaintenanceState,
         setCatalogLoading,
         currentPluginSlug,
         shouldShowProvision,
@@ -198,7 +201,7 @@ export default function Addons() {
             ajaxUrl,
             nonce: wpConfig.nonce,
             action: getAjaxAction('track_status'),
-            params: { subscriptionId, resourceType: 'cancellation', locale: window.marketplaceConfig?.locale || '' },
+            params: { subscriptionId, resourceType: 'cancellation' },
             interval: 10000,
             onResult: (pollResult) => {
                 const data = pollResult?.data?.data;
@@ -251,7 +254,6 @@ export default function Addons() {
                 action: getAjaxAction('unsubscribe'),
                 nonce: wpConfig.nonce,
                 subscriptionId,
-                locale: window.marketplaceConfig?.locale || '',
             }),
         })
             .then(r => r.json())
@@ -368,8 +370,8 @@ export default function Addons() {
         return true;
       })
       .sort((a, b) => {
-        const orderA = a.displayOrder !== undefined ? parseInt(a.displayOrder) : Infinity;
-        const orderB = b.displayOrder !== undefined ? parseInt(b.displayOrder) : Infinity;
+        const orderA = a.featuredOrder !== undefined ? parseInt(a.featuredOrder) : Infinity;
+        const orderB = b.featuredOrder !== undefined ? parseInt(b.featuredOrder) : Infinity;
         return orderA - orderB;
       })
       .slice(0, 3);
@@ -381,6 +383,7 @@ export default function Addons() {
     const fetchPluginCatalog = useCallback(() => {
         setCatalogLoading(true);
         setCatalogError(null);
+        setMaintenanceState({ isOn: false, message: '', buttonLabel: '' });
 
         fetch(apiBaseUrl)
             .then((res) => {
@@ -393,6 +396,18 @@ export default function Addons() {
                 // Check if response was cached
                 if (data.is_cached || data.cached) {
                     isCachedRef.current = true;
+                }
+
+                // Maintenance mode — early-return before throwing so catalogError stays clean.
+                // Both message and button label are server-supplied; falsy values cause
+                // the corresponding element to be hidden.
+                if (data?.data?.maintenanceMode === true) {
+                    setMaintenanceState({
+                        isOn: true,
+                        message: data?.data?.message || '',
+                        buttonLabel: data?.data?.buttonLabel || '',
+                    });
+                    return;
                 }
 
                 if (data.success && data.data && data.data.catalog) {
@@ -437,7 +452,7 @@ export default function Addons() {
             .finally(() => {
                 setCatalogLoading(false);
             });
-    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, isOnecomBrand, isSpecialPlugin, fetchSubscriptionStatus]);
+    }, [apiBaseUrl, setPlugins, setUiI18n, setCatalogError, setCatalogLoading, setMaintenanceState, isOnecomBrand, isSpecialPlugin, fetchSubscriptionStatus]);
 
     // Fetch plugins on mount — guarded so it only runs once automatically.
     useEffect(() => {
@@ -568,6 +583,17 @@ export default function Addons() {
                 </div>
 
             </div>
+        );
+    }
+
+    // Maintenance mode takes priority — planned downtime, not an unexpected failure.
+    if (maintenanceState.isOn) {
+        return (
+            <MaintenanceState
+                message={maintenanceState.message}
+                buttonLabel={maintenanceState.buttonLabel}
+                onRetry={fetchPluginCatalog}
+            />
         );
     }
 

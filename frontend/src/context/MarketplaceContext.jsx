@@ -56,6 +56,9 @@ export const MarketplaceProvider = ({
     const [allPluginsActivated, setAllPluginsActivated] = useState(false);
     const [catalogError, setCatalogError] = useState(false);
     const [catalogLoading, setCatalogLoading] = useState(true);
+    // Separate from catalogError so the auto-reload effect doesn't fire on planned downtime.
+    // `message` and `buttonLabel` come straight from the API response — no local i18n fallback.
+    const [maintenanceState, setMaintenanceState] = useState({ isOn: false, message: '', buttonLabel: '' });
     const [deleteModalState, setDeleteModalState] = useState({ isOpen: false, plugin: null });
     const [cancelSubsModalState, setCancelSubsModalState] = useState({ isOpen: false, plugin: null, subscriptionId: null, expiresAt: null, onConfirm: null });
     const [pendingProcurements, setPendingProcurements] = useState(() => {
@@ -356,7 +359,6 @@ export const MarketplaceProvider = ({
                 setSubscriptionsList([]);
                 return;
             }
-            console.log('Subscriptions list:', result?.data || []);
             setSubscriptionsList(result?.data || []);
         } catch (error) {
             console.error('Error during fetch subscription list', error);
@@ -378,7 +380,6 @@ export const MarketplaceProvider = ({
                 action: getAjaxAction('cancel_subscription'),
                 nonce: window.marketplaceConfig?.wpConfig?.nonce,
                 plugin_slug: plugin.slug,
-                locale: window.marketplaceConfig?.locale || '',
                 ...(subscription_id ? { subscription_id } : {}),
             });
 
@@ -758,6 +759,8 @@ export const MarketplaceProvider = ({
         setCatalogError,
         catalogLoading,
         setCatalogLoading,
+        maintenanceState,
+        setMaintenanceState,
         currentPluginSlug,
         setCurrentPluginSlug,
         deleteModalState,

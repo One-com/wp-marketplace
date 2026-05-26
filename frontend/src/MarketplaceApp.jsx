@@ -13,15 +13,17 @@ const MarketplaceContent = () => {
         catalogLoading,
         isWpVersionSupported,
         currentPluginSlug,
+        maintenanceState,
     } = useMarketplace();
 
     const isSupportedWpVersion = isWpVersionSupported('6.2');
     const isDetailPage = !!currentPluginSlug;
+    const isMaintenance = maintenanceState?.isOn;
 
     return (
         <MarketplaceLayout className="gv-surface-dim">
-            {!isDetailPage && !catalogError && isSupportedWpVersion && <ProductBanner loading={catalogLoading} />}
-            {!isDetailPage && !allPluginsActivated && isSupportedWpVersion && <FeaturedCarousel loading={catalogLoading} />}
+            {!isDetailPage && !catalogError && !isMaintenance && isSupportedWpVersion && <ProductBanner loading={catalogLoading} />}
+            {!isDetailPage && !catalogError && !isMaintenance && !allPluginsActivated && isSupportedWpVersion && <FeaturedCarousel loading={catalogLoading} />}
 
             <Marketplace />
         </MarketplaceLayout>
