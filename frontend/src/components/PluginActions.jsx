@@ -571,7 +571,7 @@ export default function PluginActions({ plugin }) {
                                    src={`${assetBase}assets/images/spinner.svg`}></gv-loader>
 
                       </>
-                    ) : (uiI18n?.buyNowButton || 'Buy Now')}
+                    ) : (uiI18n?.labels?.buyNowButton || 'Buy Now')}
                 </button>
             ) : (
               <button
