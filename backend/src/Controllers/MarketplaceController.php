@@ -1346,7 +1346,6 @@ class MarketplaceController {
 		if ( isset( $log_payload['api_key'] ) ) {
 			$log_payload['api_key'] = '***';
 		}
-		error_log( '[marketplace] subscribe request POST payload: ' . wp_json_encode( $log_payload ) );
 
 		$result = $this->get_model()->request( $payload, 'POST' );
 
@@ -1479,7 +1478,6 @@ class MarketplaceController {
 		if ( isset( $log_payload['api_key'] ) ) {
 			$log_payload['api_key'] = '***';
 		}
-		error_log( '[marketplace] unsubscribe request DELETE payload: ' . wp_json_encode( $log_payload ) );
 
 		$result = $this->get_model()->request( $payload, 'DELETE' );
 
