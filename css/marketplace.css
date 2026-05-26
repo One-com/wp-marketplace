@@ -291,6 +291,13 @@ body.one-com_page_onecom-marketplace{
 	}
 }
 
+/* Toast text: prevent Gravity's default `word-break: break-all` from
+ * splitting words mid-token (e.g. "install" → "ins" / "tall"). Match the
+ * upstream selector specificity (0,3,0) so this rule wins via load order. */
+.gv-activated .gv-toast .gv-toast-content {
+	word-break: normal;
+}
+
 /* ============================================================
  * RANKMATH BRAND OVERRIDES — REMOVE THIS BLOCK TO REVERT
  * Scope: only applies when root mount has class `brand-rankmath`.
