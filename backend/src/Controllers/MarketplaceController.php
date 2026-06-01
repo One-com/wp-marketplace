@@ -2,6 +2,7 @@
 namespace Groupone\Marketplace\Controllers;
 
 use Groupone\Marketplace\Models\MarketplaceModel;
+use Groupone\Marketplace\Trackers\AbstractPluginTracker;
 
 use WP_REST_Response;
 class MarketplaceController {
@@ -834,6 +835,11 @@ class MarketplaceController {
 		// benign hiccups (post-install hook noise, etc.), so is_installed() is the
 		// source of truth for "did our own install succeed".
 		if ( $this->is_installed( $slug ) ) {
+			try{
+				$this->fire_post_install_tracking( $slug );
+			} catch ( \Throwable $e ) {
+				error_log( '[Marketplace] Install tracking failed for "' . $slug . '": ' . $e->getMessage() );
+			}
 			delete_transient( $lock_key );
 			wp_send_json_success([
 				'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
@@ -853,6 +859,102 @@ class MarketplaceController {
 
 		delete_transient( $lock_key );
 		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
+	}
+
+	/**
+	 * Auto-discover and fire a post-install tracker for the given plugin slug.
+	 *
+	 * Convention: a tracker for slug 'my-plugin' is expected at:
+	 *   Trackers/my-plugin/MyPluginTracker.php
+	 *   class Groupone\Marketplace\Trackers\MyPlugin\MyPluginTracker
+	 *
+	 * If no tracker file exists for the slug, this is a no-op.
+	 * Any failure (missing class, exception) is logged and swallowed —
+	 * the install response is never affected (short-circuit guarantee).
+	 *
+	 * To add tracking for a new plugin, create the folder + class following the
+	 * convention above. No config changes or registration required.
+	 *
+	 * @param string $slug The installed plugin slug (e.g. 'imagify', 'wp-media').
+	 * @return void
+	 */
+	/**
+	 * Resolve and return a tracker instance for the given slug, or null if none exists.
+	 *
+	 * Convention: Trackers/{slug}/Tracker.php → Groupone\Marketplace\Trackers\{Slug}\Tracker
+	 * e.g. 'wp-media' → Groupone\Marketplace\Trackers\WpMedia\Tracker
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return AbstractPluginTracker|null
+	 */
+	private function resolve_tracker( string $slug ): ?AbstractPluginTracker {
+		$tracker_file = __DIR__ . '/../Trackers/' . $slug . '/Tracker.php';
+
+		if ( ! file_exists( $tracker_file ) ) {
+			return null;
+		}
+
+		if ( ! class_exists( AbstractPluginTracker::class ) ) {
+			require_once __DIR__ . '/../Trackers/AbstractPluginTracker.php';
+		}
+
+		// Capture declared classes before and after requiring the tracker file.
+		// This avoids constructing the class name from the namespace — which breaks
+		// when Mozart/Strauss prefixes namespaces differently per consumer plugin.
+		$before = get_declared_classes();
+		require_once $tracker_file;
+		$new_classes = array_diff( get_declared_classes(), $before );
+
+		foreach ( $new_classes as $class ) {
+			if ( is_subclass_of( $class, AbstractPluginTracker::class ) ) {
+				return new $class();
+			}
+		}
+
+		error_log( '[Marketplace] Tracker file found for "' . $slug . '" but no AbstractPluginTracker subclass was found inside it.' );
+		return null;
+	}
+
+	/**
+	 * Fire onInstall() on the tracker for the given slug, if one exists.
+	 * Failures are logged and swallowed — never affects the install response.
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return void
+	 */
+	private function fire_post_install_tracking( string $slug ): void {
+		$tracker = $this->resolve_tracker( $slug );
+
+		if ( $tracker === null ) {
+			return;
+		}
+
+		try {
+			$tracker->onInstall( $slug, $this->config['brand'] ?? '' );
+		} catch ( \Throwable $e ) {
+			error_log( '[Marketplace] Install tracking failed for "' . $slug . '": ' . $e->getMessage() );
+		}
+	}
+
+	/**
+	 * Fire onActivate() on the tracker for the given slug, if one exists.
+	 * Failures are logged and swallowed — never affects the activation response.
+	 *
+	 * @param string $slug Plugin slug.
+	 * @return void
+	 */
+	private function fire_post_activation_tracking( string $slug ): void {
+		$tracker = $this->resolve_tracker( $slug );
+
+		if ( $tracker === null ) {
+			return;
+		}
+
+		try {
+			$tracker->onActivate( $slug, $this->config['brand'] ?? '' );
+		} catch ( \Throwable $e ) {
+			error_log( '[Marketplace] Activation tracking failed for "' . $slug . '": ' . $e->getMessage() );
+		}
 	}
 
 	/**
@@ -1093,6 +1195,8 @@ class MarketplaceController {
 		if ( is_wp_error( $result ) ) {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
+
+		$this->fire_post_activation_tracking( $slug );
 
 		wp_send_json_success( [
 			'installed' => true,
