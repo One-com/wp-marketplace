@@ -923,13 +923,14 @@ class MarketplaceController {
 	 * @return void
 	 */
 	private function fire_post_install_tracking( string $slug ): void {
-		$tracker = $this->resolve_tracker( $slug );
-
-		if ( $tracker === null ) {
-			return;
-		}
-
 		try {
+
+			$tracker = $this->resolve_tracker( $slug );
+
+			if ( $tracker === null ) {
+				return;
+			}
+
 			$tracker->onInstall( $slug, $this->config['brand'] ?? '' );
 		} catch ( \Throwable $e ) {
 			error_log( '[Marketplace] Install tracking failed for "' . $slug . '": ' . $e->getMessage() );
