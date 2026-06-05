@@ -212,7 +212,7 @@ export default function PluginActions({ plugin }) {
                         // returns an active status with a downloadUrl, before the
                         // automatic install attempt.
                         const priceData = getPluginPriceData(plugin);
-                        trackEvent('Purchase completed', {
+                        trackEvent('Subscription Created', {
                             product_slug: plugin.slug || '',
                             product_name: plugin.name || '',
                             item_name: plugin.slug || '',

@@ -39,6 +39,10 @@ const initializeMixpanel = () => {
         }
 
         mixpanel.init(token, {
+            // Route ingestion through Mixpanel's EU host. The SDK's default
+            // (api-js.mixpanel.com) and the legacy api.mixpanel.com are both on
+            // the deprecation path; api-eu.mixpanel.com is the approved target.
+            api_host: 'https://api-eu.mixpanel.com',
             debug: mixpanelConfig.debug || false,
             track_pageview: false, // We'll handle page views manually
             persistence: 'localStorage',
