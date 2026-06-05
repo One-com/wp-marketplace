@@ -39,6 +39,7 @@ const initializeMixpanel = () => {
         }
 
         mixpanel.init(token, {
+            api_host: 'https://api-eu.mixpanel.com',
             debug: mixpanelConfig.debug || false,
             track_pageview: false, // We'll handle page views manually
             persistence: 'localStorage',
