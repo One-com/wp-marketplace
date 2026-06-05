@@ -288,7 +288,7 @@ export default function PluginActions({ plugin }) {
 
     // Derive subscription dates from the list whenever it updates (covers page reload case).
     // 'pending_cancellation' is treated as 'active' for display — the indicator only flips to
-    // 'Subscription canceled' once the backend confirms the cancellation with status 'canceled'.
+    // 'Subscription cancelled' once the backend confirms the cancellation with status 'canceled'.
     useEffect(() => {
         if (!isPremiumOnNonOnecom || !plugin.productId || !subscriptionsList?.length) return;
         const match = subscriptionsList.find(

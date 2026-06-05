@@ -9,7 +9,7 @@ import "@group.one/gravity";
 import ErrorState from "./ErrorState";
 import MaintenanceState from "./MaintenanceState";
 import WpVersionErrorState from "./WpVersionErrorState";
-import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
+import {trackButtonClick, trackPageView, trackPluginDetailVisit, trackEvent} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { getLatestSubscription, getAjaxAction } from "../utils/common.utils";
 import { startPolling } from "../utils/pollingHelper";
@@ -208,6 +208,17 @@ export default function Addons() {
                 const status = data?.status;
 
                 if (status === 'canceled') {
+                    // Track cancellation success — polling-confirmed path.
+                    // Look up plugin metadata from the merged catalog for richer event properties.
+                    const plugin = mergedPlugins?.find(p => p.slug === slug) || { slug };
+                    trackEvent('Subscription cancelled', {
+                        product_slug: plugin.slug || '',
+                        product_name: plugin.name || '',
+                        item_name: plugin.slug || '',
+                        subscription_id: subscriptionId,
+                        timestamp: Date.now(),
+                    });
+
                     stopPolling();
                     fetchPartnerSubscriptions();
                     return true;
@@ -267,6 +278,15 @@ export default function Addons() {
                 const status = responseData?.status;
 
                 if (status === 'canceled') {
+                    // Track cancellation success — immediate path (no polling needed).
+                    trackEvent('Subscription cancelled', {
+                        product_slug: plugin.slug || '',
+                        product_name: plugin.name || '',
+                        item_name: plugin.slug || '',
+                        subscription_id: subscriptionId,
+                        timestamp: Date.now(),
+                    });
+
                     // Immediately canceled — refresh list, no polling needed
                     fetchPartnerSubscriptions();
                     return;
