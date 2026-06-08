@@ -435,21 +435,6 @@ class MarketplaceController {
 			'activePlugins' => $active_plugins,
 			'activeThemeAuthor' => $active_theme_author,
 			'data_consent_status' => $data_consent_status,
-			'labels'=>array(
-				'install' => __('Install', 'onecom-wp'),
-				'installing' => __('Installing', 'onecom-wp'),
-				'activate' => __('Activate', 'onecom-wp'),
-				'deactivate' => __('Deactivate', 'onecom-wp'),
-				'activating' => __('Activating', 'onecom-wp'),
-				'deactivating' => __('Deactivating', 'onecom-wp'),
-				'download' => __('Download', 'onecom-wp'),
-				'downloading' => __('Downloading...', 'onecom-wp'),
-				'learnMore' => __('Learn more', 'onecom-wp'),
-				'all' => __('All', 'onecom-wp'),
-				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
-				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
-				'moreDetails' => __('More details', 'onecom-wp'),
-			),
 			// Always send mixpanel config so it can be used when consent is granted dynamically
 			'mixpanel' => [
 				'token' => $mixpanel_token,
@@ -587,21 +572,6 @@ class MarketplaceController {
  		'activePlugins' => $active_plugins,
  		'activeThemeAuthor' => $active_theme_author,
  		'data_consent_status' => $data_consent_status,
- 		'labels'=>array(
- 			'install' => __('Install', 'onecom-wp'),
- 			'installing' => __('Installing', 'onecom-wp'),
- 			'activate' => __('Activate', 'onecom-wp'),
- 			'deactivate' => __('Deactivate', 'onecom-wp'),
- 			'activating' => __('Activating', 'onecom-wp'),
- 			'deactivating' => __('Deactivating', 'onecom-wp'),
- 			'download' => __('Download', 'onecom-wp'),
- 			'downloading' => __('Downloading...', 'onecom-wp'),
- 			'learnMore' => __('Learn more', 'onecom-wp'),
- 			'all' => __('All', 'onecom-wp'),
- 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
- 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
- 			'moreDetails' => __('More details', 'onecom-wp'),
- 		),
  		// Always send mixpanel config so it can be used when consent is granted dynamically
  		'mixpanel' => [
  			'token' => $mixpanel_token,
