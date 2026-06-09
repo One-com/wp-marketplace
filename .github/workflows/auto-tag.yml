@@ -1,0 +1,60 @@
+name: Auto Tag Release
+
+# Publishes a Git tag whenever the version in composer.json is bumped on master.
+# Pushing the tag triggers the Packagist webhook, which indexes the new version
+# for Composer consumers. composer.json is the single source of truth for the
+# version (the `version` field). Packagist still resolves the released version
+# from the Git tag, not from this field.
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Tag version from composer.json
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # Full history so existing tags are visible to the existence check.
+          fetch-depth: 0
+
+      - name: Read version from composer.json
+        id: version
+        run: |
+          VERSION=$(jq -r '.version // empty' composer.json)
+          if [ -z "$VERSION" ]; then
+            echo "::error::No 'version' field found in composer.json"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved version v$VERSION from composer.json"
+
+      - name: Check whether tag already exists
+        id: check
+        run: |
+          if git rev-parse "${{ steps.version.outputs.tag }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.tag }} already exists — nothing to do."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag ${{ steps.version.outputs.tag }} does not exist — it will be created."
+          fi
+
+      - name: Create and push annotated tag
+        if: steps.check.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "${{ steps.version.outputs.tag }}" \
+            -m "Release ${{ steps.version.outputs.tag }}"
+          git push origin "${{ steps.version.outputs.tag }}"
+          echo "Pushed ${{ steps.version.outputs.tag }} — Packagist will index it via webhook."
