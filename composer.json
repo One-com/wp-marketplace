@@ -1,5 +1,6 @@
 {
   "name": "groupone/marketplace",
+  "version": "2.0.4",
   "description": "Embeddable React-based marketplace UI for WordPress plugins. Consumed via Composer + Mozart; ships a webpack-built frontend and an MVC PHP backend.",
   "type": "library",
   "license": "GPL-2.0-or-later",
