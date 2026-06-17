@@ -435,21 +435,6 @@ class MarketplaceController {
 			'activePlugins' => $active_plugins,
 			'activeThemeAuthor' => $active_theme_author,
 			'data_consent_status' => $data_consent_status,
-			'labels'=>array(
-				'install' => __('Install', 'onecom-wp'),
-				'installing' => __('Installing', 'onecom-wp'),
-				'activate' => __('Activate', 'onecom-wp'),
-				'deactivate' => __('Deactivate', 'onecom-wp'),
-				'activating' => __('Activating', 'onecom-wp'),
-				'deactivating' => __('Deactivating', 'onecom-wp'),
-				'download' => __('Download', 'onecom-wp'),
-				'downloading' => __('Downloading...', 'onecom-wp'),
-				'learnMore' => __('Learn more', 'onecom-wp'),
-				'all' => __('All', 'onecom-wp'),
-				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
-				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
-				'moreDetails' => __('More details', 'onecom-wp'),
-			),
 			// Always send mixpanel config so it can be used when consent is granted dynamically
 			'mixpanel' => [
 				'token' => $mixpanel_token,
@@ -587,21 +572,6 @@ class MarketplaceController {
  		'activePlugins' => $active_plugins,
  		'activeThemeAuthor' => $active_theme_author,
  		'data_consent_status' => $data_consent_status,
- 		'labels'=>array(
- 			'install' => __('Install', 'onecom-wp'),
- 			'installing' => __('Installing', 'onecom-wp'),
- 			'activate' => __('Activate', 'onecom-wp'),
- 			'deactivate' => __('Deactivate', 'onecom-wp'),
- 			'activating' => __('Activating', 'onecom-wp'),
- 			'deactivating' => __('Deactivating', 'onecom-wp'),
- 			'download' => __('Download', 'onecom-wp'),
- 			'downloading' => __('Downloading...', 'onecom-wp'),
- 			'learnMore' => __('Learn more', 'onecom-wp'),
- 			'all' => __('All', 'onecom-wp'),
- 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
- 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
- 			'moreDetails' => __('More details', 'onecom-wp'),
- 		),
  		// Always send mixpanel config so it can be used when consent is granted dynamically
  		'mixpanel' => [
  			'token' => $mixpanel_token,
@@ -693,7 +663,14 @@ class MarketplaceController {
 			$is_cached = true;
 		} else {
 			// Lazy-load model only when the REST endpoint is called (optimization)
-			$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
+			$catalog_payload = $this->config['payload'] ?? [];
+
+			// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+			if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+				unset( $catalog_payload['action'] );
+			}
+
+			$plugins = $this->get_model()->fetch_plugins( $catalog_payload );
 
 			if ( is_wp_error( $plugins ) ) {
 				return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
@@ -1317,6 +1294,11 @@ class MarketplaceController {
 			]
 		);
 
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
+
 		$result = $this->get_model()->request( $payload, 'POST' );
 
 		if ( is_wp_error( $result ) ) {
@@ -1352,6 +1334,11 @@ class MarketplaceController {
 				'resource_id'   => $subscription_id,
 			]
 		);
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
 
 		$result = $this->get_model()->request( $payload, 'POST' );
 
@@ -1392,6 +1379,11 @@ class MarketplaceController {
 				'action' => 'wp-marketplace-subscription-list'
 			]
 		);
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
 
 		//The default method is GET
 		$result = $this->get_model()->request( $payload);
@@ -1442,6 +1434,11 @@ class MarketplaceController {
 				'data'   => wp_json_encode( [ 'subscriptionID' => $subscription_id ] ),
 			]
 		);
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
 
 		$result = $this->get_model()->request( $payload, 'DELETE' );
 
