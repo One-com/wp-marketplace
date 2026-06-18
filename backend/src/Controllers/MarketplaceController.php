@@ -49,7 +49,8 @@ class MarketplaceController {
 	 */
 	protected function get_model() {
 		if ( $this->model === null ) {
-			$this->model = new MarketplaceModel( $this->config['api_url'] );
+			$is_sandbox  = ! empty( $this->config['mixp_props']['is_sandbox'] ) && $this->config['mixp_props']['is_sandbox'] === true;
+			$this->model = new MarketplaceModel( $this->config['api_url'], $is_sandbox );
 		}
 		return $this->model;
 	}
