@@ -13,6 +13,7 @@ A reusable WordPress plugin module for managing and displaying a marketplace of 
 - [Assets Path Configuration](#assets-path-configuration)
 - [How It Works](#how-it-works)
 - [Asset Copying](#asset-copying)
+- [Releasing a New Version](#releasing-a-new-version)
 
 ---
 
@@ -218,4 +219,49 @@ How to reference assets
 - If you move files to a custom location, pass `assets_path` explicitly so the module can find `frontend/build/index.js` and related files.
 
 ---
+
+## Releasing a New Version
+
+Releases are **tag-driven and automated**. `composer.json` (`version` field) is the
+single source of truth for the version — you never create a Git tag by hand.
+
+### The flow
+
+```
+bump composer.json version → open PR → merge to master
+        → auto-tag.yml creates & pushes vX.Y.Z
+        → Packagist webhook indexes the tag (version available via Composer)
+        → CI/CD release job builds the GitHub Release artifact for the tag
+```
+
+### How to cut a release
+
+1. In a branch, bump the `version` field in [`composer.json`](composer.json),
+   following [semver](https://semver.org/) (e.g. `2.0.3` → `2.1.0`).
+2. Open a PR and merge it to `master`.
+3. On merge, the **Auto Tag Release** workflow
+   ([`.github/workflows/auto-tag.yml`](.github/workflows/auto-tag.yml)) reads the
+   version from `composer.json`, and if no matching tag exists it creates and
+   pushes an annotated tag `vX.Y.Z`.
+4. Packagist, connected to this repo via GitHub webhook, picks up the new tag and
+   makes the version installable with `composer require groupone/marketplace`.
+   No manual Packagist steps are needed.
+5. The `release` job in
+   [`.github/workflows/ci.yml`](.github/workflows/ci.yml) triggers on the new tag
+   and builds the GitHub Release archive (`wp-marketplace-X.Y.Z.zip`).
+
+### Notes & guarantees
+
+- **Idempotent.** If a tag for the current `composer.json` version already exists,
+  `auto-tag.yml` exits cleanly without creating a duplicate or failing.
+- **No version change → no tag.** Merging changes that don't bump the version
+  produces no new tag.
+- **Single tagger.** Only `auto-tag.yml` creates tags. The CI release job builds
+  artifacts for an already-pushed tag, so the two never race.
+- **Packagist resolves from the Git tag, not the `version` field.** Composer
+  warns that a hard-coded `version` field is discouraged for Packagist-published
+  packages — here it is used solely as the CI trigger source. Packagist still
+  derives the released version from the Git tag, so the two always agree.
+- **Tagging does not wait for CI.** Version bumps go through PR CI before merge,
+  so the tagged commit on `master` has already passed checks.
 
