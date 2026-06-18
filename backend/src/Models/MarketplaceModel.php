@@ -7,9 +7,11 @@ namespace Groupone\Marketplace\Models;
 
 class MarketplaceModel {
 	protected $api_url;
+	protected $is_sandbox;
 
-	public function __construct( string $api_url ) {
-		$this->api_url = $api_url;
+	public function __construct( string $api_url, bool $is_sandbox = false ) {
+		$this->api_url    = $api_url;
+		$this->is_sandbox = $is_sandbox;
 	}
 
 	/**
@@ -25,9 +27,11 @@ class MarketplaceModel {
 	 * @return array|\WP_Error Parsed response array, or \WP_Error on network/WP failure.
 	 */
 	public function request( array $payload, string $method = 'GET' ) {
+		// Production upstream responds well within 30s; sandbox has been
+		// observed to exceed it, so use a more generous timeout there.
 		$args = [
 			'body'    => $payload,
-			'timeout' => 30,
+			'timeout' => $this->is_sandbox ? 60 : 30,
 		];
 
 		// TEMP DIAGNOSTIC: log the URL + method + payload-shape + timing for every request.
