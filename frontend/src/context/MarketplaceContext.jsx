@@ -356,8 +356,11 @@ export const MarketplaceProvider = ({
     }, [activePlugins, activeThemeAuthor]);
 
 
-    // Fetch the full subscriptions list (used on both Marketplace and Addons pages)
+    // Fetch the full subscriptions list (used on both Marketplace and Addons pages).
+    // onecom relies on a separate per-plugin purchase check (see fetchSubscriptionStatus)
+    // backed by host-plugin transients, so skip the marketplace-API list for that brand.
     const fetchPartnerSubscriptions = useCallback(async () => {
+        if (isOnecomBrand) return;
         try {
             const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
             if (!ajaxUrl) {
@@ -386,7 +389,7 @@ export const MarketplaceProvider = ({
             console.error('Error during fetch subscription list', error);
             setSubscriptionsList([]);
         }
-    }, []);
+    }, [isOnecomBrand]);
 
     // Handle "Cancel Subscription" action
     const handleCancelSubsAction = useCallback(async (action, plugin, subscription_id) => {
