@@ -34,10 +34,6 @@ class MarketplaceModel {
 			'timeout' => $this->is_sandbox ? 60 : 30,
 		];
 
-		// TEMP DIAGNOSTIC: log the URL + method + payload-shape + timing for every request.
-		$start = microtime( true );
-		error_log( '[Marketplace HTTP] ' . $method . ' ' . $this->api_url . ' payload_keys=' . implode( ',', array_keys( $payload ) ) );
-
 		if ( $method === 'POST' ) {
 			$response = wp_remote_post( $this->api_url, $args );
 		} elseif ( $method === 'DELETE' ) {
@@ -46,10 +42,6 @@ class MarketplaceModel {
 		} else {
 			$response = wp_remote_get( $this->api_url, $args );
 		}
-
-		$elapsed_ms = (int) ( ( microtime( true ) - $start ) * 1000 );
-		$status     = is_wp_error( $response ) ? 'WP_Error: ' . $response->get_error_message() : 'HTTP ' . wp_remote_retrieve_response_code( $response );
-		error_log( '[Marketplace HTTP] ← ' . $status . ' (' . $elapsed_ms . 'ms)' );
 
 		if ( is_wp_error( $response ) ) {
 			error_log( '[Marketplace] WP error: ' . $response->get_error_message() );

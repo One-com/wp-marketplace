@@ -541,9 +541,6 @@ class MarketplaceController {
 				unset( $catalog_payload['action'] );
 			}
 
-			// TEMP DIAGNOSTIC: log outgoing payload keys (no values — keep credentials out of the log).
-			error_log( '[Marketplace catalog] brand=' . ( $this->config['brand'] ?? '(unset)' ) . ' outgoing payload keys: ' . implode( ',', array_keys( $catalog_payload ) ) );
-
 			$plugins = $this->get_model()->fetch_plugins( $catalog_payload );
 
 			if ( is_wp_error( $plugins ) ) {
@@ -565,8 +562,6 @@ class MarketplaceController {
 			){
 				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 			} else {
-				// TEMP DIAGNOSTIC: dump first 1500 chars of the response so we can see what shape the API returned.
-				error_log( '[Marketplace catalog] Invalid catalog structure. Response type=' . gettype( $plugins ) . ', top-level keys=' . ( is_array( $plugins ) ? implode( ',', array_keys( $plugins ) ) : '(not array)' ) . ', body=' . substr( wp_json_encode( $plugins ), 0, 1500 ) );
 				return new WP_REST_Response( [ 'error' => 'Invalid catalog structure' ], 500 );
 			}
 			$is_cached = false;
