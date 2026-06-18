@@ -6,6 +6,28 @@ import { getAjaxAction } from '../utils/common.utils';
 
 const MarketplaceContext = createContext(null);
 
+// Maps backend error codes to ui18n keys under `uiI18n.notifications.*`.
+// The API team is expected to ship these keys in the localized response.
+const ERROR_CODE_TO_I18N_KEY = {
+    plugin_already_installed: 'pluginAlreadyInstalled',
+    install_in_progress: 'installInProgress',
+    install_failed_download: 'installFailedDownload',
+    install_failed_not_found: 'installFailedNotFound',
+    cannot_delete_active: 'cannotDeleteActive',
+};
+
+// Prefer the localized string for the returned `code`; fall back to the
+// server's English `message` so the toast still says something useful if
+// ui18n hasn't shipped the key yet.
+const resolveErrorMessage = (result, uiI18n) => {
+    const code = result?.data?.code;
+    if (code && ERROR_CODE_TO_I18N_KEY[code]) {
+        const localized = uiI18n?.notifications?.[ERROR_CODE_TO_I18N_KEY[code]];
+        if (localized) return localized;
+    }
+    return result?.error || result?.data?.message || result?.data?.error || null;
+};
+
 /**
  * Helper to construct localized loading messages for plugin actions
  */
@@ -334,8 +356,11 @@ export const MarketplaceProvider = ({
     }, [activePlugins, activeThemeAuthor]);
 
 
-    // Fetch the full subscriptions list (used on both Marketplace and Addons pages)
+    // Fetch the full subscriptions list (used on both Marketplace and Addons pages).
+    // onecom relies on a separate per-plugin purchase check (see fetchSubscriptionStatus)
+    // backed by host-plugin transients, so skip the marketplace-API list for that brand.
     const fetchPartnerSubscriptions = useCallback(async () => {
+        if (isOnecomBrand) return;
         try {
             const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
             if (!ajaxUrl) {
@@ -364,7 +389,7 @@ export const MarketplaceProvider = ({
             console.error('Error during fetch subscription list', error);
             setSubscriptionsList([]);
         }
-    }, []);
+    }, [isOnecomBrand]);
 
     // Handle "Cancel Subscription" action
     const handleCancelSubsAction = useCallback(async (action, plugin, subscription_id) => {
@@ -634,7 +659,7 @@ export const MarketplaceProvider = ({
             } else {
                 // Show error toast for activation and installation errors
                 if (action === 'activate') {
-                    setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
+                    setErrorState({ visible: true, type: 'activate', pluginSlug: plugin.slug, message: resolveErrorMessage(result, uiI18n) });
 
                     // Track activation error
                     trackButtonClick({
@@ -648,7 +673,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'deactivate') {
-                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
+                    setErrorState({ visible: true, type: 'deactivate', pluginSlug: plugin.slug, message: resolveErrorMessage(result, uiI18n) });
 
                     // Track deactivation error
                     trackButtonClick({
@@ -662,7 +687,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'install') {
-                    setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
+                    setErrorState({ visible: true, type: 'install', pluginSlug: plugin.slug, message: resolveErrorMessage(result, uiI18n) });
 
                     // Track installation error
                     trackButtonClick({
@@ -676,7 +701,7 @@ export const MarketplaceProvider = ({
                         }
                     });
                 } else if (action === 'delete') {
-                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug, message: result?.error || result?.data?.message || result?.data?.error || null });
+                    setErrorState({ visible: true, type: 'delete', pluginSlug: plugin.slug, message: resolveErrorMessage(result, uiI18n) });
 
                     // Track deletion error
                     trackButtonClick({
