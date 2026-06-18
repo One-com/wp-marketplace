@@ -670,6 +670,9 @@ class MarketplaceController {
 				unset( $catalog_payload['action'] );
 			}
 
+			// TEMP DIAGNOSTIC: log outgoing payload keys (no values — keep credentials out of the log).
+			error_log( '[Marketplace catalog] brand=' . ( $this->config['brand'] ?? '(unset)' ) . ' outgoing payload keys: ' . implode( ',', array_keys( $catalog_payload ) ) );
+
 			$plugins = $this->get_model()->fetch_plugins( $catalog_payload );
 
 			if ( is_wp_error( $plugins ) ) {
@@ -691,7 +694,8 @@ class MarketplaceController {
 			){
 				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 			} else {
-				error_log( 'Invalid catalog structure' );
+				// TEMP DIAGNOSTIC: dump first 1500 chars of the response so we can see what shape the API returned.
+				error_log( '[Marketplace catalog] Invalid catalog structure. Response type=' . gettype( $plugins ) . ', top-level keys=' . ( is_array( $plugins ) ? implode( ',', array_keys( $plugins ) ) : '(not array)' ) . ', body=' . substr( wp_json_encode( $plugins ), 0, 1500 ) );
 				return new WP_REST_Response( [ 'error' => 'Invalid catalog structure' ], 500 );
 			}
 			$is_cached = false;
@@ -751,7 +755,7 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'install_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Permission denied' ]);
 		}
 
 
@@ -769,7 +773,8 @@ class MarketplaceController {
 		// inspect 'installed: true' to update its UI without showing a "succeeded" toast.
 		if ( $this->is_installed( $slug ) ) {
 			wp_send_json_error( [
-				'message'   => __( 'Plugin is already installed.', 'onecom-wp' ),
+				'code'      => 'plugin_already_installed',
+				'message'   => 'Plugin is already installed.',
 				'installed' => true,
 				'activated' => false,
 			] );
@@ -784,7 +789,8 @@ class MarketplaceController {
 		$lock_key = "marketplace_install_lock_{$slug}";
 		if ( get_transient( $lock_key ) ) {
 			wp_send_json_error( [
-				'message' => __( 'An install is already in progress for this plugin. Please wait a moment and try again.', 'onecom-wp' ),
+				'code'    => 'install_in_progress',
+				'message' => 'An install is already in progress for this plugin. Please wait a moment and try again.',
 			] );
 		}
 		set_transient( $lock_key, time(), 120 );
@@ -813,7 +819,7 @@ class MarketplaceController {
 		if ( $this->is_installed( $slug ) ) {
 			delete_transient( $lock_key );
 			wp_send_json_success([
-				'message'   => __( 'Plugin installed successfully', 'onecom-wp' ),
+				'message'   => 'Plugin installed successfully',
 				'installed' => true,
 				'activated' => false,
 			]);
@@ -825,11 +831,17 @@ class MarketplaceController {
 			$skin_messages = method_exists( $upgrader->skin, 'get_upgrade_messages' ) ? $upgrader->skin->get_upgrade_messages() : [];
 			$skin_errors   = isset( $upgrader->skin->errors ) ? $upgrader->skin->errors : null;
 			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url . '; skin messages: ' . wp_json_encode( $skin_messages ) . '; skin errors: ' . wp_json_encode( $skin_errors ) );
-			wp_send_json_error( [ 'message' => __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ) ] );
+			wp_send_json_error( [
+				'code'    => 'install_failed_download',
+				'message' => 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.',
+			] );
 		}
 
 		delete_transient( $lock_key );
-		wp_send_json_error( [ 'message' => __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ) ] );
+		wp_send_json_error( [
+			'code'    => 'install_failed_not_found',
+			'message' => 'Plugin installation failed. The plugin was not found after installation.',
+		] );
 	}
 
 	/**
@@ -1082,17 +1094,17 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'activate_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Permission denied' ]);
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
 		if ( empty( $slug ) ) {
-			wp_send_json_error([ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Invalid plugin slug' ]);
 		}
 
 		// Check if plugin is installed first
 		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error([ 'message' => __( 'Plugin not installed', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Plugin not installed' ]);
 		}
 
 		// Resolve the plugin file using the enhanced helper function
@@ -1107,7 +1119,7 @@ class MarketplaceController {
 		}
 
 		if ( empty( $plugin_file ) ) {
-			wp_send_json_error([ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Plugin file not found' ]);
 		}
 
 		// Ensure the plugin is loaded so its deactivation hooks are registered.
@@ -1119,11 +1131,11 @@ class MarketplaceController {
 		deactivate_plugins( $plugin_file, false, null );
 
 		if ( is_plugin_active( $plugin_file ) ) {
-			wp_send_json_error([ 'message' => __( 'Failed to deactivate plugin', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Failed to deactivate plugin' ]);
 		}
 
 		wp_send_json_success([
-			'message'   => __( 'Plugin deactivated successfully', 'onecom-wp' ),
+			'message'   => 'Plugin deactivated successfully',
 			'installed' => true,
 			'activated' => false,
 		]);
@@ -1133,17 +1145,17 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'delete_plugins' ) ) {
-			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
+			wp_send_json_error( [ 'message' => 'Permission denied' ] );
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
 		if ( empty( $slug ) ) {
-			wp_send_json_error( [ 'message' => __( 'Invalid plugin slug', 'onecom-wp' ) ] );
+			wp_send_json_error( [ 'message' => 'Invalid plugin slug' ] );
 		}
 
 		// Check if plugin is installed first
 		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin not installed', 'onecom-wp' ) ] );
+			wp_send_json_error( [ 'message' => 'Plugin not installed' ] );
 		}
 
 		// Resolve the plugin file
@@ -1151,12 +1163,15 @@ class MarketplaceController {
 		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
 
 		if ( empty( $plugin_file ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin file not found', 'onecom-wp' ) ] );
+			wp_send_json_error( [ 'message' => 'Plugin file not found' ] );
 		}
 
 		// Check if the plugin is active
 		if ( is_plugin_active( $plugin_file ) ) {
-			wp_send_json_error( [ 'message' => __( 'Cannot delete an active plugin. Please deactivate it first.', 'onecom-wp' ) ] );
+			wp_send_json_error( [
+				'code'    => 'cannot_delete_active',
+				'message' => 'Cannot delete an active plugin. Please deactivate it first.',
+			] );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
@@ -1169,11 +1184,11 @@ class MarketplaceController {
 		}
 
 		if ( $result === false ) {
-			wp_send_json_error( [ 'message' => __( 'Failed to delete plugin', 'onecom-wp' ) ] );
+			wp_send_json_error( [ 'message' => 'Failed to delete plugin' ] );
 		}
 
 		wp_send_json_success( [
-			'message'   => __( 'Plugin deleted successfully', 'onecom-wp' ),
+			'message'   => 'Plugin deleted successfully',
 			'installed' => false,
 			'activated' => false,
 		] );
@@ -1362,7 +1377,7 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'install_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Permission denied' ]);
 		}
 
 		$brand_name = $this->config['brand'];
