@@ -8,7 +8,7 @@ import ErrorState from "./ErrorState";
 import MaintenanceState from "./MaintenanceState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice, getRebatePrice,getFullPrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getRebatePrice, getFullPrice, getDiscountPercentage } from "../utils/priceFormatter";
 import { trackMarketplaceVisit, trackPluginDetailVisit, trackPageView } from "../utils/mixpanelTracking";
 
 export default function Marketplace() {
@@ -508,6 +508,8 @@ export default function Marketplace() {
                             const price = formatPluginPrice(plugin, freeLabel, uiI18n);
                             const fullPriceAmount = getFullPrice(plugin);
                             const rebatePriceAmount = getRebatePrice(plugin);
+                            const discountPct = getDiscountPercentage(plugin);
+                            const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && rebatePriceAmount && discountPct > 0;
                             return (
                                 <div
                                     key={plugin.slug}
@@ -527,12 +529,20 @@ export default function Marketplace() {
                                     <div className="gv-flex gv-flex-col gv-justify-between gv-h-full">
                                     <p className="gv-text-sm gv-text-bold gv-mb-xs">{plugin.name}</p>
                                       <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm gv-flex-1"> {plugin.i18n.listingDescription || plugin.i18n.subtitle} </p>
-                                      <span className="gv-caption-lg gv-text-bold">
-                                            <>
-                                                {plugin.licenseType === "premium" && (rebatePriceAmount > 0) ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount) : price}
-                                              {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                            </>
-                                      </span>
+                                      {hasDiscount ? (
+                                          <div className="ocmp-price-wrapper">
+                                              <span className="gv-price-old gv-caption-lg">{fullPriceAmount}</span>
+                                              <span className="gv-caption-lg gv-text-bold">{rebatePriceAmount}<span className="gv-period">/{uiI18n?.labels?.timeMonth}</span></span>
+                                              <span className="gv-badge gv-badge-discount">{uiI18n?.labels?.save || 'Save'} {discountPct}%</span>
+                                          </div>
+                                      ) : (
+                                          <span className="gv-caption-lg gv-text-bold">
+                                              <>
+                                                  {price}
+                                                  {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                              </>
+                                          </span>
+                                      )}
                                     </div>
                                   </div>
                                     <div className="gv-span-1 gv-content-center gv-text-right">

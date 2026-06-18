@@ -106,6 +106,16 @@ body.one-com_page_onecom-marketplace{
 	cursor: pointer;
 }
 
+.ocmp-price-wrapper span.gv-price-old.gv-caption-lg {
+  color: var(--color-body-on-alternative);
+  text-decoration: line-through;
+  padding-right: 5px;
+}
+
+.ocmp-price-wrapper span.gv-badge.gv-badge-discount {
+  margin-left: 5px;
+  margin-bottom: -8px;
+}
 /* Responsive styles for Product Banner */
 @media (max-width: 1024px) {
 	.gv-product-banner .gv-left-banner {
