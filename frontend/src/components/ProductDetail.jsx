@@ -276,7 +276,7 @@ export default function ProductDetail({
                                         <div className="gv-bottom">
                                             <div className="gv-price-container">
                                                 {hasDiscount && (
-                                                    <div className="gv-price-with-badge">
+                                                    <div className="gv-price-with-badge single-page-sale">
                                                         <span className="gv-price-old"><HtmlRenderer htmlString={fullPriceAmount} /></span>
                                                         <div className="gv-badge gv-badge-discount">{uiI18n?.labels?.save || 'Save'} {discountPct}%</div>
                                                     </div>

@@ -112,10 +112,22 @@ body.one-com_page_onecom-marketplace{
   padding-right: 5px;
 }
 
+/* Price badge custom css */
 .ocmp-price-wrapper span.gv-badge.gv-badge-discount {
   margin-left: 5px;
   margin-bottom: -8px;
+  font-size: 10px;
+  height: 24px;
+  padding: 3px 6px;
 }
+
+.gv-price-with-badge.single-page-sale .gv-badge.gv-badge-discount {
+  font-size: 10px;
+  height: 24px;
+  padding: 3px 6px;
+}
+/* Price badge custom css */
+
 /* Responsive styles for Product Banner */
 @media (max-width: 1024px) {
 	.gv-product-banner .gv-left-banner {
