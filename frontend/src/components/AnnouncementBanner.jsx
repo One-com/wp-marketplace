@@ -140,7 +140,7 @@ const AnnouncementBanner = ({ plugin }) => {
 
     return (
         <div
-            className="gv-notice gv-notice-info gv-w-full mp-announcement-banner"
+            className="gv-notice gv-notice-upgrade gv-w-full mp-announcement-banner"
             role="region"
             aria-label={`Release announcement: ${banner.title}`}
             style={{
