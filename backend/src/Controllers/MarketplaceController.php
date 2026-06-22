@@ -202,6 +202,7 @@ class MarketplaceController {
 			add_action( "wp_ajax_{$prefix}_clear_subscription_list", [ $this, 'ajax_clear_subscription_list' ] );
 			add_action( "wp_ajax_{$prefix}_save_pending_cancellation", [ $this, 'ajax_save_pending_cancellation' ] );
 			add_action( "wp_ajax_{$prefix}_clear_pending_cancellation", [ $this, 'ajax_clear_pending_cancellation' ] );
+			add_action( "wp_ajax_{$prefix}_dismiss_banner", [ $this, 'ajax_dismiss_banner' ] );
 
 
 			//reset transient for marketplace catalog
@@ -457,6 +458,8 @@ class MarketplaceController {
 			],
 			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
 			'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
+			'dismissedBanners'     => $this->get_dismissed_banners(),
+			'bannersApiUrl'        => rest_url( 'marketplace/v1/banners' ),
 			'menuSlug'             => $this->config['menu_slug'],
 			'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
 			'siteUrl'              => home_url(),
@@ -492,6 +495,20 @@ class MarketplaceController {
 			'callback'            => [ $this, 'check_plugin_activation' ],
 			'permission_callback' => '__return_true',
 		] );
+
+		// /banners is brand-agnostic: registered once under the common
+		// 'marketplace/v1' namespace regardless of which brand is booting.
+		// The static flag prevents duplicate registration when multiple
+		// marketplace instances run on the same WordPress install.
+		static $banners_route_registered = false;
+		if ( ! $banners_route_registered ) {
+			register_rest_route( 'marketplace/v1', '/banners', [
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'get_banners' ],
+				'permission_callback' => '__return_true',
+			] );
+			$banners_route_registered = true;
+		}
 	}
 
 	public function check_plugin_activation( $request ) {
@@ -511,6 +528,94 @@ class MarketplaceController {
 		], 200 );
 	}
 
+
+	/**
+	 * GET /wp-json/marketplace/v1/banners?plugin_slug={slug}
+	 *
+	 * Brand-agnostic endpoint — registered once under the common 'marketplace/v1'
+	 * namespace so it works regardless of which brand is booting the module.
+	 *
+	 * Returns release announcement banners for the marketplace frontend.
+	 * Each banner is keyed to a plugin slug and controlled by an `enabled` flag
+	 * (driven by a feature flag on the backend once the real API is wired up).
+	 *
+	 * Currently returns a mocked response — replace the $banners array with a
+	 * real upstream API call when the backend service is ready (WPIN-8591).
+	 *
+	 * Response shape:
+	 * {
+	 *   "success": true,
+	 *   "data": {
+	 *     "banners": [
+	 *       {
+	 *         "id":         string   — stable identifier for dismiss-state storage,
+	 *         "slug":       string   — marketplace plugin slug this banner targets,
+	 *         "enabled":    bool     — feature-flag gate; false = banner hidden,
+	 *         "title":      string,
+	 *         "body":       string,
+	 *         "cta": {
+	 *           "label":  string,
+	 *           "url":    string
+	 *         },
+	 *         "expires_at": string   — ISO 8601 date after which banner auto-hides
+	 *       }
+	 *     ]
+	 *   }
+	 * }
+	 *
+	 * @param \WP_REST_Request $request
+	 * @return WP_REST_Response
+	 */
+	public function get_banners( $request ) {
+		$plugin_slug = sanitize_text_field( $request->get_param( 'plugin_slug' ) );
+
+		if ( empty( $plugin_slug ) ) {
+			return new WP_REST_Response( [ 'error' => 'Missing plugin_slug parameter.' ], 400 );
+		}
+
+		// Mocked banner data keyed by plugin slug.
+		// TODO: replace with a real upstream call to wp-marketplace-service once WPIN-8591 is live.
+		$banners = [
+			'rank-math' => [
+				'plugin_slug' => 'rank-math',
+				'title'       => 'Rank Math AI Visibility is Here',
+				'body'        => 'Discover the new AI-powered visibility feature for smarter SEO. Rank Math now helps your content surface in AI-driven search results.',
+				'cta_label'   => 'Learn More',
+				'cta_url'     => 'https://marketplace.example.com/plugins/rank-math',
+				'is_active'   => true,
+				'expires_at'  => '2026-12-31T23:59:59Z',
+			],
+			'wp-rocket' => [
+				'plugin_slug' => 'wp-rocket',
+				'title'       => 'WP Rocket RocketCDN Free Tier Now Available',
+				'body'        => 'Speed up your website with WP Rocket\'s RocketCDN — now available with a free tier for all users at no extra cost.',
+				'cta_label'   => 'Get Started',
+				'cta_url'     => 'https://marketplace.example.com/plugins/wp-rocket',
+				'is_active'   => true,
+				'expires_at'  => '2026-12-31T23:59:59Z',
+			],
+		];
+
+		if ( ! isset( $banners[ $plugin_slug ] ) ) {
+			return new WP_REST_Response( null, 404 );
+		}
+
+		$banner = $banners[ $plugin_slug ];
+
+		// Respect active flag and expiry
+		if ( ! $banner['is_active'] ) {
+			return new WP_REST_Response( null, 404 );
+		}
+
+		if ( ! empty( $banner['expires_at'] ) ) {
+			$expires = strtotime( $banner['expires_at'] );
+			if ( $expires !== false && $expires < time() ) {
+				return new WP_REST_Response( null, 404 );
+			}
+		}
+
+		return new WP_REST_Response( $banner, 200 );
+	}
 
 	public function get_plugins( $request ) {
 
@@ -1404,6 +1509,60 @@ class MarketplaceController {
 		}
 
 		wp_send_json_success( [ 'message' => 'Pending cancellation cleared.' ] );
+	}
+
+	/**
+	 * Return the list of banner slugs the current user has dismissed.
+	 * Stored in WP user meta under `{brand}_marketplace_dismissed_banners`.
+	 * Called from build_marketplace_config() so the data is available in the
+	 * initial page load without an extra round-trip from React.
+	 *
+	 * @return string[]
+	 */
+	protected function get_dismissed_banners(): array {
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			return [];
+		}
+		$brand    = $this->config['brand'] ?: 'marketplace';
+		$meta_key = "{$brand}_marketplace_dismissed_banners";
+		$dismissed = get_user_meta( $user_id, $meta_key, true );
+		return is_array( $dismissed ) ? $dismissed : [];
+	}
+
+	/**
+	 * Persist a dismissed banner slug to WP user meta so it is never re-shown
+	 * to the same user, even across different browsers or devices.
+	 *
+	 * Meta key: `{brand}_marketplace_dismissed_banners` (array of banner slugs)
+	 */
+	public function ajax_dismiss_banner(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$banner_slug = sanitize_text_field( $_POST['banner_slug'] ?? '' );
+
+		if ( empty( $banner_slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing banner_slug.' ] );
+			return;
+		}
+
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			wp_send_json_error( [ 'message' => 'Not logged in.' ] );
+			return;
+		}
+
+		$brand     = $this->config['brand'] ?: 'marketplace';
+		$meta_key  = "{$brand}_marketplace_dismissed_banners";
+		$dismissed = get_user_meta( $user_id, $meta_key, true );
+		$dismissed = is_array( $dismissed ) ? $dismissed : [];
+
+		if ( ! in_array( $banner_slug, $dismissed, true ) ) {
+			$dismissed[] = $banner_slug;
+			update_user_meta( $user_id, $meta_key, $dismissed );
+		}
+
+		wp_send_json_success( [ 'message' => 'Banner dismissed.' ] );
 	}
 
 	/**
