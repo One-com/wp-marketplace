@@ -143,16 +143,14 @@ const AnnouncementBanner = ({ plugin }) => {
             className="gv-notice gv-notice-upgrade gv-w-full mp-announcement-banner"
             role="region"
             aria-label={`Release announcement: ${banner.title}`}
-            style={{
-                gap: 'var(--size-sm)',
-                alignItems: 'flex-start',
-            }}
+            style={{ gap: 'var(--size-sm)', alignItems: 'flex-start' }}
         >
             {/* Scoped overrides — desktop only; mobile restores Gravity default padding */}
             <style>{`
-                .mp-announcement-banner { padding: var(--size-sm) !important; }
+                .mp-announcement-banner { padding: var(--size-md) !important;     padding-bottom: 10px !important; }
                 .mp-announcement-banner .gv-notice-close { padding: var(--size-xs) !important; }
                 .mp-announcement-banner .gv-notice-icon { width: var(--size-icon-md); height: var(--size-icon-md); flex-shrink: 0; }
+                .mp-announcement-banner .banner-cta { height: 32px !important; font-size: 13px !important; }
                 @media (max-width: 599px) {
                     .mp-announcement-banner { padding: var(--size-lg) !important; }
                     .mp-announcement-banner .gv-notice-close { padding: var(--size-sm) !important; }
@@ -177,7 +175,7 @@ const AnnouncementBanner = ({ plugin }) => {
                     >
                         <span
                             className="gv-acc-title"
-                            style={{ fontSize: 'calc(var(--font-size-text-sm) * 1rem - 2px)' }}
+                            style={{ fontSize: '13px' }}
                         >
                             {banner.title}
                         </span>
@@ -191,7 +189,7 @@ const AnnouncementBanner = ({ plugin }) => {
                             href={banner.cta_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="gv-button gv-button-neutral gv-button-sm gv-mt-sm"
+                            className="gv-button gv-button-neutral gv-button-sm gv-mt-md banner-cta"
                             style={{ height: 'var(--form-element-height)' }}
                         >
                             {banner.cta_label}
