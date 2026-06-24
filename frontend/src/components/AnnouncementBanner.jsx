@@ -33,11 +33,12 @@ const AnnouncementBanner = ({ plugin }) => {
     // since product_id will be removed from the announcement object.
     const bannerId = plugin?.productId || null;
 
-    // Validate: must exist, be active, and not expired
+    // Validate: announcement must exist and not be expired.
+    // No is_active flag — presence of the announcement object means it is active.
     const isValid = (() => {
-        if ( !announcement?.is_active ) return false;
-        if ( announcement?.expires_at ) {
-            return new Date( announcement.expires_at ) > new Date();
+        if ( !announcement ) return false;
+        if ( announcement?.expiresAt ) {
+            return new Date( announcement.expiresAt ) > new Date();
         }
         return true;
     })();
@@ -108,7 +109,6 @@ const AnnouncementBanner = ({ plugin }) => {
             <style>{`
                 .mp-announcement-banner { padding: var(--size-md) !important; padding-bottom: 10px !important; }
                 .mp-announcement-banner .gv-notice-close { padding: var(--size-xs) !important; }
-                .mp-announcement-banner .gv-notice-icon { width: var(--size-icon-md); height: var(--size-icon-md); flex-shrink: 0; }
                 .mp-announcement-banner .banner-cta { height: 32px !important; font-size: 13px !important; }
                 @media (max-width: 599px) {
                     .mp-announcement-banner { padding: var(--size-lg) !important; }
@@ -121,6 +121,7 @@ const AnnouncementBanner = ({ plugin }) => {
                 className="gv-notice-icon"
                 aria-hidden="true"
                 src={`${iconBase}icons/campaign.svg`}
+                style={{ flexShrink: 0 }}
             ></gv-icon>
 
             {/* Accordion: title row (trigger) + collapsible body */}
@@ -146,13 +147,13 @@ const AnnouncementBanner = ({ plugin }) => {
                     <div className="gv-acc-content gv-pb-0 gv-mb-sm">
                         <p>{announcement.body}</p>
                         <a
-                            href={announcement.cta_url}
+                            href={announcement.ctaUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="gv-button gv-button-neutral gv-button-sm gv-mt-md banner-cta"
                             style={{ height: 'var(--form-element-height)' }}
                         >
-                            {announcement.cta_label}
+                            {announcement.ctaLabel}
                             <gv-icon
                                 aria-hidden="true"
                                 src={`${iconBase}icons/open_in_new.svg`}
