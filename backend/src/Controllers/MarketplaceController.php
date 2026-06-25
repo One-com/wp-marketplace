@@ -202,6 +202,7 @@ class MarketplaceController {
 			add_action( "wp_ajax_{$prefix}_clear_subscription_list", [ $this, 'ajax_clear_subscription_list' ] );
 			add_action( "wp_ajax_{$prefix}_save_pending_cancellation", [ $this, 'ajax_save_pending_cancellation' ] );
 			add_action( "wp_ajax_{$prefix}_clear_pending_cancellation", [ $this, 'ajax_clear_pending_cancellation' ] );
+			add_action( "wp_ajax_{$prefix}_dismiss_banner", [ $this, 'ajax_dismiss_banner' ] );
 
 
 			//reset transient for marketplace catalog
@@ -457,6 +458,7 @@ class MarketplaceController {
 			],
 			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
 			'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
+			'dismissedBanners'     => $this->get_dismissed_banners(),
 			'menuSlug'             => $this->config['menu_slug'],
 			'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
 			'siteUrl'              => home_url(),
@@ -492,6 +494,7 @@ class MarketplaceController {
 			'callback'            => [ $this, 'check_plugin_activation' ],
 			'permission_callback' => '__return_true',
 		] );
+
 	}
 
 	public function check_plugin_activation( $request ) {
@@ -581,6 +584,7 @@ class MarketplaceController {
 				$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
 				$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
 			}
+
 			return $plugin;
 		};
 
@@ -1404,6 +1408,60 @@ class MarketplaceController {
 		}
 
 		wp_send_json_success( [ 'message' => 'Pending cancellation cleared.' ] );
+	}
+
+	/**
+	 * Return the list of banner slugs the current user has dismissed.
+	 * Stored in WP user meta under `{brand}_marketplace_dismissed_banners`.
+	 * Called from build_marketplace_config() so the data is available in the
+	 * initial page load without an extra round-trip from React.
+	 *
+	 * @return string[]
+	 */
+	protected function get_dismissed_banners(): array {
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			return [];
+		}
+		$brand    = $this->config['brand'] ?: 'marketplace';
+		$meta_key = "{$brand}_marketplace_dismissed_banners";
+		$dismissed = get_user_meta( $user_id, $meta_key, true );
+		return is_array( $dismissed ) ? $dismissed : [];
+	}
+
+	/**
+	 * Persist a dismissed banner slug to WP user meta so it is never re-shown
+	 * to the same user, even across different browsers or devices.
+	 *
+	 * Meta key: `{brand}_marketplace_dismissed_banners` (array of banner slugs)
+	 */
+	public function ajax_dismiss_banner(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$banner_slug = sanitize_text_field( wp_unslash( $_POST['banner_slug'] ?? '' ) );
+
+		if ( empty( $banner_slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing banner_slug.' ] );
+			return;
+		}
+
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			wp_send_json_error( [ 'message' => 'Not logged in.' ] );
+			return;
+		}
+
+		$brand     = $this->config['brand'] ?: 'marketplace';
+		$meta_key  = "{$brand}_marketplace_dismissed_banners";
+		$dismissed = get_user_meta( $user_id, $meta_key, true );
+		$dismissed = is_array( $dismissed ) ? $dismissed : [];
+
+		if ( ! in_array( $banner_slug, $dismissed, true ) ) {
+			$dismissed[] = $banner_slug;
+			update_user_meta( $user_id, $meta_key, $dismissed );
+		}
+
+		wp_send_json_success( [ 'message' => 'Banner dismissed.' ] );
 	}
 
 	/**
