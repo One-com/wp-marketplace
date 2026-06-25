@@ -6,7 +6,7 @@ import ErrorToast from "./ErrorToast";
 import Breadcrumbs from "./Breadcrumbs";
 import AnnouncementBanner from "./AnnouncementBanner";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice, getFullPrice, getRebatePrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getFullPrice, getRebatePrice, getDiscountPercentage } from "../utils/priceFormatter";
 import { HtmlRenderer } from "../utils/common.utils";
 
 export default function ProductDetail({
@@ -184,6 +184,8 @@ export default function ProductDetail({
     // Extract full and rebate prices using common utility functions
     const fullPriceAmount = getFullPrice(plugin, true);
     const rebatePriceAmount = getRebatePrice(plugin, true);
+    const discountPct = getDiscountPercentage(plugin);
+    const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && rebatePriceAmount !== null && discountPct > 0 && !hasFreeTrialPeriod && !hasFreeTrialText;
 
     // Helper function to extract numbered properties dynamically from i18n object
     const extractNumberedProps = (obj, baseName) => {
@@ -273,6 +275,12 @@ export default function ProductDetail({
                                         </div>
                                         <div className="gv-bottom">
                                             <div className="gv-price-container">
+                                                {hasDiscount && (
+                                                    <div className="gv-price-with-badge single-page-sale">
+                                                        <span className="gv-price-old"><HtmlRenderer htmlString={fullPriceAmount} /></span>
+                                                        <div className="gv-badge gv-badge-discount">{uiI18n?.labels?.save || 'Save'} {discountPct}%</div>
+                                                    </div>
+                                                )}
                                                 <div className="gv-price">
                                                     {(hasFreeTrialPeriod || hasFreeTrialText) ? (
                                                         <span className="gv-price-text">{price}</span>
