@@ -1438,7 +1438,7 @@ class MarketplaceController {
 	public function ajax_dismiss_banner(): void {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
-		$banner_slug = sanitize_text_field( $_POST['banner_slug'] ?? '' );
+		$banner_slug = sanitize_text_field( wp_unslash( $_POST['banner_slug'] ?? '' ) );
 
 		if ( empty( $banner_slug ) ) {
 			wp_send_json_error( [ 'message' => 'Missing banner_slug.' ] );
