@@ -248,7 +248,9 @@ export default function FeaturedCarousel({ loading = false }) {
                         const price = formatPluginPrice(plugin, freeLabel, uiI18n);
                         const fullPriceAmount = getFullPrice(plugin);
                         const discountPct = getDiscountPercentage(plugin);
-                        const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && discountPct > 0;
+                        const hasFreeTrialPeriod = plugin.i18n?.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '';
+                        const hasFreeTrialText = plugin.i18n?.freeTrialText && plugin.i18n.freeTrialText.trim() !== '';
+                        const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && discountPct > 0 && !hasFreeTrialPeriod && !hasFreeTrialText;
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
                         // Extract category name from plugin categories array
