@@ -509,7 +509,9 @@ export default function Marketplace() {
                             const fullPriceAmount = getFullPrice(plugin);
                             const rebatePriceAmount = getRebatePrice(plugin);
                             const discountPct = getDiscountPercentage(plugin);
-                            const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && rebatePriceAmount && discountPct > 0;
+                            const hasFreeTrialPeriod = plugin.i18n?.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '';
+                            const hasFreeTrialText = plugin.i18n?.freeTrialText && plugin.i18n.freeTrialText.trim() !== '';
+                            const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && rebatePriceAmount && discountPct > 0 && !hasFreeTrialPeriod && !hasFreeTrialText;
                             return (
                                 <div
                                     key={plugin.slug}
