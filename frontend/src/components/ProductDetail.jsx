@@ -4,6 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import Breadcrumbs from "./Breadcrumbs";
+import AnnouncementBanner from "./AnnouncementBanner";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getFullPrice, getRebatePrice, getDiscountPercentage } from "../utils/priceFormatter";
 import { HtmlRenderer } from "../utils/common.utils";
@@ -238,9 +239,8 @@ export default function ProductDetail({
                 >
                     <SuccessNotice plugin={plugin} />
                     <ErrorToast plugin={plugin} />
+                    <AnnouncementBanner plugin={plugin} />
                 </Breadcrumbs>
-
-
 
                 <header className="gv-product-header gv-area-header">
                     <div className="gv-content gv-stack-space-md gv-text-sm">

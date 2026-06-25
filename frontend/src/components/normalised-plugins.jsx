@@ -68,6 +68,7 @@ export function normalizePlugins(rawResponse) {
       version: plugin?.productMeta?.version || "",
       activeInstalls: plugin?.productMeta?.activeInstallations ?? null,
       pluginLastUpdated: plugin?.productMeta?.lastUpdated || null,
+      announcement: plugin?.announcement || null,
       freeTrial: plugin?.freeTrial || null,
       rating: plugin?.productMeta?.rating ?? null,
       ratingCount: plugin?.productMeta?.ratingCount ?? null,

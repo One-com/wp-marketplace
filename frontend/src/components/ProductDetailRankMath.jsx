@@ -4,6 +4,7 @@ import PluginActions from "./PluginActions";
 import SuccessNotice from "./SuccessNotice";
 import ErrorToast from "./ErrorToast";
 import Breadcrumbs from "./Breadcrumbs";
+import AnnouncementBanner from "./AnnouncementBanner";
 import { useMarketplace } from "../context/MarketplaceContext";
 import { formatPluginPrice, getFullPrice } from "../utils/priceFormatter";
 
@@ -507,6 +508,7 @@ export default function ProductDetailRankMath({
                     <SuccessNotice plugin={noticeState?.pluginSlug === proPlugin?.slug ? proPlugin : freePlugin} />
                     <ErrorToast plugin={freePlugin} />
                     <ErrorToast plugin={proPlugin} />
+                    <AnnouncementBanner plugin={plugin} />
                 </Breadcrumbs>
 
 
