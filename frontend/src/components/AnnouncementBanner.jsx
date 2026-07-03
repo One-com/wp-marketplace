@@ -110,6 +110,7 @@ const AnnouncementBanner = ({ plugin }) => {
                 .mp-announcement-banner { padding: var(--size-md) !important; padding-bottom: 10px !important; }
                 .mp-announcement-banner .gv-notice-close { padding: var(--size-xs) !important; }
                 .mp-announcement-banner .banner-cta { height: 32px !important; font-size: 13px !important; }
+                .mp-announcement-banner .gv-acc-content p { white-space: pre-line; }
                 @media (max-width: 599px) {
                     .mp-announcement-banner { padding: var(--size-lg) !important; }
                     .mp-announcement-banner .gv-notice-close { padding: var(--size-sm) !important; }
