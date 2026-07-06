@@ -72,6 +72,22 @@ class MarketplaceAbilities {
 				self::register_reads( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider );
 			}
 		} );
+
+		// Expose the abilities as first-class tools on the adapter's default server, so
+		// MCP clients see each operation individually WITH its annotations (e.g. the
+		// destructive hint on install/delete). Without this the abilities are only
+		// reachable via the generic execute-ability meta-tool, which hides per-ability
+		// annotations. Only slugs that actually registered are added.
+		add_filter( 'mcp_adapter_default_server_config', static function ( $config ) use ( $brand ) {
+			$tools = ( isset( $config['tools'] ) && is_array( $config['tools'] ) ) ? $config['tools'] : [];
+			foreach ( self::ability_ids( $brand ) as $id ) {
+				if ( wp_get_ability( $id ) ) {
+					$tools[] = $id;
+				}
+			}
+			$config['tools'] = array_values( array_unique( $tools ) );
+			return $config;
+		} );
 	}
 
 	/**
