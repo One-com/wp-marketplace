@@ -396,12 +396,16 @@ export default function PluginActions({ plugin }) {
         }
 
         try {
+            // TEMP TEST OVERRIDE (SocialPilot) — force EUR / 20.4 on the buy-now request.
+            // Scoped to the socialpilot-autopost-ultimate slug. Remove this block after testing.
+            const __spTestOverride = plugin?.slug === 'socialpilot-autopost-ultimate';
+
             const formData = new URLSearchParams({
                 action: getAjaxAction('subscribe'),
                 nonce: wpConfig.nonce,
                 productId: plugin.productId || '',
-                priceAmount: priceData.amount || '',
-                priceCurrency: priceData.currency || '',
+                priceAmount: __spTestOverride ? '20.4' : (priceData.amount || ''),
+                priceCurrency: __spTestOverride ? 'EUR' : (priceData.currency || ''),
                 pricePeriod: priceData.period || '',
             });
 

@@ -1235,7 +1235,113 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
+		// Data-driven license provisioning: only once the procurement is active and the
+		// response carries licenseData, write each entry into the WP database.
+		$status       = $result['data']['status'] ?? '';
+		$license_data = $result['data']['license']['licenseData'] ?? null;
+		if ( 'active' === $status && is_array( $license_data ) && ! empty( $license_data ) ) {
+			$this->apply_license_data( $license_data );
+		}
+
 		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Data-driven license provisioning.
+	 *
+	 * Writes license values returned by the purchase/procurement API into the WP
+	 * database, driven entirely by the API response — new plugins need no module
+	 * code, only the right `licenseData` in their response. Each entry is:
+	 *
+	 *     { "key": [ "<option_name>", "<nested>", ... ], "value": "<stored as-is>" }
+	 *
+	 * The first `key` element is the wp_option name; the rest is the nested path
+	 * within that option's array. The value is stored verbatim (encrypted blobs are
+	 * kept as-is; the target plugin decrypts on read).
+	 *
+	 * @param array $license_data Map/list of { key: string[], value: mixed } entries.
+	 */
+	private function apply_license_data( array $license_data ): void {
+		foreach ( $license_data as $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['key'] ) || ! is_array( $entry['key'] ) || ! array_key_exists( 'value', $entry ) ) {
+				continue;
+			}
+			$this->set_option_by_path( array_values( $entry['key'] ), $entry['value'] );
+		}
+	}
+
+	/**
+	 * Set a value at an option path: the first element is the option name, the rest is
+	 * the nested array path inside it. Guarded so an API response can't overwrite core
+	 * WordPress options.
+	 *
+	 * @param array $path  [ option_name, ...nested_keys ]
+	 * @param mixed $value Value to store (verbatim).
+	 * @return bool Whether the option was updated.
+	 */
+	private function set_option_by_path( array $path, $value ): bool {
+		$option_name = (string) array_shift( $path );
+
+		if ( '' === $option_name || ! $this->is_writable_option( $option_name ) ) {
+			error_log( '[Marketplace] license write blocked for option: ' . $option_name );
+			return false;
+		}
+
+		// Top-level option.
+		if ( empty( $path ) ) {
+			return update_option( $option_name, $value );
+		}
+
+		// Nested value inside the option's array; create intermediate containers as needed.
+		$data = get_option( $option_name, [] );
+		if ( ! is_array( $data ) ) {
+			$data = [];
+		}
+
+		$cursor = &$data;
+		$last   = array_pop( $path );
+		foreach ( $path as $segment ) {
+			if ( ! isset( $cursor[ $segment ] ) || ! is_array( $cursor[ $segment ] ) ) {
+				$cursor[ $segment ] = [];
+			}
+			$cursor = &$cursor[ $segment ];
+		}
+		$cursor[ $last ] = $value;
+		unset( $cursor );
+
+		return update_option( $option_name, $data );
+	}
+
+	/**
+	 * Guard which options the license writer may touch. Blocks core/critical WordPress
+	 * options so a compromised API response can't take over the site. Hosts can tighten
+	 * further (e.g. to an allowlist) via the 'marketplace_license_writable_option' filter.
+	 *
+	 * @param string $option_name
+	 * @return bool
+	 */
+	private function is_writable_option( string $option_name ): bool {
+		global $wpdb;
+
+		$blocked = [
+			'siteurl', 'home', 'blogname', 'blogdescription', 'admin_email', 'new_admin_email',
+			'users_can_register', 'default_role', 'template', 'stylesheet', 'current_theme',
+			'active_plugins', 'active_sitewide_plugins', 'WPLANG', 'cron', 'user_roles',
+			$wpdb->prefix . 'user_roles', 'auth_key', 'auth_salt', 'mailserver_url',
+			'mailserver_login', 'mailserver_pass', 'upload_path', 'db_version', 'secret',
+			'recently_activated',
+		];
+
+		$allowed = ! in_array( $option_name, $blocked, true );
+
+		/**
+		 * Filter whether a given option may be written by the license provisioner.
+		 * Return false to block a name, or implement a strict allowlist.
+		 *
+		 * @param bool   $allowed
+		 * @param string $option_name
+		 */
+		return (bool) apply_filters( 'marketplace_license_writable_option', $allowed, $option_name );
 	}
 
 	/**
