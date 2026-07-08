@@ -953,6 +953,11 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
 		}
 
+		// Now that the plugin is active (its activation routine has run and initialised
+		// its own options), write any license details we staged for this slug — merged
+		// into the plugin's freshly-created option so they aren't clobbered.
+		$this->apply_pending_license( $slug );
+
 		wp_send_json_success( [
 			'installed' => true,
 			'activated' => true,
@@ -1194,6 +1199,16 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
+		// Immediate-active purchases return the license inline — stage it here (it is
+		// written on activation, see ajax_activate_plugin). Slug is carried on our own
+		// request. The pending -> active poll path is handled in ajax_track_status.
+		$slug         = sanitize_key( wp_unslash( $_POST['slug'] ?? '' ) );
+		$status       = $result['data']['status'] ?? '';
+		$license_data = $result['data']['license']['licenseData'] ?? null;
+		if ( 'active' === $status && '' !== $slug && is_array( $license_data ) && ! empty( $license_data ) ) {
+			$this->stage_license( $slug, $license_data );
+		}
+
 		wp_send_json_success( $result );
 	}
 
@@ -1235,15 +1250,169 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
-		// Data-driven license provisioning: only once the procurement is active and the
-		// response carries licenseData, write each entry into the WP database.
+		// Data-driven license provisioning: once the procurement is active, STAGE the
+		// license for this plugin. It's written to the DB only after the plugin is
+		// activated (see ajax_activate_plugin -> apply_pending_license), so the plugin's
+		// own activation routine can't overwrite it. The slug is carried on our own
+		// request (not from the external API) — see the FE track-status call.
+		$slug         = sanitize_key( wp_unslash( $_POST['slug'] ?? '' ) );
 		$status       = $result['data']['status'] ?? '';
 		$license_data = $result['data']['license']['licenseData'] ?? null;
-		if ( 'active' === $status && is_array( $license_data ) && ! empty( $license_data ) ) {
-			$this->apply_license_data( $license_data );
+		if ( 'active' === $status && '' !== $slug && is_array( $license_data ) && ! empty( $license_data ) ) {
+			$this->stage_license( $slug, $license_data );
 		}
 
 		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Option name holding staged (pending) licenses, keyed by plugin slug.
+	 */
+	private function pending_licenses_option(): string {
+		$brand = $this->config['brand'] ?? '';
+		return "{$brand}_marketplace_pending_licenses";
+	}
+
+	/**
+	 * Stage a plugin's license for provisioning on activation.
+	 *
+	 * We do NOT write to the target option here — some plugins reinitialise their
+	 * options in their activation routine, which would clobber an early write. Instead
+	 * we persist the licenseData keyed by slug and apply it right after the plugin is
+	 * activated (see apply_pending_license). If the plugin is already active, apply now
+	 * (its activation routine has already run, and activation won't fire again).
+	 *
+	 * @param string $slug         Plugin slug (our correlation key).
+	 * @param array  $license_data Response licenseData map.
+	 */
+	private function stage_license( string $slug, array $license_data ): void {
+		if ( '' === $slug || empty( $license_data ) ) {
+			return;
+		}
+
+		if ( $this->is_plugin_active_by_slug( $slug ) ) {
+			$this->apply_license_data( $license_data );
+			return;
+		}
+
+		$option  = $this->pending_licenses_option();
+		$pending = get_option( $option, [] );
+		if ( ! is_array( $pending ) ) {
+			$pending = [];
+		}
+		$pending[ $slug ] = $license_data;
+		update_option( $option, $pending, false );
+	}
+
+	/**
+	 * Apply (and clear) a staged license for the given slug. Called from
+	 * ajax_activate_plugin right after the plugin is activated.
+	 *
+	 * @param string $slug
+	 */
+	private function apply_pending_license( string $slug ): void {
+		if ( '' === $slug ) {
+			return;
+		}
+		$option  = $this->pending_licenses_option();
+		$pending = get_option( $option, [] );
+		if ( ! is_array( $pending ) || empty( $pending[ $slug ] ) || ! is_array( $pending[ $slug ] ) ) {
+			return;
+		}
+
+		$this->apply_license_data( $pending[ $slug ] );
+
+		unset( $pending[ $slug ] );
+		update_option( $option, $pending, false );
+	}
+
+	/**
+	 * Stage licenses for every active subscription that carries licenseData. Slugs are
+	 * resolved from productId via the cached catalog.
+	 *
+	 * @param mixed $subscriptions
+	 */
+	private function stage_licenses_from_subscriptions( $subscriptions ): void {
+		if ( ! is_array( $subscriptions ) ) {
+			return;
+		}
+		$map = null;
+		foreach ( $subscriptions as $sub ) {
+			if ( ! is_array( $sub ) || 'active' !== ( $sub['status'] ?? '' ) ) {
+				continue;
+			}
+			$license = $sub['licenseData'] ?? null;
+			if ( ! is_array( $license ) || empty( $license ) ) {
+				continue;
+			}
+			$product_id = (string) ( $sub['productId'] ?? '' );
+			if ( '' === $product_id ) {
+				continue;
+			}
+			if ( null === $map ) {
+				$map = $this->product_id_to_slug_map();
+			}
+			$slug = $map[ $product_id ] ?? '';
+			if ( '' !== $slug ) {
+				$this->stage_license( $slug, $license );
+			}
+		}
+	}
+
+	/**
+	 * Build a productId => slug map from the cached marketplace catalog. Best-effort:
+	 * returns an empty map if the catalog isn't cached (the track-status path still
+	 * stages by the slug carried on its request).
+	 *
+	 * @return array<string,string>
+	 */
+	private function product_id_to_slug_map(): array {
+		$brand   = $this->config['brand'] ?? '';
+		$catalog = get_site_transient( "{$brand}_marketplace_catalog" );
+		if ( ! is_array( $catalog ) ) {
+			return [];
+		}
+
+		$items = [];
+		if ( ! empty( $catalog['data']['catalog'] ) && is_array( $catalog['data']['catalog'] ) ) {
+			$items = $catalog['data']['catalog'];
+		} elseif ( isset( $catalog['data'] ) && is_array( $catalog['data'] ) && array_values( $catalog['data'] ) === $catalog['data'] ) {
+			$items = $catalog['data'];
+		} elseif ( ! empty( $catalog['data']['ui_json'] ) && is_array( $catalog['data']['ui_json'] ) ) {
+			$items = $catalog['data']['ui_json'];
+		} else {
+			$sections = $catalog['data']['sections'] ?? $catalog['sections'] ?? [];
+			if ( is_array( $sections ) ) {
+				foreach ( $sections as $section ) {
+					if ( ! empty( $section['items'] ) && is_array( $section['items'] ) ) {
+						$items = array_merge( $items, $section['items'] );
+					}
+				}
+			}
+		}
+
+		$map = [];
+		foreach ( $items as $item ) {
+			if ( is_array( $item ) && ! empty( $item['slug'] ) && ! empty( $item['productId'] ) ) {
+				$map[ (string) $item['productId'] ] = (string) $item['slug'];
+			}
+		}
+		return $map;
+	}
+
+	/**
+	 * Whether the plugin resolved from a slug is currently active.
+	 *
+	 * @param string $slug
+	 * @return bool
+	 */
+	private function is_plugin_active_by_slug( string $slug ): bool {
+		if ( '' === $slug ) {
+			return false;
+		}
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+		return ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) && is_plugin_active( $plugin_file );
 	}
 
 	/**
@@ -1368,6 +1537,7 @@ class MarketplaceController {
 		$get_subscription_list = get_site_transient( $transient_name );
 
 		if ( is_array($get_subscription_list ) && ! empty( $get_subscription_list ) ) {
+			$this->stage_licenses_from_subscriptions( $get_subscription_list );
 			wp_send_json_success( $get_subscription_list );
 		}
 
@@ -1397,6 +1567,7 @@ class MarketplaceController {
 		$get_subscription_list = $result['data']["subscriptions"] ?? null;
 
 		if ( ! empty( $get_subscription_list ) && is_array( $get_subscription_list ) ) {
+			$this->stage_licenses_from_subscriptions( $get_subscription_list );
 			set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
 		} else {
 			$get_subscription_list = [];

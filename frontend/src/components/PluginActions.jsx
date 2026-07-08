@@ -148,7 +148,9 @@ export default function PluginActions({ plugin }) {
             ajaxUrl,
             nonce: wpConfig.nonce,
             action: getAjaxAction('track_status'),
-            params: { subscriptionId },
+            // slug is carried so the backend can stage this plugin's license (keyed by
+            // slug) to write on activation. It's our own request param, not from the API.
+            params: { subscriptionId, slug },
             interval: 10000,
             onResult: async (result) => {
                 if (!result.success) return false; // keep polling
@@ -396,16 +398,13 @@ export default function PluginActions({ plugin }) {
         }
 
         try {
-            // TEMP TEST OVERRIDE (SocialPilot) — force EUR / 20.4 on the buy-now request.
-            // Scoped to the socialpilot-autopost-ultimate slug. Remove this block after testing.
-            const __spTestOverride = plugin?.slug === 'socialpilot-autopost-ultimate';
-
             const formData = new URLSearchParams({
                 action: getAjaxAction('subscribe'),
                 nonce: wpConfig.nonce,
+                slug: plugin.slug || '',
                 productId: plugin.productId || '',
-                priceAmount: __spTestOverride ? '20.4' : (priceData.amount || ''),
-                priceCurrency: __spTestOverride ? 'EUR' : (priceData.currency || ''),
+                priceAmount: priceData.amount || '',
+                priceCurrency: priceData.currency || '',
                 pricePeriod: priceData.period || '',
             });
 
