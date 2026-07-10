@@ -174,6 +174,19 @@ class MarketplaceController {
 	 * Initialize hooks.
 	 */
 	public function init() {
+		// Robustness: when this (Mozart-prefixed) copy is dropped in without the host
+		// regenerating its autoloader classmap — e.g. the Dependencies folder copied by
+		// hand — the sibling Abilities/Services classes aren't autoloadable. Load them
+		// directly so the folder is self-contained. No-op on a proper composer/Mozart
+		// build (the classes are already in the classmap). Paths are relative + the
+		// class names resolve via the `use` aliases, so this is prefix-agnostic.
+		if ( ! class_exists( PluginService::class, false ) && is_readable( __DIR__ . '/../Services/PluginService.php' ) ) {
+			require_once __DIR__ . '/../Services/PluginService.php';
+		}
+		if ( ! class_exists( MarketplaceAbilities::class, false ) && is_readable( __DIR__ . '/../Abilities/MarketplaceAbilities.php' ) ) {
+			require_once __DIR__ . '/../Abilities/MarketplaceAbilities.php';
+		}
+
 		if ( is_admin() || is_network_admin() ) {
 			add_action( 'admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'admin_menu', [ $this, 'register_addons_menu' ] );
@@ -1158,6 +1171,13 @@ class MarketplaceController {
 	 * @return array|\WP_Error List of subscriptions, or WP_Error on fetch/API failure.
 	 */
 	public function fetch_subscriptions() {
+		// onecom uses a separate per-plugin purchase check, not the marketplace
+		// subscription-list API (which its partner API rejects with "Validation Failed").
+		// Mirror get_subscriptions_list() and return an empty list for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			return [];
+		}
+
 		$brand_name     = $this->config['brand'];
 		$transient_name = "{$brand_name}_subscription_list";
 		$cached         = get_site_transient( $transient_name );

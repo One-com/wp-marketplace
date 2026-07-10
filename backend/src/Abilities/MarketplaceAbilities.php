@@ -81,6 +81,7 @@ class MarketplaceAbilities {
 		add_filter( 'mcp_adapter_default_server_config', static function ( $config ) use ( $brand ) {
 			$tools = ( isset( $config['tools'] ) && is_array( $config['tools'] ) ) ? $config['tools'] : [];
 			foreach ( self::ability_ids( $brand ) as $id ) {
+				// Only add slugs that actually registered (registry is the source of truth).
 				if ( wp_get_ability( $id ) ) {
 					$tools[] = $id;
 				}
@@ -108,9 +109,11 @@ class MarketplaceAbilities {
 			$ids[] = "{$brand}-marketplace/list-plugins";
 			$ids[] = "{$brand}-marketplace/get-product";
 			$ids[] = "{$brand}-marketplace/list-installed";
-			$ids[] = "{$brand}-marketplace/list-subscriptions";
 			$ids[] = "{$brand}-marketplace/refresh-products";
-			if ( self::RANKMATH_BRAND === $brand ) {
+			// Subscription reads only for subscription-capable brands (default: Rank Math).
+			$subscription_brands = apply_filters( 'marketplace_subscription_brands', [ self::RANKMATH_BRAND ] );
+			if ( in_array( $brand, (array) $subscription_brands, true ) ) {
+				$ids[] = "{$brand}-marketplace/list-subscriptions";
 				$ids[] = "{$brand}-marketplace/get-subscription";
 			}
 		}
@@ -317,8 +320,11 @@ class MarketplaceAbilities {
 			}
 		}
 
-		// Subscriptions ("My Subscriptions").
-		if ( null !== $subscriptions_provider ) {
+		// Subscriptions ("My Subscriptions"). Only for brands whose API supports the
+		// subscription-list endpoint — onecom uses a separate per-plugin purchase check,
+		// so registering it there would only ever error. Defaults to Rank Math.
+		$subscription_brands = apply_filters( 'marketplace_subscription_brands', [ self::RANKMATH_BRAND ] );
+		if ( null !== $subscriptions_provider && in_array( $brand, (array) $subscription_brands, true ) ) {
 			$slug = "{$brand}-marketplace/list-subscriptions";
 			if ( ! wp_get_ability( $slug ) ) {
 				wp_register_ability( $slug, [
@@ -534,7 +540,9 @@ class MarketplaceAbilities {
 			$out[]     = [
 				'slug'         => $slug,
 				'name'         => (string) ( $item['name'] ?? $item['title'] ?? $slug ),
-				'download_url' => (string) ( $item['download_url'] ?? '' ),
+				// Catalog items may carry the package URL under different keys; mirror the
+				// frontend's fallback (download | download_url | downloadUrl).
+				'download_url' => (string) ( $item['download'] ?? $item['download_url'] ?? $item['downloadUrl'] ?? '' ),
 				'categories'   => self::normalize_categories( $item ),
 				'featured'     => (bool) ( $item['featured'] ?? false ),
 				'installed'    => $installed,
