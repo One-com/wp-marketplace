@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef, useMemo, useCallback} from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice, getRebatePrice, getFullPrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getRebatePrice, getFullPrice, getDiscountPercentage } from "../utils/priceFormatter";
 import ProductDetail from "./ProductDetail";
 import ProductDetailRankMath from "./ProductDetailRankMath";
 import ErrorToast from "./ErrorToast";
@@ -9,7 +9,7 @@ import "@group.one/gravity";
 import ErrorState from "./ErrorState";
 import MaintenanceState from "./MaintenanceState";
 import WpVersionErrorState from "./WpVersionErrorState";
-import {trackButtonClick, trackPageView, trackPluginDetailVisit} from "../utils/mixpanelTracking";
+import {trackButtonClick, trackPageView, trackPluginDetailVisit, trackEvent} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { getLatestSubscription, getAjaxAction } from "../utils/common.utils";
 import { startPolling } from "../utils/pollingHelper";
@@ -208,6 +208,17 @@ export default function Addons() {
                 const status = data?.status;
 
                 if (status === 'canceled') {
+                    // Track cancellation success — polling-confirmed path.
+                    // Look up plugin metadata from the merged catalog for richer event properties.
+                    const plugin = mergedPlugins?.find(p => p.slug === slug) || { slug };
+                    trackEvent('Subscription cancelled', {
+                        product_slug: plugin.slug || '',
+                        product_name: plugin.name || '',
+                        item_name: plugin.slug || '',
+                        subscription_id: subscriptionId,
+                        timestamp: Date.now(),
+                    });
+
                     stopPolling();
                     fetchPartnerSubscriptions();
                     return true;
@@ -267,6 +278,15 @@ export default function Addons() {
                 const status = responseData?.status;
 
                 if (status === 'canceled') {
+                    // Track cancellation success — immediate path (no polling needed).
+                    trackEvent('Subscription cancelled', {
+                        product_slug: plugin.slug || '',
+                        product_name: plugin.name || '',
+                        item_name: plugin.slug || '',
+                        subscription_id: subscriptionId,
+                        timestamp: Date.now(),
+                    });
+
                     // Immediately canceled — refresh list, no polling needed
                     fetchPartnerSubscriptions();
                     return;
@@ -857,6 +877,10 @@ export default function Addons() {
                       const price = formatPluginPrice(plugin, freeLabel, uiI18n);
                       const fullPriceAmount = getFullPrice(plugin);
                       const rebatePriceAmount = getRebatePrice(plugin);
+                      const discountPct = getDiscountPercentage(plugin);
+                      const hasFreeTrialPeriod = plugin.i18n?.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '';
+                      const hasFreeTrialText = plugin.i18n?.freeTrialText && plugin.i18n.freeTrialText.trim() !== '';
+                      const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && rebatePriceAmount && discountPct > 0 && !hasFreeTrialPeriod && !hasFreeTrialText;
 
                       return (
                         <div
@@ -879,18 +903,24 @@ export default function Addons() {
                               <p className="oc-card-content gv-text-on-alternative gv-mb-sm gv-text-sm gv-flex-1">
                                 {plugin.i18n.listingDescription || plugin.i18n.subtitle}
                               </p>
-                              <span className="gv-caption-lg gv-text-bold">
-                                  <>
-                                      {plugin.licenseType === "premium" && (rebatePriceAmount > 0)
-                                        ? (rebatePriceAmount !== null ? rebatePriceAmount : fullPriceAmount)
-                                        : price}
-                                      {plugin.licenseType !== "free" &&
-                                        price &&
-                                        price !== freeLabel &&
-                                        price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
-                                        <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                  </>
-                              </span>
+                              {hasDiscount ? (
+                                  <div className="ocmp-price-wrapper">
+                                      <span className="gv-price-old gv-caption-lg">{fullPriceAmount}</span>
+                                      <span className="gv-caption-lg gv-text-bold">{rebatePriceAmount}<span className="gv-period">/{uiI18n?.labels?.timeMonth}</span></span>
+                                      <span className="gv-badge gv-badge-discount">{uiI18n?.labels?.save || 'Save'} {discountPct}%</span>
+                                  </div>
+                              ) : (
+                                  <span className="gv-caption-lg gv-text-bold">
+                                      <>
+                                          {price}
+                                          {plugin.licenseType !== "free" &&
+                                            price &&
+                                            price !== freeLabel &&
+                                            price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') &&
+                                            <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                      </>
+                                  </span>
+                              )}
                             </div>
                           </div>
                           <div className="gv-span-1 gv-content-center gv-text-right">
@@ -917,16 +947,18 @@ export default function Addons() {
           {/* Entry point for addons list */}
           {installedPlugins.length > 0 && (
             <section className="addons-section gv-mt-fluid">
-              <div className="gv-flex gv-justify-end gv-mt-0">
-                <button
-                  className="gv-button gv-button-secondary gv-mode-condensed"
-                  disabled={refreshing}
-                  onClick={handleRefreshSubscriptions}
-                >
-                  <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
-                  <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
-                </button>
-              </div>
+              {!isOnecomBrand && (
+                <div className="gv-flex gv-justify-end gv-mt-0">
+                  <button
+                    className="gv-button gv-button-secondary gv-mode-condensed"
+                    disabled={refreshing}
+                    onClick={handleRefreshSubscriptions}
+                  >
+                    <gv-icon aria-hidden="true" src={`${iconBase}refresh.svg`}></gv-icon>
+                    <span>{refreshing ? (uiI18n?.labels?.refreshing || 'Refreshing...') : (uiI18n?.labels?.refresh || 'Refresh')}</span>
+                  </button>
+                </div>
+              )}
               <div className="gv-data-table gv-mt-lg gv-addons-table">
                 <table className="gv-col-5-shrink gv-col-6-shrink">
                   <thead>

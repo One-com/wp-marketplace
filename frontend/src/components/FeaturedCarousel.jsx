@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { formatPluginPrice } from "../utils/priceFormatter";
+import { formatPluginPrice, getFullPrice, getDiscountPercentage } from "../utils/priceFormatter";
 
 export default function FeaturedCarousel({ loading = false }) {
     const { plugins, assetsBaseUrl,uiI18n } = useMarketplace();
@@ -246,6 +246,11 @@ export default function FeaturedCarousel({ loading = false }) {
                             ? plugin.i18n.freeTrialPeriod
                             : (uiI18n?.labels?.free || 'Free');
                         const price = formatPluginPrice(plugin, freeLabel, uiI18n);
+                        const fullPriceAmount = getFullPrice(plugin);
+                        const discountPct = getDiscountPercentage(plugin);
+                        const hasFreeTrialPeriod = plugin.i18n?.freeTrialPeriod && plugin.i18n.freeTrialPeriod.trim() !== '';
+                        const hasFreeTrialText = plugin.i18n?.freeTrialText && plugin.i18n.freeTrialText.trim() !== '';
+                        const hasDiscount = plugin.licenseType === "premium" && fullPriceAmount && discountPct > 0 && !hasFreeTrialPeriod && !hasFreeTrialText;
                         const mainImage = plugin.bannerUrl || plugin.image || plugin.thumbnail || 'https://gravity.group.one/guide-images/product-image@2x.png';
 
                         // Extract category name from plugin categories array
@@ -305,10 +310,18 @@ export default function FeaturedCarousel({ loading = false }) {
                                               {uiI18n?.featuredCta}
                                             </button>
 
-                                            <span className="gv-price gv-text-bold gv-text-md gv-ml-md gv-flex-1">
-                                                {price}
-                                                {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
-                                            </span>
+                                            <div className="gv-ml-md gv-flex-1">
+                                                {hasDiscount && (
+                                                    <div className="ocmp-price-wrapper">
+                                                        <span className="gv-price-old gv-caption-lg">{fullPriceAmount}</span>
+                                                        <span className="gv-badge gv-badge-discount">{uiI18n?.labels?.save || 'Save'} {discountPct}%</span>
+                                                    </div>
+                                                )}
+                                                <span className="gv-price gv-text-bold gv-text-md">
+                                                    {price}
+                                                    {plugin.licenseType !== "free" && price && price !== freeLabel && price !== (uiI18n?.labels?.freeUntilRenewal || 'Free until renewal') && <span className="gv-period">/{uiI18n?.labels?.timeMonth}</span>}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
                                     </div>

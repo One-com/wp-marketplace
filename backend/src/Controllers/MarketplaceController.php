@@ -51,7 +51,8 @@ class MarketplaceController {
 	 */
 	protected function get_model() {
 		if ( $this->model === null ) {
-			$this->model = new MarketplaceModel( $this->config['api_url'] );
+			$is_sandbox  = ! empty( $this->config['mixp_props']['is_sandbox'] ) && $this->config['mixp_props']['is_sandbox'] === true;
+			$this->model = new MarketplaceModel( $this->config['api_url'], $is_sandbox );
 		}
 		return $this->model;
 	}
@@ -216,6 +217,7 @@ class MarketplaceController {
 			add_action( "wp_ajax_{$prefix}_clear_subscription_list", [ $this, 'ajax_clear_subscription_list' ] );
 			add_action( "wp_ajax_{$prefix}_save_pending_cancellation", [ $this, 'ajax_save_pending_cancellation' ] );
 			add_action( "wp_ajax_{$prefix}_clear_pending_cancellation", [ $this, 'ajax_clear_pending_cancellation' ] );
+			add_action( "wp_ajax_{$prefix}_dismiss_banner", [ $this, 'ajax_dismiss_banner' ] );
 
 
 			//reset transient for marketplace catalog
@@ -351,307 +353,148 @@ class MarketplaceController {
 	}
 
 	public function render_addons_page() {
-		// Lazy-load assets only when this page is actually rendered (optimization)
-		$this->ensure_assets_resolved();
-
-		$base_path = $this->assets_base_path;
-		$base_url  = $this->assets_base_url;
-
-		// Enqueue JS dynamically for addons
-		$js_file   = 'frontend/build/addons.js';
-		$js_path   = $base_path . $js_file;
-		$js_url    = $base_url . $js_file;
-
-		wp_enqueue_script(
-			'marketplace-addons-frontend',
-			$js_url,
-			[ 'wp-element' ],
-			file_exists( $js_path ) ? filemtime( $js_path ) : '1.0.0',
-			true
-		);
-
-		// Enqueue CSS dynamically (custom or default)
-		if ( ! empty( $this->config['custom_css'] ) ) {
-			wp_enqueue_style( 'marketplace-css', esc_url( $this->config['custom_css'] ), [], '1.0.0' );
-		} else {
-			// Enqueue library CSS (one.min.css)
-			$one_css_file = 'assets/min-css/one.min.css';
-			$one_css_path = $base_path . $one_css_file;
-			wp_enqueue_style(
-				'marketplace-one-css',
-				$base_url . $one_css_file,
-				[],
-				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
-			);
-
-			// Enqueue marketplace custom CSS (marketplace.min.css)
-			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
-			$marketplace_css_path = $base_path . $marketplace_css_file;
-			wp_enqueue_style(
-				'marketplace-custom-css',
-				$base_url . $marketplace_css_file,
-				[ 'marketplace-one-css' ],
-				file_exists( $marketplace_css_path ) ? filemtime( $marketplace_css_path ) : '1.0.0'
-			);
-		}
-
-		// Get all active plugin slugs to evaluate rules on frontend
-		$active_plugins = $this->get_active_plugin_slugs();
-
-		// Get active theme author to evaluate theme-based rules on frontend
-		$active_theme_author = $this->get_active_theme_author();
-
-		// Get current user information
-		$current_user = wp_get_current_user();
-		$wp_user = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
-		$wp_admin_email = $current_user->user_email ? hash( 'sha256', $current_user->user_email ) : '';
-		$wp_role = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
-		$user_id = $current_user->ID;
-
-		// Get WordPress environment information
-		$wp_version = get_bloginfo( 'version' );
-		$php_version = phpversion();
-		$locale = get_locale();
-
-		// Build global properties for Mixpanel
-		$global_properties = [
-			'application' => 'wordpress_marketplace',
-			'brand' => $this->config['brand'],
-			'wp_locale' => $locale,
-			'wp_version' => $wp_version,
-			'php_version' => $php_version,
-			'wp_user' => $wp_user, // Hashed
-			'wp_admin_email' => $wp_admin_email, // Hashed
-			'wp_role' => $wp_role,
-			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
-			'user_id' => $user_id,
-		];
-
-		// Merge custom mixpanel properties from config if provided
-		if ( ! empty( $this->config['mixp_props'] ) && is_array( $this->config['mixp_props'] ) ) {
-			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
-		}
-
-		// Unset is_sandbox from global properties so it's not sent with events
-		if ( isset( $global_properties['is_sandbox'] ) ) {
-			unset( $global_properties['is_sandbox'] );
-		}
-
-		// Get distinct_id from config if provided
-		$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
-
-		// Get data consent status from config
-		$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
-
-		// Get Mixpanel token
-		$mixpanel_token = $this->get_mixpanel_token();
-
-		// Build base localized config
-		$localized_config = [
-			'apiBaseUrl' => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
-			'apiUrl'     => $this->config['api_url'],
-			'locale' => $locale,
-			'brand' => $this->config['brand'],
-			'useWPHandlers' => true,
-			'wpConfig' => [
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'adminUrl' => admin_url(),
-				'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
-				'ajaxActionPrefix' => $this->get_ajax_prefix(),
-				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
-			],
-			'enableDefaultStyles' => empty( $this->config['custom_css'] ),
-			'assetsBaseUrl' => $base_url,
-			'wpVersion' => $wp_version,
-			'activePlugins' => $active_plugins,
-			'activeThemeAuthor' => $active_theme_author,
-			'data_consent_status' => $data_consent_status,
-			'labels'=>array(
-				'install' => __('Install', 'onecom-wp'),
-				'installing' => __('Installing', 'onecom-wp'),
-				'activate' => __('Activate', 'onecom-wp'),
-				'deactivate' => __('Deactivate', 'onecom-wp'),
-				'activating' => __('Activating', 'onecom-wp'),
-				'deactivating' => __('Deactivating', 'onecom-wp'),
-				'download' => __('Download', 'onecom-wp'),
-				'downloading' => __('Downloading...', 'onecom-wp'),
-				'learnMore' => __('Learn more', 'onecom-wp'),
-				'all' => __('All', 'onecom-wp'),
-				'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
-				'discouraged' => __('Discouraged plugins', 'onecom-wp'),
-				'moreDetails' => __('More details', 'onecom-wp'),
-			),
-			// Always send mixpanel config so it can be used when consent is granted dynamically
-			'mixpanel' => [
-				'token' => $mixpanel_token,
-				'globalProperties' => $global_properties,
-				'distinctId' => $distinct_id,
-			],
-			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
-		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
-		'menuSlug'             => $this->config['menu_slug'],
-		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
-		'siteUrl'              => home_url(),
-		'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
-		];
-
-		// Localize JS with config
-		wp_localize_script( 'marketplace-addons-frontend', 'marketplaceConfig', $localized_config );
-
-		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
-		echo '<div id="marketplace-addons-root" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
+		$this->render_marketplace_page( 'marketplace-addons-frontend', 'frontend/build/addons.js', 'marketplace-addons-root' );
 	}
 
 	public function render_admin_page() {
-		// Lazy-load assets only when this page is actually rendered (optimization)
+		$this->render_marketplace_page( 'marketplace-frontend', 'frontend/build/index.js', 'marketplace-root' );
+	}
+
+	/**
+	 * Shared render pipeline for both marketplace pages. Enqueues assets,
+	 * localizes the shared marketplace config, and outputs the mount-point div.
+	 */
+	private function render_marketplace_page( string $script_handle, string $js_file, string $root_element_id ): void {
 		$this->ensure_assets_resolved();
 
 		$base_path = $this->assets_base_path;
 		$base_url  = $this->assets_base_url;
 
-		// Enqueue JS dynamically
-		$js_file   = 'frontend/build/index.js';
-		$js_path   = $base_path . $js_file;
-		$js_url    = $base_url . $js_file;
+		$this->enqueue_page_assets( $script_handle, $js_file, $base_path, $base_url );
+
+		wp_localize_script( $script_handle, 'marketplaceConfig', $this->build_marketplace_config( $base_url ) );
+
+		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
+		echo '<div id="' . esc_attr( $root_element_id ) . '" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
+	}
+
+	/**
+	 * Enqueue the page JS bundle and either the host-supplied custom CSS or the
+	 * default Gravity + marketplace stylesheets.
+	 */
+	private function enqueue_page_assets( string $script_handle, string $js_file, string $base_path, string $base_url ): void {
+		$js_path = $base_path . $js_file;
+		$js_url  = $base_url . $js_file;
 
 		wp_enqueue_script(
-			'marketplace-frontend',
+			$script_handle,
 			$js_url,
 			[ 'wp-element' ],
 			file_exists( $js_path ) ? filemtime( $js_path ) : '1.0.0',
 			true
 		);
 
-		// Enqueue CSS dynamically (custom or default)
 		if ( ! empty( $this->config['custom_css'] ) ) {
 			wp_enqueue_style( 'marketplace-css', esc_url( $this->config['custom_css'] ), [], '1.0.0' );
-		} else {
-			// Enqueue library CSS (one.min.css)
-			$one_css_file = 'assets/min-css/one.min.css';
-			$one_css_path = $base_path . $one_css_file;
-			wp_enqueue_style(
-				'marketplace-one-css',
-				$base_url . $one_css_file,
-				[],
-				file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
-			);
-
-			// Enqueue marketplace custom CSS (marketplace.min.css)
-			$marketplace_css_file = 'assets/min-css/marketplace.min.css';
-			$marketplace_css_path = $base_path . $marketplace_css_file;
-			wp_enqueue_style(
-				'marketplace-custom-css',
-				$base_url . $marketplace_css_file,
-				[ 'marketplace-one-css' ],
-				file_exists( $marketplace_css_path ) ? filemtime( $marketplace_css_path ) : '1.0.0'
-			);
+			return;
 		}
 
-		// Get all active plugin slugs to evaluate rules on frontend
-		$active_plugins = $this->get_active_plugin_slugs();
+		$one_css_file = 'assets/min-css/one.min.css';
+		$one_css_path = $base_path . $one_css_file;
+		wp_enqueue_style(
+			'marketplace-one-css',
+			$base_url . $one_css_file,
+			[],
+			file_exists( $one_css_path ) ? filemtime( $one_css_path ) : '1.0.0'
+		);
 
-		// Get active theme author to evaluate theme-based rules on frontend
+		$marketplace_css_file = 'assets/min-css/marketplace.min.css';
+		$marketplace_css_path = $base_path . $marketplace_css_file;
+		wp_enqueue_style(
+			'marketplace-custom-css',
+			$base_url . $marketplace_css_file,
+			[ 'marketplace-one-css' ],
+			file_exists( $marketplace_css_path ) ? filemtime( $marketplace_css_path ) : '1.0.0'
+		);
+	}
+
+	/**
+	 * Build the `window.marketplaceConfig` payload that gets localized into
+	 * both page bundles. Pure builder — no side effects.
+	 */
+	private function build_marketplace_config( string $base_url ): array {
+		$active_plugins      = $this->get_active_plugin_slugs();
 		$active_theme_author = $this->get_active_theme_author();
 
-		// Get current user information
-		$current_user = wp_get_current_user();
-		$wp_user = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
+		$current_user   = wp_get_current_user();
+		$wp_user        = $current_user->user_login ? hash( 'sha256', $current_user->user_login ) : '';
 		$wp_admin_email = $current_user->user_email ? hash( 'sha256', $current_user->user_email ) : '';
-		$wp_role = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
-		$user_id = $current_user->ID;
+		$wp_role        = ! empty( $current_user->roles ) ? $current_user->roles[0] : '';
+		$user_id        = $current_user->ID;
 
-		// Get WordPress environment information
-		$wp_version = get_bloginfo( 'version' );
+		$wp_version  = get_bloginfo( 'version' );
 		$php_version = phpversion();
-		$locale = get_locale();
+		$locale      = get_locale();
 
-		// Build global properties for Mixpanel
 		$global_properties = [
-			'application' => 'wordpress_marketplace',
-			'brand' => $this->config['brand'],
-			'wp_locale' => $locale,
-			'wp_version' => $wp_version,
-			'php_version' => $php_version,
-			'wp_user' => $wp_user, // Hashed
+			'application'    => 'wordpress_marketplace',
+			'brand'          => $this->config['brand'],
+			'wp_locale'      => $locale,
+			'wp_version'     => $wp_version,
+			'php_version'    => $php_version,
+			'wp_user'        => $wp_user, // Hashed
 			'wp_admin_email' => $wp_admin_email, // Hashed
-			'wp_role' => $wp_role,
-			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
-			'user_id' => $user_id,
+			'wp_role'        => $wp_role,
+			'user_agent'     => isset( $_SERVER['HTTP_USER_AGENT'] ) ? $_SERVER['HTTP_USER_AGENT'] : '',
+			'user_id'        => $user_id,
 		];
 
-		// Merge custom mixpanel properties from config if provided
 		if ( ! empty( $this->config['mixp_props'] ) && is_array( $this->config['mixp_props'] ) ) {
 			$global_properties = array_merge( $global_properties, $this->config['mixp_props'] );
 		}
 
-		// Unset is_sandbox from global properties so it's not sent with events
+		// is_sandbox is consumed elsewhere (model timeout); strip it before mixpanel sees it.
 		if ( isset( $global_properties['is_sandbox'] ) ) {
 			unset( $global_properties['is_sandbox'] );
 		}
 
- 	// Get distinct_id from config if provided
- 	$distinct_id = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+		$distinct_id         = ! empty( $this->config['mixp_distinct_id'] ) ? $this->config['mixp_distinct_id'] : '';
+		$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
+		$mixpanel_token      = $this->get_mixpanel_token();
 
- 	// Get data consent status from config
- 	$data_consent_status = ! empty( $this->config['data_consent_status'] ) ? $this->config['data_consent_status'] : false;
-
-	// Get Mixpanel token
-	$mixpanel_token = $this->get_mixpanel_token();
-
- 	// Build base localized config
- 	$localized_config = [
- 		'apiBaseUrl' => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
- 		'apiUrl'     => $this->config['api_url'],
- 		'locale' => $locale,
- 		'brand' => $this->config['brand'],
- 		'useWPHandlers' => true,
- 		'wpConfig' => [
- 			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
- 			'adminUrl' => admin_url(),
- 			'nonce'    => wp_create_nonce( 'marketplace_nonce' ),
-				'ajaxActionPrefix' => $this->get_ajax_prefix(),
- 			'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
- 		],
- 		'enableDefaultStyles' => empty( $this->config['custom_css'] ),
- 		'assetsBaseUrl' => $base_url,
- 		'wpVersion' => $wp_version,
- 		'activePlugins' => $active_plugins,
- 		'activeThemeAuthor' => $active_theme_author,
- 		'data_consent_status' => $data_consent_status,
- 		'labels'=>array(
- 			'install' => __('Install', 'onecom-wp'),
- 			'installing' => __('Installing', 'onecom-wp'),
- 			'activate' => __('Activate', 'onecom-wp'),
- 			'deactivate' => __('Deactivate', 'onecom-wp'),
- 			'activating' => __('Activating', 'onecom-wp'),
- 			'deactivating' => __('Deactivating', 'onecom-wp'),
- 			'download' => __('Download', 'onecom-wp'),
- 			'downloading' => __('Downloading...', 'onecom-wp'),
- 			'learnMore' => __('Learn more', 'onecom-wp'),
- 			'all' => __('All', 'onecom-wp'),
- 			'recommendedPlugins' => __('Recommended plugins', 'onecom-wp'),
- 			'discouraged' => __('Discouraged plugins', 'onecom-wp'),
- 			'moreDetails' => __('More details', 'onecom-wp'),
- 		),
- 		// Always send mixpanel config so it can be used when consent is granted dynamically
- 		'mixpanel' => [
- 			'token' => $mixpanel_token,
- 			'globalProperties' => $global_properties,
- 			'distinctId' => $distinct_id,
- 		],
- 		'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
-		'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
-		'menuSlug'             => $this->config['menu_slug'],
-		'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
-		'siteUrl'              => home_url(),
-		'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
- 	];
-
- 	// Localize JS with config
- 	wp_localize_script( 'marketplace-frontend', 'marketplaceConfig', $localized_config );
-
-		$brand_class = ! empty( $this->config['brand'] ) ? ' brand-' . sanitize_html_class( $this->config['brand'] ) : '';
-		echo '<div id="marketplace-root" class="gv-activated' . esc_attr( $brand_class ) . '"></div>';
+		return [
+			'apiBaseUrl'           => trailingslashit( rest_url( ( $this->config['brand'] ?: 'marketplace' ) . '-marketplace/v1/plugins' ) ),
+			'apiUrl'               => $this->config['api_url'],
+			'locale'               => $locale,
+			'brand'                => $this->config['brand'],
+			'useWPHandlers'        => true,
+			'wpConfig'             => [
+				'ajaxUrl'                  => admin_url( 'admin-ajax.php' ),
+				'adminUrl'                 => admin_url(),
+				'nonce'                    => wp_create_nonce( 'marketplace_nonce' ),
+				'ajaxActionPrefix'         => $this->get_ajax_prefix(),
+				'rankMathRegistrationSkip' => (bool) ( ! empty( get_option( 'rank_math_registration_skip' ) ) && ( get_option( 'rank_math_registration_skip' ) === '1' || get_option( 'rank_math_registration_skip' ) === true ) ),
+			],
+			'enableDefaultStyles'  => empty( $this->config['custom_css'] ),
+			'assetsBaseUrl'        => $base_url,
+			'wpVersion'            => $wp_version,
+			'activePlugins'        => $active_plugins,
+			'activeThemeAuthor'    => $active_theme_author,
+			'data_consent_status'  => $data_consent_status,
+			// Always send mixpanel config so it can be used when consent is granted dynamically
+			'mixpanel'             => [
+				'token'            => $mixpanel_token,
+				'globalProperties' => $global_properties,
+				'distinctId'       => $distinct_id,
+			],
+			'pendingProcurements'  => get_option( "{$this->config['brand']}_marketplace_pending_procurements", [] ),
+			'pendingCancellations' => get_option( "{$this->config['brand']}_marketplace_pending_cancellations", [] ),
+			'dismissedBanners'     => $this->get_dismissed_banners(),
+			'menuSlug'             => $this->config['menu_slug'],
+			'addonsMenuSlug'       => $this->config['addons_menu_slug'] ?: 'onecom-marketplace-products',
+			'siteUrl'              => home_url(),
+			'dateFormat'           => get_option( 'date_format', 'F j, Y' ),
+		];
 	}
 
 	/**
@@ -682,6 +525,7 @@ class MarketplaceController {
 			'callback'            => [ $this, 'check_plugin_activation' ],
 			'permission_callback' => '__return_true',
 		] );
+
 	}
 
 	public function check_plugin_activation( $request ) {
@@ -750,7 +594,14 @@ class MarketplaceController {
 		}
 
 		// Lazy-load model only when actually fetching (optimization)
-		$plugins = $this->get_model()->fetch_plugins( $this->config['payload'] );
+		$catalog_payload = $this->config['payload'] ?? [];
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $catalog_payload['action'] );
+		}
+
+		$plugins = $this->get_model()->fetch_plugins( $catalog_payload );
 
 		if ( is_wp_error( $plugins ) ) {
 			return $plugins;
@@ -806,6 +657,7 @@ class MarketplaceController {
 				$plugin_file = $this->resolve_plugin_file_by_slug( $plugin['slug'] );
 				$plugin['activated'] = ( ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) ) ? is_plugin_active( $plugin_file ) : false;
 			}
+
 			return $plugin;
 		};
 
@@ -846,7 +698,7 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'install_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Permission denied' ]);
 		}
 
 		$slug         = sanitize_text_field( $_REQUEST['slug'] ?? '' );
@@ -954,7 +806,7 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'activate_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Permission denied' ]);
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
@@ -967,7 +819,7 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'delete_plugins' ) ) {
-			wp_send_json_error( [ 'message' => __( 'Permission denied', 'onecom-wp' ) ] );
+			wp_send_json_error( [ 'message' => 'Permission denied' ] );
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
@@ -979,10 +831,12 @@ class MarketplaceController {
 	/**
 	 * Map a PluginService normalized result to a JSON AJAX response.
 	 * Preserves the legacy payload shape (message + installed/activated flags)
-	 * the React frontend relies on.
+	 * the React frontend relies on, plus the machine-readable `code` the frontend
+	 * maps to localized notification strings (ERROR_CODE_TO_I18N_KEY).
 	 */
 	private function send_service_result( array $result ): void {
 		$payload = [
+			'code'      => $result['code'],
 			'message'   => $result['message'],
 			'installed' => $result['installed'],
 			'activated' => $result['activated'],
@@ -1110,6 +964,11 @@ class MarketplaceController {
 			]
 		);
 
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
+
 		$result = $this->get_model()->request( $payload, 'POST' );
 
 		if ( is_wp_error( $result ) ) {
@@ -1145,6 +1004,11 @@ class MarketplaceController {
 				'resource_id'   => $subscription_id,
 			]
 		);
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
 
 		$result = $this->get_model()->request( $payload, 'POST' );
 
@@ -1219,7 +1083,14 @@ class MarketplaceController {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'install_plugins' ) ) {
-			wp_send_json_error([ 'message' => __( 'Permission denied', 'onecom-wp' ) ]);
+			wp_send_json_error([ 'message' => 'Permission denied' ]);
+		}
+
+		// onecom uses a separate per-plugin purchase check registered by the host
+		// plugin (wp_ajax_get_addon_purchase_status). Skip the marketplace-API list
+		// and the transient cache entirely for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			wp_send_json_success( [] );
 		}
 
 		$list = $this->fetch_subscriptions();
@@ -1260,6 +1131,11 @@ class MarketplaceController {
 				'data'   => wp_json_encode( [ 'subscriptionID' => $subscription_id ] ),
 			]
 		);
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $payload['action'] );
+		}
 
 		$result = $this->get_model()->request( $payload, 'DELETE' );
 
@@ -1337,6 +1213,60 @@ class MarketplaceController {
 		}
 
 		wp_send_json_success( [ 'message' => 'Pending cancellation cleared.' ] );
+	}
+
+	/**
+	 * Return the list of banner slugs the current user has dismissed.
+	 * Stored in WP user meta under `{brand}_marketplace_dismissed_banners`.
+	 * Called from build_marketplace_config() so the data is available in the
+	 * initial page load without an extra round-trip from React.
+	 *
+	 * @return string[]
+	 */
+	protected function get_dismissed_banners(): array {
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			return [];
+		}
+		$brand    = $this->config['brand'] ?: 'marketplace';
+		$meta_key = "{$brand}_marketplace_dismissed_banners";
+		$dismissed = get_user_meta( $user_id, $meta_key, true );
+		return is_array( $dismissed ) ? $dismissed : [];
+	}
+
+	/**
+	 * Persist a dismissed banner slug to WP user meta so it is never re-shown
+	 * to the same user, even across different browsers or devices.
+	 *
+	 * Meta key: `{brand}_marketplace_dismissed_banners` (array of banner slugs)
+	 */
+	public function ajax_dismiss_banner(): void {
+		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		$banner_slug = sanitize_text_field( wp_unslash( $_POST['banner_slug'] ?? '' ) );
+
+		if ( empty( $banner_slug ) ) {
+			wp_send_json_error( [ 'message' => 'Missing banner_slug.' ] );
+			return;
+		}
+
+		$user_id = get_current_user_id();
+		if ( ! $user_id ) {
+			wp_send_json_error( [ 'message' => 'Not logged in.' ] );
+			return;
+		}
+
+		$brand     = $this->config['brand'] ?: 'marketplace';
+		$meta_key  = "{$brand}_marketplace_dismissed_banners";
+		$dismissed = get_user_meta( $user_id, $meta_key, true );
+		$dismissed = is_array( $dismissed ) ? $dismissed : [];
+
+		if ( ! in_array( $banner_slug, $dismissed, true ) ) {
+			$dismissed[] = $banner_slug;
+			update_user_meta( $user_id, $meta_key, $dismissed );
+		}
+
+		wp_send_json_success( [ 'message' => 'Banner dismissed.' ] );
 	}
 
 	/**

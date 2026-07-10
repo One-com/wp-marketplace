@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useMarketplace } from "../context/MarketplaceContext";
-import { trackPluginAction, trackButtonClick } from "../utils/mixpanelTracking";
+import { trackPluginAction, trackButtonClick, trackEvent } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { startPolling } from "../utils/pollingHelper";
 import { getAjaxAction } from "../utils/common.utils";
@@ -208,6 +208,23 @@ export default function PluginActions({ plugin }) {
                     clearSubscriptionListCache();
 
                     if (downloadUrl) {
+                        // Track procurement success — fires once when the partner API
+                        // returns an active status with a downloadUrl, before the
+                        // automatic install attempt.
+                        const priceData = getPluginPriceData(plugin);
+                        trackEvent('Subscription Created', {
+                            product_slug: plugin.slug || '',
+                            product_name: plugin.name || '',
+                            item_name: plugin.slug || '',
+                            subscription_id: subscriptionId,
+                            amount: priceData.amount,
+                            currency: priceData.currency,
+                            period: priceData.period,
+                            provisioned_at: license?.provisionedAt || null,
+                            expires_at: license?.expiresAt || null,
+                            timestamp: Date.now(),
+                        });
+
                         const installed = await handlePluginAction('install', { ...plugin, download: downloadUrl }, 'buy_now');
                         if (installed) {
                             acknowledgePluginDownload(subscriptionId);
@@ -271,7 +288,7 @@ export default function PluginActions({ plugin }) {
 
     // Derive subscription dates from the list whenever it updates (covers page reload case).
     // 'pending_cancellation' is treated as 'active' for display — the indicator only flips to
-    // 'Subscription canceled' once the backend confirms the cancellation with status 'canceled'.
+    // 'Subscription cancelled' once the backend confirms the cancellation with status 'canceled'.
     useEffect(() => {
         if (!isPremiumOnNonOnecom || !plugin.productId || !subscriptionsList?.length) return;
         const match = subscriptionsList.find(

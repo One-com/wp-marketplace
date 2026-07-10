@@ -44,7 +44,7 @@ class PluginService {
 		if ( self::is_installed( $slug ) ) {
 			// Match the legacy handler exactly: report installed without probing
 			// activation state (the frontend keys off 'installed' here).
-			return self::result( false, 'already_installed', __( 'Plugin is already installed.', 'onecom-wp' ), true, false );
+			return self::result( false, 'plugin_already_installed', __( 'Plugin is already installed.', 'onecom-wp' ), true, false );
 		}
 
 		// Serialize concurrent installs of the same plugin. Without this, two parallel
@@ -53,7 +53,7 @@ class PluginService {
 		// block future installs; we delete it explicitly on every exit path.
 		$lock_key = "marketplace_install_lock_{$slug}";
 		if ( get_transient( $lock_key ) ) {
-			return self::result( false, 'in_progress', __( 'An install is already in progress for this plugin. Please wait a moment and try again.', 'onecom-wp' ), false, false );
+			return self::result( false, 'install_in_progress', __( 'An install is already in progress for this plugin. Please wait a moment and try again.', 'onecom-wp' ), false, false );
 		}
 		set_transient( $lock_key, time(), 120 );
 
@@ -81,11 +81,11 @@ class PluginService {
 			$skin_messages = method_exists( $upgrader->skin, 'get_upgrade_messages' ) ? $upgrader->skin->get_upgrade_messages() : [];
 			$skin_errors   = isset( $upgrader->skin->errors ) ? $upgrader->skin->errors : null;
 			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url . '; skin messages: ' . wp_json_encode( $skin_messages ) . '; skin errors: ' . wp_json_encode( $skin_errors ) );
-			return self::result( false, 'install_failed', __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ), false, false );
+			return self::result( false, 'install_failed_download', __( 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.', 'onecom-wp' ), false, false );
 		}
 
 		delete_transient( $lock_key );
-		return self::result( false, 'install_failed', __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ), false, false );
+		return self::result( false, 'install_failed_not_found', __( 'Plugin installation failed. The plugin was not found after installation.', 'onecom-wp' ), false, false );
 	}
 
 	/**
@@ -193,7 +193,7 @@ class PluginService {
 		}
 
 		if ( is_plugin_active( $plugin_file ) ) {
-			return self::result( false, 'active', __( 'Cannot delete an active plugin. Please deactivate it first.', 'onecom-wp' ), true, true );
+			return self::result( false, 'cannot_delete_active', __( 'Cannot delete an active plugin. Please deactivate it first.', 'onecom-wp' ), true, true );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';

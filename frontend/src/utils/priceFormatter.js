@@ -80,6 +80,22 @@ export const getRebatePrice = (plugin, wrapAmount = false) => {
 };
 
 /**
+ * Calculates the discount percentage between full price and rebate price
+ * @param {Object} plugin - The plugin object containing prices array
+ * @returns {number|null} - Discount percentage (e.g. 20) or null if not applicable
+ */
+export const getDiscountPercentage = (plugin) => {
+    if (plugin.prices && Array.isArray(plugin.prices)) {
+        const fullPrice = plugin.prices.find(p => p.priceType === 'full');
+        const rebatePrice = plugin.prices.find(p => p.priceType === 'rebate');
+        if (fullPrice && rebatePrice && Number(fullPrice.amount) > 0 && Number(rebatePrice.amount) > 0) {
+            return Math.round((1 - Number(rebatePrice.amount) / Number(fullPrice.amount)) * 100);
+        }
+    }
+    return null;
+};
+
+/**
  * Formats the price display for a plugin based on its license type
  * @param {Object} plugin - The plugin object containing price and license information
  * @param {string} freeLabel - Optional label for free plugins (defaults to 'Free')
