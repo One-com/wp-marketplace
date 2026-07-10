@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
 import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
-import { handleImagifyActivation } from '../utils/imagifyHandler';
+import { handleRedirectActivation } from '../utils/redirectActivationHandler';
 import { getAjaxAction } from '../utils/common.utils';
 
 const MarketplaceContext = createContext(null);
@@ -444,8 +444,12 @@ export const MarketplaceProvider = ({
     // Handle plugin actions (install, activate, deactivate)
     // downloadUrl (4th arg) overrides plugin.download for install; omit to keep existing behaviour
     const handlePluginAction = useCallback(async (action, plugin, source = '', downloadUrl = '') => {
-        // Check if this is Imagify plugin activation (handles 302 redirect case)
-        const isImagifyActivation = action === 'activate' && plugin.slug === 'imagify';
+        // Some plugins (e.g. Imagify) issue a wp_redirect inside their activation hook,
+        // which terminates PHP before a JSON response can be returned. The marketplace
+        // catalog flags these via `redirectsOnActivate: true` so we can route them
+        // through the polling-based handler instead of treating the inevitable network
+        // error as a failure.
+        const isRedirectActivation = action === 'activate' && plugin.redirectsOnActivate === true;
 
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: action }));
 
@@ -459,9 +463,9 @@ export const MarketplaceProvider = ({
         setLoadingAction(loadingMessage);
         setLoadingPlugin('');
 
-        // For Imagify, use the specialized handler
-        if (isImagifyActivation) {
-            handleImagifyActivation({
+        // For redirect-on-activate plugins, use the polling-based handler.
+        if (isRedirectActivation) {
+            handleRedirectActivation({
                 plugin,
                 apiBaseUrl,
                 useWPHandlers,

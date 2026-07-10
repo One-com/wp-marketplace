@@ -2,6 +2,8 @@
 namespace Groupone\Marketplace\Controllers;
 
 use Groupone\Marketplace\Models\MarketplaceModel;
+use Groupone\Marketplace\Services\PluginService;
+use Groupone\Marketplace\Abilities\MarketplaceAbilities;
 
 use WP_REST_Response;
 class MarketplaceController {
@@ -173,6 +175,19 @@ class MarketplaceController {
 	 * Initialize hooks.
 	 */
 	public function init() {
+		// Robustness: when this (Mozart-prefixed) copy is dropped in without the host
+		// regenerating its autoloader classmap — e.g. the Dependencies folder copied by
+		// hand — the sibling Abilities/Services classes aren't autoloadable. Load them
+		// directly so the folder is self-contained. No-op on a proper composer/Mozart
+		// build (the classes are already in the classmap). Paths are relative + the
+		// class names resolve via the `use` aliases, so this is prefix-agnostic.
+		if ( ! class_exists( PluginService::class, false ) && is_readable( __DIR__ . '/../Services/PluginService.php' ) ) {
+			require_once __DIR__ . '/../Services/PluginService.php';
+		}
+		if ( ! class_exists( MarketplaceAbilities::class, false ) && is_readable( __DIR__ . '/../Abilities/MarketplaceAbilities.php' ) ) {
+			require_once __DIR__ . '/../Abilities/MarketplaceAbilities.php';
+		}
+
 		if ( is_admin() || is_network_admin() ) {
 			add_action( 'admin_menu', [ $this, 'register_menu' ] );
 			add_action( 'admin_menu', [ $this, 'register_addons_menu' ] );
@@ -211,6 +226,22 @@ class MarketplaceController {
 		}
 
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
+
+		// Register marketplace MCP abilities (no-op if the Abilities API isn't present).
+		// The catalog provider reuses the same transient-cached fetch as the REST endpoint.
+		// The host plugin's MCP server selects these abilities to expose them over MCP.
+		MarketplaceAbilities::register( array_merge( $this->config, [
+			'catalog_provider' => function () {
+				$is_cached = false;
+				return $this->fetch_catalog( $is_cached );
+			},
+			'subscriptions_provider' => function () {
+				return $this->fetch_subscriptions();
+			},
+			'refresh_provider' => function () {
+				return $this->refresh_catalog();
+			},
+		] ) );
 	}
 
 	public function register_menu() {
@@ -515,17 +546,42 @@ class MarketplaceController {
 	}
 
 
-	public function get_plugins( $request ) {
+	/**
+	 * Clear the marketplace caches (catalog + subscriptions) and re-fetch the catalog
+	 * fresh from the API. Shared by the MCP refresh-products ability.
+	 *
+	 * @return array|\WP_Error Fresh catalog payload, or WP_Error on fetch failure.
+	 */
+	public function refresh_catalog() {
+		$brand_name = $this->config['brand'];
+		delete_site_transient( "{$brand_name}_marketplace_catalog" );
+		delete_site_transient( "{$brand_name}_subscription_list" );
 
+		// Cache just cleared, so this hits the API and re-primes the transient.
+		$is_cached = false;
+		return $this->fetch_catalog( $is_cached );
+	}
+
+	/**
+	 * Fetch the marketplace catalog (transient-cached, brand-specific).
+	 * Shared by the REST endpoint (get_plugins) and the MCP list-plugins ability,
+	 * so the upstream fetch + 15-minute cache logic lives in one place.
+	 *
+	 * @param bool $is_cached Set by reference to whether the result came from cache.
+	 * @return array|\WP_Error  Raw catalog payload, or WP_Error on fetch/structure failure.
+	 *                          Maintenance-mode payloads are returned as-is (caller must check
+	 *                          $payload['data']['maintenanceMode']).
+	 */
+	public function fetch_catalog( &$is_cached = false ) {
 		$brand_name = $this->config['brand'];
 		$transient_name = "{$brand_name}_marketplace_catalog";
 		$marketplace_catalog = get_site_transient( $transient_name );
 		$is_cached = false;
 
-		// Maintenance-mode passthrough from cache. Return the response as-is so the React
-		// frontend can render MaintenanceState; skip the catalog enrichment that follows.
+		// Maintenance-mode passthrough from cache.
 		if ( is_array( $marketplace_catalog ) && ! empty( $marketplace_catalog['data']['maintenanceMode'] ) ) {
-			return new WP_REST_Response( $marketplace_catalog, 200 );
+			$is_cached = true;
+			return $marketplace_catalog;
 		}
 
 		if ( is_array( $marketplace_catalog ) &&
@@ -533,41 +589,58 @@ class MarketplaceController {
 			isset( $marketplace_catalog['data']['catalog'] ) &&
 			is_array( $marketplace_catalog['data']['catalog'] )
 		){
-			$plugins = $marketplace_catalog;
 			$is_cached = true;
+			return $marketplace_catalog;
+		}
+
+		// Lazy-load model only when actually fetching (optimization)
+		$catalog_payload = $this->config['payload'] ?? [];
+
+		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			unset( $catalog_payload['action'] );
+		}
+
+		$plugins = $this->get_model()->fetch_plugins( $catalog_payload );
+
+		if ( is_wp_error( $plugins ) ) {
+			return $plugins;
+		}
+
+		// Maintenance-mode passthrough from upstream. Intentionally NOT cached:
+		// every Retry click triggers a fresh upstream check so users recover as soon
+		// as the API is back, instead of waiting for a transient to expire.
+		if ( is_array( $plugins ) && ! empty( $plugins['data']['maintenanceMode'] ) ) {
+			return $plugins;
+		}
+
+		// Cache the catalog for 15 minutes
+		if (
+			! empty( $plugins['success'] ) &&
+			isset( $plugins['data']['catalog'] ) &&
+			is_array( $plugins['data']['catalog'] )
+		){
+			set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
 		} else {
-			// Lazy-load model only when the REST endpoint is called (optimization)
-			$catalog_payload = $this->config['payload'] ?? [];
+			error_log( 'Invalid catalog structure' );
+			return new \WP_Error( 'invalid_catalog', 'Invalid catalog structure' );
+		}
 
-			// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
-			if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
-				unset( $catalog_payload['action'] );
-			}
+		return $plugins;
+	}
 
-			$plugins = $this->get_model()->fetch_plugins( $catalog_payload );
+	public function get_plugins( $request ) {
 
-			if ( is_wp_error( $plugins ) ) {
-				return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
-			}
+		$is_cached = false;
+		$plugins = $this->fetch_catalog( $is_cached );
 
-			// Maintenance-mode passthrough from upstream. Intentionally NOT cached:
-			// every Retry click triggers a fresh upstream check so users recover as soon
-			// as the API is back, instead of waiting for a transient to expire.
-			if ( is_array( $plugins ) && ! empty( $plugins['data']['maintenanceMode'] ) ) {
-				return new WP_REST_Response( $plugins, 200 );
-			}
+		if ( is_wp_error( $plugins ) ) {
+			return new WP_REST_Response( [ 'error' => $plugins->get_error_message() ], 500 );
+		}
 
-			// Cache the catalog for 15 minutes if not already cached
-			if (
-				! empty( $plugins['success'] ) &&
-				isset( $plugins['data']['catalog'] ) &&
-				is_array( $plugins['data']['catalog'] )
-			){
-				set_site_transient( $transient_name, $plugins, 15 * MINUTE_IN_SECONDS );
-			} else {
-				return new WP_REST_Response( [ 'error' => 'Invalid catalog structure' ], 500 );
-			}
-			$is_cached = false;
+		// Maintenance-mode passthrough: render as-is, skip enrichment.
+		if ( is_array( $plugins ) && ! empty( $plugins['data']['maintenanceMode'] ) ) {
+			return new WP_REST_Response( $plugins, 200 );
 		}
 
 		// Attach WP state (installed/activated) for both legacy and new shapes
@@ -628,90 +701,11 @@ class MarketplaceController {
 			wp_send_json_error([ 'message' => 'Permission denied' ]);
 		}
 
-
-		$slug        = sanitize_text_field( $_REQUEST['slug'] ?? '' );
+		$slug         = sanitize_text_field( $_REQUEST['slug'] ?? '' );
 		$download_url = esc_url_raw( $_REQUEST['download_url'] ?? '' );
 
-		if ( empty( $slug ) || empty( $download_url ) ) {
-			wp_send_json_error( [ 'message' => __( 'Invalid plugin data.', 'text-domain' ) ] );
-		}
-
-		// Concurrency / idempotency: if the plugin is already on disk before we even
-		// touch the upgrader (sibling tab finished installing, another consumer plugin
-		// already installed it, prior install attempt, etc.), be honest with the user
-		// — return an informative error rather than fake success. The frontend can
-		// inspect 'installed: true' to update its UI without showing a "succeeded" toast.
-		if ( $this->is_installed( $slug ) ) {
-			wp_send_json_error( [
-				'code'      => 'plugin_already_installed',
-				'message'   => 'Plugin is already installed.',
-				'installed' => true,
-				'activated' => false,
-			] );
-		}
-
-		// Serialize concurrent installs of the same plugin. Without this, two parallel
-		// install requests can both pass the pre-check, both download the same package
-		// to /tmp, and race on cleanup — observed as duplicate "upgrader returned NULL"
-		// entries plus an "unlink: No such file or directory" warning at the same
-		// timestamp. The lock has a TTL so a crashed request can't permanently block
-		// future installs; we also delete it explicitly on every exit path.
-		$lock_key = "marketplace_install_lock_{$slug}";
-		if ( get_transient( $lock_key ) ) {
-			wp_send_json_error( [
-				'code'    => 'install_in_progress',
-				'message' => 'An install is already in progress for this plugin. Please wait a moment and try again.',
-			] );
-		}
-		set_transient( $lock_key, time(), 120 );
-
-		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
-		$result   = $upgrader->install( $download_url ); //  use URL from React
-
-		if ( is_wp_error( $result ) ) {
-			delete_transient( $lock_key );
-			// Forward WP's actual error message (e.g. "Destination folder already exists"
-			// when a parallel install finished mid-flight). Include 'installed' so the
-			// frontend knows whether the plugin ended up on disk.
-			wp_send_json_error( [
-				'message'   => $result->get_error_message(),
-				'installed' => $this->is_installed( $slug ),
-				'activated' => false,
-			] );
-		}
-
-		// No WP_Error: if the plugin is now on disk, this request's upgrader put it
-		// there. Plugin_Upgrader::install() can legitimately return false/null on
-		// benign hiccups (post-install hook noise, etc.), so is_installed() is the
-		// source of truth for "did our own install succeed".
-		if ( $this->is_installed( $slug ) ) {
-			delete_transient( $lock_key );
-			wp_send_json_success([
-				'message'   => 'Plugin installed successfully',
-				'installed' => true,
-				'activated' => false,
-			]);
-		}
-
-		// Plugin is not on disk — only now treat null/false as a real failure.
-		if ( $result === null || $result === false ) {
-			delete_transient( $lock_key );
-			$skin_messages = method_exists( $upgrader->skin, 'get_upgrade_messages' ) ? $upgrader->skin->get_upgrade_messages() : [];
-			$skin_errors   = isset( $upgrader->skin->errors ) ? $upgrader->skin->errors : null;
-			error_log( '[Marketplace] install failed for ' . $slug . ' (upgrader returned ' . var_export( $result, true ) . '); URL: ' . $download_url . '; skin messages: ' . wp_json_encode( $skin_messages ) . '; skin errors: ' . wp_json_encode( $skin_errors ) );
-			wp_send_json_error( [
-				'code'    => 'install_failed_download',
-				'message' => 'Plugin installation failed. Unable to download or extract the plugin. The download URL may be invalid or inaccessible.',
-			] );
-		}
-
-		delete_transient( $lock_key );
-		wp_send_json_error( [
-			'code'    => 'install_failed_not_found',
-			'message' => 'Plugin installation failed. The plugin was not found after installation.',
-		] );
+		$result = PluginService::install( $slug, $download_url );
+		$this->send_service_result( $result );
 	}
 
 	/**
@@ -776,71 +770,7 @@ class MarketplaceController {
 	 * @return boolean True if the plugin is installed, false otherwise.
 	 */
 	private function is_installed( $slug = '' ): bool {
-		if ( empty( $slug ) ) {
-			return false;
-		}
-
-		// If slug contains a slash, it's likely a full plugin file path like 'dirname/filename.php'
-		if ( strpos( $slug, '/' ) !== false ) {
-			// Check if the full plugin file exists
-			$plugin_file_path = WP_PLUGIN_DIR . '/' . $slug;
-			if ( file_exists( $plugin_file_path ) ) {
-				return true;
-			}
-
-			// Also check if just the directory exists (handles edge cases)
-			$plugin_dir = dirname( $plugin_file_path );
-			if ( file_exists( $plugin_dir ) && is_dir( $plugin_dir ) ) {
-				return true;
-			}
-
-			return false;
-		}
-
-		// For simple slugs, check if directory exists
-		$plugin_dir = WP_PLUGIN_DIR . '/' . $slug;
-		if ( file_exists( $plugin_dir ) && is_dir( $plugin_dir ) ) {
-			return true;
-		}
-
-		// Also check if it's a single-file plugin (slug.php)
-		$plugin_file = WP_PLUGIN_DIR . '/' . $slug . '.php';
-		if ( file_exists( $plugin_file ) ) {
-			return true;
-		}
-
-		// Fallback: scan installed plugins for partial matches
-		// This handles cases like:
-		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugins = get_plugins();
-
-		foreach ( $plugins as $file => $data ) {
-			$parts = explode( '/', $file );
-			if ( count( $parts ) === 2 ) {
-				$directory = $parts[0];
-				$main_file = $parts[1];
-
-				// Check if directory exactly matches the slug
-				if ( $directory === $slug ) {
-					return true;
-				}
-
-				// Check if the main plugin file name matches the slug
-				$file_slug = str_replace( '.php', '', $main_file );
-				if ( $file_slug === $slug ) {
-					return true;
-				}
-			} elseif ( count( $parts ) === 1 ) {
-				// Single file plugin
-				$file_slug = str_replace( '.php', '', $parts[0] );
-				if ( $file_slug === $slug ) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return PluginService::is_installed( (string) $slug );
 	}
 
 	/**
@@ -856,108 +786,20 @@ class MarketplaceController {
 	 * @return string Plugin file path relative to plugins dir, or empty string if not found.
 	 */
 	private function resolve_plugin_file_by_slug( $slug ): string {
-		if ( empty( $slug ) ) {
-			return '';
-		}
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugins = get_plugins();
-
-		// If incoming "slug" already looks like a plugin file (contains a slash or ends with .php),
-		// try an exact match first.
-		if ( strpos( $slug, '/' ) !== false || substr( $slug, -4 ) === '.php' ) {
-			if ( isset( $plugins[ $slug ] ) ) {
-				return $slug;
-			}
-			// Also try trimming any leading slashes just in case
-			$trimmed = ltrim( $slug, '/' );
-			if ( isset( $plugins[ $trimmed ] ) ) {
-				return $trimmed;
-			}
-		}
-
-		// Otherwise, treat input as directory slug and try common patterns.
-		foreach ( $plugins as $file => $data ) {
-			if ( strpos( $file, $slug . '/' ) === 0 || $file === $slug . '.php' ) {
-				return $file;
-			}
-		}
-
-		// Fallback: scan installed plugins for partial matches
-		// This handles cases like:
-		// 1. slug "rank-math-pro" matching "seo-by-rank-math-pro/rank-math-pro.php" (file name)
-		foreach ( $plugins as $file => $data ) {
-			$parts = explode( '/', $file );
-			if ( count( $parts ) === 2 ) {
-				$directory = $parts[0];
-				$main_file = $parts[1];
-
-				// Check if directory exactly matches the slug
-				if ( $directory === $slug ) {
-					return $file;
-				}
-
-				// Check if the main plugin file name matches the slug
-				$file_slug = str_replace( '.php', '', $main_file );
-				if ( $file_slug === $slug ) {
-					return $file;
-				}
-			} elseif ( count( $parts ) === 1 ) {
-				// Single file plugin
-				$file_slug = str_replace( '.php', '', $parts[0] );
-				if ( $file_slug === $slug ) {
-					return $file;
-				}
-			}
-		}
-
-		return '';
+		return PluginService::resolve_plugin_file_by_slug( (string) $slug );
 	}
 
 	public function ajax_activate_plugin() {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
-			wp_send_json_error( [ 'message' => __( 'You do not have permission to activate plugins.', 'text-domain' ) ] );
+			wp_send_json_error( [ 'message' => __( 'You do not have permission to activate plugins.', 'onecom-wp' ) ] );
 		}
 
 		check_ajax_referer( 'marketplace_nonce', '_wpnonce' );
 
 		$slug = isset( $_REQUEST['slug'] ) ? sanitize_key( wp_unslash( $_REQUEST['slug'] ) ) : '';
 
-		if ( empty( $slug ) ) {
-			wp_send_json_error( [ 'message' => __( 'Missing plugin slug.', 'text-domain' ) ] );
-		}
-
-		// Check if plugin is installed first
-		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin not installed.', 'text-domain' ) ] );
-		}
-
-		// Resolve the plugin file using the enhanced helper function
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
-
-		if ( empty( $plugin_file ) ) {
-			wp_send_json_error( [ 'message' => __( 'Plugin file not found.', 'text-domain' ) ] );
-		}
-
-		if ( $plugin_file === 'seo-by-rank-math-pro/rank-math-pro.php' ) {
-			// Also activate the Free version if it's installed and not active
-			$free_plugin_file = 'seo-by-rank-math/rank-math.php';
-			if ( $this->is_installed( 'seo-by-rank-math' ) && ! is_plugin_active( $free_plugin_file ) ) {
-				activate_plugin( $free_plugin_file );
-			}
-		}
-
-		$result = activate_plugin( $plugin_file );
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
-		}
-
-		wp_send_json_success( [
-			'installed' => true,
-			'activated' => true,
-			'message'   => __( 'Plugin activated successfully.', 'text-domain' ),
-		] );
+		$result = PluginService::activate( $slug );
+		$this->send_service_result( $result );
 	}
 
 	public function ajax_deactivate_plugin() {
@@ -968,47 +810,9 @@ class MarketplaceController {
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
-		if ( empty( $slug ) ) {
-			wp_send_json_error([ 'message' => 'Invalid plugin slug' ]);
-		}
 
-		// Check if plugin is installed first
-		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error([ 'message' => 'Plugin not installed' ]);
-		}
-
-		// Resolve the plugin file using the enhanced helper function
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
-
-		if ( $plugin_file === 'seo-by-rank-math/rank-math.php' ) {
-			// Also deactivate the Pro version if it's active
-			if ( is_plugin_active( 'seo-by-rank-math-pro/rank-math-pro.php' ) ) {
-				deactivate_plugins( 'seo-by-rank-math-pro/rank-math-pro.php' );
-			}
-		}
-
-		if ( empty( $plugin_file ) ) {
-			wp_send_json_error([ 'message' => 'Plugin file not found' ]);
-		}
-
-		// Ensure the plugin is loaded so its deactivation hooks are registered.
-		if ( is_plugin_active( $plugin_file ) ) {
-			include_once WP_PLUGIN_DIR . '/' . $plugin_file;
-		}
-
-		// Handle both site-wide and network-wide deactivation to ensure hooks fire correctly
-		deactivate_plugins( $plugin_file, false, null );
-
-		if ( is_plugin_active( $plugin_file ) ) {
-			wp_send_json_error([ 'message' => 'Failed to deactivate plugin' ]);
-		}
-
-		wp_send_json_success([
-			'message'   => 'Plugin deactivated successfully',
-			'installed' => true,
-			'activated' => false,
-		]);
+		$result = PluginService::deactivate( $slug );
+		$this->send_service_result( $result );
 	}
 
 	public function ajax_delete_plugin() {
@@ -1019,49 +823,30 @@ class MarketplaceController {
 		}
 
 		$slug = sanitize_text_field( $_REQUEST['slug'] ?? '' );
-		if ( empty( $slug ) ) {
-			wp_send_json_error( [ 'message' => 'Invalid plugin slug' ] );
+
+		$result = PluginService::delete( $slug );
+		$this->send_service_result( $result );
+	}
+
+	/**
+	 * Map a PluginService normalized result to a JSON AJAX response.
+	 * Preserves the legacy payload shape (message + installed/activated flags)
+	 * the React frontend relies on, plus the machine-readable `code` the frontend
+	 * maps to localized notification strings (ERROR_CODE_TO_I18N_KEY).
+	 */
+	private function send_service_result( array $result ): void {
+		$payload = [
+			'code'      => $result['code'],
+			'message'   => $result['message'],
+			'installed' => $result['installed'],
+			'activated' => $result['activated'],
+		];
+
+		if ( $result['success'] ) {
+			wp_send_json_success( $payload );
 		}
 
-		// Check if plugin is installed first
-		if ( ! $this->is_installed( $slug ) ) {
-			wp_send_json_error( [ 'message' => 'Plugin not installed' ] );
-		}
-
-		// Resolve the plugin file
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
-
-		if ( empty( $plugin_file ) ) {
-			wp_send_json_error( [ 'message' => 'Plugin file not found' ] );
-		}
-
-		// Check if the plugin is active
-		if ( is_plugin_active( $plugin_file ) ) {
-			wp_send_json_error( [
-				'code'    => 'cannot_delete_active',
-				'message' => 'Cannot delete an active plugin. Please deactivate it first.',
-			] );
-		}
-
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		require_once ABSPATH . 'wp-admin/includes/plugin.php';
-
-		$result = delete_plugins( [ $plugin_file ] );
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
-		}
-
-		if ( $result === false ) {
-			wp_send_json_error( [ 'message' => 'Failed to delete plugin' ] );
-		}
-
-		wp_send_json_success( [
-			'message'   => 'Plugin deleted successfully',
-			'installed' => false,
-			'activated' => false,
-		] );
+		wp_send_json_error( $payload );
 	}
 
 	/**
@@ -1242,6 +1027,57 @@ class MarketplaceController {
 	 *
 	 * @return void
 	 */
+	/**
+	 * Fetch the site's marketplace subscription list (transient-cached, brand-specific).
+	 * Shared by the AJAX endpoint (get_subscriptions_list) and the MCP list-subscriptions
+	 * ability, so the upstream fetch + 15-minute cache lives in one place.
+	 *
+	 * @return array|\WP_Error List of subscriptions, or WP_Error on fetch/API failure.
+	 */
+	public function fetch_subscriptions() {
+		// onecom uses a separate per-plugin purchase check, not the marketplace
+		// subscription-list API (which its partner API rejects with "Validation Failed").
+		// Mirror get_subscriptions_list() and return an empty list for that brand.
+		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+			return [];
+		}
+
+		$brand_name     = $this->config['brand'];
+		$transient_name = "{$brand_name}_subscription_list";
+		$cached         = get_site_transient( $transient_name );
+
+		if ( is_array( $cached ) && ! empty( $cached ) ) {
+			return $cached;
+		}
+
+		$payload = array_merge(
+			$this->config['payload'] ?? [],
+			[ 'action' => 'wp-marketplace-subscription-list' ]
+		);
+
+		// The default method is GET.
+		$result = $this->get_model()->request( $payload );
+
+		if ( is_wp_error( $result ) ) {
+			return $result;
+		}
+
+		if ( isset( $result['error'] ) && $result['error'] ) {
+			$message = is_string( $result['error'] ) ? $result['error'] : __( 'Failed to fetch subscriptions.', 'onecom-wp' );
+			return new \WP_Error( 'subscription_error', $message, $result );
+		}
+
+		$list = $result['data']['subscriptions'] ?? null;
+
+		if ( ! empty( $list ) && is_array( $list ) ) {
+			set_site_transient( $transient_name, $list, 15 * MINUTE_IN_SECONDS );
+		} else {
+			$list = [];
+		}
+
+		return $list;
+	}
+
 	public function get_subscriptions_list(): void
 	{
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
@@ -1257,46 +1093,15 @@ class MarketplaceController {
 			wp_send_json_success( [] );
 		}
 
-		$brand_name = $this->config['brand'];
-		$transient_name = "{$brand_name}_subscription_list";
-		$get_subscription_list = get_site_transient( $transient_name );
+		$list = $this->fetch_subscriptions();
 
-		if ( is_array($get_subscription_list ) && ! empty( $get_subscription_list ) ) {
-			wp_send_json_success( $get_subscription_list );
+		if ( is_wp_error( $list ) ) {
+			// Preserve the legacy shape: API-error responses forwarded the full result.
+			$data = $list->get_error_data();
+			wp_send_json_error( is_array( $data ) ? $data : [ 'message' => $list->get_error_message() ] );
 		}
 
-		$payload = array_merge(
-			$this->config['payload'] ?? [],
-			[
-				'action' => 'wp-marketplace-subscription-list'
-			]
-		);
-
-		// onecom's partner API doesn't expect an 'action' key — strip it for that brand.
-		if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
-			unset( $payload['action'] );
-		}
-
-		//The default method is GET
-		$result = $this->get_model()->request( $payload);
-
-		if ( is_wp_error( $result ) ) {
-			wp_send_json_error( [ 'message' => $result->get_error_message() ] );
-		}
-
-		if ( isset( $result['error'] ) && $result['error'] ) {
-			wp_send_json_error( $result );
-		}
-
-		$get_subscription_list = $result['data']["subscriptions"] ?? null;
-
-		if ( ! empty( $get_subscription_list ) && is_array( $get_subscription_list ) ) {
-			set_site_transient( $transient_name, $get_subscription_list, 15 * MINUTE_IN_SECONDS );
-		} else {
-			$get_subscription_list = [];
-		}
-
-		wp_send_json_success($get_subscription_list);
+		wp_send_json_success( $list );
 	}
 
 	public function cancel_subscriptions() {
