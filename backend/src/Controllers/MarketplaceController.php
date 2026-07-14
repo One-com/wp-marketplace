@@ -241,6 +241,14 @@ class MarketplaceController {
 			'refresh_provider' => function () {
 				return $this->refresh_catalog();
 			},
+			// Inputs for catalog visibility rules (mustHavePlugins / mustHaveThemesByAuthor),
+			// mirroring what is localized to the frontend so MCP hides the same products.
+			'visibility_provider' => function () {
+				return [
+					'active_plugins' => $this->get_active_plugin_slugs(),
+					'theme_author'   => $this->get_active_theme_author(),
+				];
+			},
 		] ) );
 	}
 

@@ -61,15 +61,20 @@ class MarketplaceAbilities {
 		$refresh_provider = isset( $config['refresh_provider'] ) && is_callable( $config['refresh_provider'] )
 			? $config['refresh_provider']
 			: null;
+		// Returns the visibility context (active plugin slugs + active theme author)
+		// used to evaluate catalog `rules`; null disables catalog visibility filtering.
+		$visibility_provider = isset( $config['visibility_provider'] ) && is_callable( $config['visibility_provider'] )
+			? $config['visibility_provider']
+			: null;
 
 		if ( function_exists( 'wp_register_ability_category' ) ) {
 			add_action( 'wp_abilities_api_categories_init', [ self::class, 'register_category' ] );
 		}
 
-		add_action( 'wp_abilities_api_init', static function () use ( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider ) {
+		add_action( 'wp_abilities_api_init', static function () use ( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider, $visibility_provider ) {
 			self::register_actions();
 			if ( '' !== $brand ) {
-				self::register_reads( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider );
+				self::register_reads( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider, $visibility_provider );
 			}
 		} );
 
@@ -236,8 +241,9 @@ class MarketplaceAbilities {
 	 * @param callable|null $catalog_provider       Returns array|WP_Error (raw catalog payload).
 	 * @param callable|null $subscriptions_provider Returns array|WP_Error (list of subscriptions).
 	 * @param callable|null $refresh_provider       Clears the caches + re-fetches; returns array|WP_Error.
+	 * @param callable|null $visibility_provider    Returns { active_plugins, theme_author } for catalog rule filtering.
 	 */
-	private static function register_reads( string $brand, ?callable $catalog_provider, ?callable $subscriptions_provider, ?callable $refresh_provider = null ): void {
+	private static function register_reads( string $brand, ?callable $catalog_provider, ?callable $subscriptions_provider, ?callable $refresh_provider = null, ?callable $visibility_provider = null ): void {
 		if ( null !== $catalog_provider ) {
 			// List catalog plugins.
 			$slug = "{$brand}-marketplace/list-plugins";
@@ -248,9 +254,11 @@ class MarketplaceAbilities {
 					'category'            => self::CATEGORY,
 					'output_schema'       => self::plugin_list_output_schema(),
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),
-					'execute_callback'    => static function () use ( $catalog_provider ) {
+					'execute_callback'    => static function () use ( $catalog_provider, $visibility_provider ) {
 						$payload = self::catalog_payload( $catalog_provider );
-						return is_wp_error( $payload ) ? $payload : [ 'plugins' => self::catalog_summaries( $payload ) ];
+						return is_wp_error( $payload )
+							? $payload
+							: [ 'plugins' => self::catalog_summaries( $payload, self::visibility_context( $visibility_provider ) ) ];
 					},
 					'meta'                => self::tool_meta( [ 'readonly' => true ] ),
 				] );
@@ -275,7 +283,7 @@ class MarketplaceAbilities {
 						'properties' => [ 'product' => [ 'type' => 'object' ] ],
 					],
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),
-					'execute_callback'    => static function ( $input ) use ( $catalog_provider ) {
+					'execute_callback'    => static function ( $input ) use ( $catalog_provider, $visibility_provider ) {
 						$slug = (string) ( $input['slug'] ?? '' );
 						if ( '' === $slug ) {
 							return new \WP_Error( 'invalid_slug', __( 'Missing product slug.', 'onecom-wp' ) );
@@ -284,8 +292,14 @@ class MarketplaceAbilities {
 						if ( is_wp_error( $payload ) ) {
 							return $payload;
 						}
+						$visibility = self::visibility_context( $visibility_provider );
 						foreach ( self::extract_items( $payload ) as $item ) {
 							if ( isset( $item['slug'] ) && (string) $item['slug'] === $slug ) {
+								// A product gated by visibility rules isn't offered in the
+								// catalog, so it's "not found" here too (can't fetch its URL).
+								if ( ! self::should_show_item( $item, $visibility ) ) {
+									break;
+								}
 								return [ 'product' => self::augment_item( $item ) ];
 							}
 						}
@@ -394,12 +408,12 @@ class MarketplaceAbilities {
 						],
 					],
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),
-					'execute_callback'    => static function () use ( $refresh_provider ) {
+					'execute_callback'    => static function () use ( $refresh_provider, $visibility_provider ) {
 						$payload = self::catalog_payload( $refresh_provider );
 						if ( is_wp_error( $payload ) ) {
 							return $payload;
 						}
-						return [ 'refreshed' => true, 'plugins' => self::catalog_summaries( $payload ) ];
+						return [ 'refreshed' => true, 'plugins' => self::catalog_summaries( $payload, self::visibility_context( $visibility_provider ) ) ];
 					},
 					// Not read-only (clears cache) but not destructive — just drops caches
 					// and re-fetches. Idempotent: refreshing again yields the same state.
@@ -527,16 +541,92 @@ class MarketplaceAbilities {
 	}
 
 	/**
+	 * Resolve the visibility context (active plugin slugs + active theme author)
+	 * used to evaluate a catalog item's `rules`. Returns null when no provider is
+	 * wired, which disables filtering (show everything).
+	 *
+	 * @param callable|null $visibility_provider
+	 * @return array|null { active_plugins: string[], theme_author: string } or null.
+	 */
+	private static function visibility_context( ?callable $visibility_provider ): ?array {
+		if ( null === $visibility_provider ) {
+			return null;
+		}
+		$ctx = call_user_func( $visibility_provider );
+		if ( ! is_array( $ctx ) ) {
+			return null;
+		}
+		return [
+			'active_plugins' => isset( $ctx['active_plugins'] ) && is_array( $ctx['active_plugins'] ) ? $ctx['active_plugins'] : [],
+			'theme_author'   => isset( $ctx['theme_author'] ) ? (string) $ctx['theme_author'] : '',
+		];
+	}
+
+	/**
+	 * Whether a catalog item should be visible, mirroring the frontend's
+	 * shouldShowPlugin(). Items may declare `rules` gating them to sites where a
+	 * required plugin is active (mustHavePlugins — any match) or the active theme
+	 * is by a given author (mustHaveThemesByAuthor, e.g. Superb addons on Superb
+	 * themes). Items without rules — or when no visibility context is given — are
+	 * always visible.
+	 *
+	 * @param array      $item       Raw catalog item.
+	 * @param array|null $visibility { active_plugins: string[], theme_author: string } or null.
+	 * @return bool
+	 */
+	private static function should_show_item( array $item, ?array $visibility ): bool {
+		if ( null === $visibility ) {
+			return true;
+		}
+		$rules = $item['rules'] ?? null;
+		if ( empty( $rules ) || ! is_array( $rules ) ) {
+			return true;
+		}
+
+		// mustHavePlugins: visible if ANY listed plugin is active (empty list = no requirement).
+		if ( ! empty( $rules['mustHavePlugins'] ) && is_array( $rules['mustHavePlugins'] ) ) {
+			$active = $visibility['active_plugins'] ?? [];
+			$has    = false;
+			foreach ( $rules['mustHavePlugins'] as $required ) {
+				if ( in_array( $required, $active, true ) ) {
+					$has = true;
+					break;
+				}
+			}
+			if ( ! $has ) {
+				return false;
+			}
+		}
+
+		// mustHaveThemesByAuthor: visible only if the active theme's author matches.
+		if ( ! empty( $rules['mustHaveThemesByAuthor'] ) && is_string( $rules['mustHaveThemesByAuthor'] ) ) {
+			if ( ( $visibility['theme_author'] ?? '' ) !== $rules['mustHaveThemesByAuthor'] ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Trimmed {slug,name,download_url,installed,activated} summaries for every catalog
 	 * item that has a slug — the shape used by the list abilities.
 	 *
-	 * @param mixed $payload
+	 * When $visibility is provided, items hidden by their `rules` are dropped
+	 * (mirrors the UI's catalog visibility). Pass null to keep every item — e.g.
+	 * list-installed shows what's physically installed regardless of rules.
+	 *
+	 * @param mixed      $payload
+	 * @param array|null $visibility { active_plugins, theme_author } or null to skip filtering.
 	 * @return array<int, array<string, mixed>>
 	 */
-	private static function catalog_summaries( $payload ): array {
+	private static function catalog_summaries( $payload, ?array $visibility = null ): array {
 		$out = [];
 		foreach ( self::extract_items( $payload ) as $item ) {
 			if ( empty( $item['slug'] ) ) {
+				continue;
+			}
+			if ( null !== $visibility && ! self::should_show_item( $item, $visibility ) ) {
 				continue;
 			}
 			$slug      = (string) $item['slug'];
