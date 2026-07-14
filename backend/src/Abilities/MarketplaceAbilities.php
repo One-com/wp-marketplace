@@ -509,7 +509,10 @@ class MarketplaceAbilities {
 	}
 
 	/**
-	 * The raw catalog item with live install/activation state attached (full detail).
+	 * The catalog item with live install/activation state attached (full detail),
+	 * minus the internal/technical metadata the marketplace UI never renders. The
+	 * `productMeta` blob and any top-level `meta` are stripped so the MCP product
+	 * response mirrors what the UI exposes instead of dumping the raw catalog item.
 	 *
 	 * @param array $item
 	 * @return array
@@ -517,6 +520,7 @@ class MarketplaceAbilities {
 	private static function augment_item( array $item ): array {
 		$slug              = (string) ( $item['slug'] ?? '' );
 		$installed         = '' !== $slug && PluginService::is_installed( $slug );
+		unset( $item['productMeta'], $item['meta'] );
 		$item['installed'] = $installed;
 		$item['activated'] = $installed ? PluginService::is_active( $slug ) : false;
 		return $item;
