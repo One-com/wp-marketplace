@@ -553,8 +553,11 @@ class MarketplaceAbilities {
 	}
 
 	/**
-	 * Normalise a catalog item's `categories` (array of strings or {slug,title}
-	 * objects) into a flat list of category slugs/titles.
+	 * Normalise a catalog item's `categories` (array of strings or
+	 * {id,slug,title,description} objects) into a flat list of human-readable
+	 * labels. Prefer the display `title` (what the UI shows) over `slug`: a
+	 * category's slug can lag its renamed label (e.g. slug "e-commerce" →
+	 * title "Sales"), so slug-first would surface stale names to MCP clients.
 	 *
 	 * @param array $item
 	 * @return string[]
@@ -566,7 +569,7 @@ class MarketplaceAbilities {
 		}
 		$out = [];
 		foreach ( $cats as $c ) {
-			$val = is_array( $c ) ? ( $c['slug'] ?? $c['title'] ?? '' ) : $c;
+			$val = is_array( $c ) ? ( $c['title'] ?? $c['name'] ?? $c['slug'] ?? '' ) : $c;
 			$val = (string) $val;
 			if ( '' !== $val ) {
 				$out[] = $val;
