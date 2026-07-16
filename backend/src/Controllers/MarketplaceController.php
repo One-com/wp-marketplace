@@ -1422,11 +1422,13 @@ class MarketplaceController {
 	 * database, driven entirely by the API response — new plugins need no module
 	 * code, only the right `licenseData` in their response. Each entry is:
 	 *
-	 *     { "key": [ "<option_name>", "<nested>", ... ], "value": "<stored as-is>" }
+	 *     { "key": [ "<option_name>", "<nested>", ... ], "value": "<encrypted-in-transit>" }
 	 *
 	 * The first `key` element is the wp_option name; the rest is the nested path
-	 * within that option's array. The value is stored verbatim (encrypted blobs are
-	 * kept as-is; the target plugin decrypts on read).
+	 * within that option's array. Values are transformed by transform_license_value()
+	 * before being written: most are stored verbatim (the target plugin decrypts on
+	 * read), but SocialPilot's key is decrypted from the shared transport envelope and
+	 * re-encrypted with the plugin's own site-local scheme (see transform_license_value).
 	 *
 	 * @param array $license_data Map/list of { key: string[], value: mixed } entries.
 	 */
@@ -1435,8 +1437,144 @@ class MarketplaceController {
 			if ( ! is_array( $entry ) || empty( $entry['key'] ) || ! is_array( $entry['key'] ) || ! array_key_exists( 'value', $entry ) ) {
 				continue;
 			}
-			$this->set_option_by_path( array_values( $entry['key'] ), $entry['value'] );
+			$path  = array_values( $entry['key'] );
+			$value = $this->transform_license_value( $path, $entry['value'] );
+			// A null transform means "skip" (e.g. transport decrypt failed) — never write
+			// a bad value, which the target plugin would silently read as an empty key.
+			if ( null === $value ) {
+				continue;
+			}
+			$this->set_option_by_path( $path, $value );
 		}
+	}
+
+	/**
+	 * Transform a license value before storage.
+	 *
+	 * Default: store verbatim (the target plugin decrypts on read). For products whose
+	 * option is in the re-encrypt set (default: SocialPilot's `socialpilot_options`,
+	 * filterable via `marketplace_license_reencrypt_options`), the backend sends the key
+	 * encrypted with a shared *transport* key; we decrypt it and re-encrypt it with the
+	 * plugin's own *site-local* scheme so the at-rest secret is site-specific, never the
+	 * fleet-wide transport key.
+	 *
+	 * @param array $path  [ option_name, ...nested_keys ].
+	 * @param mixed $value Incoming value.
+	 * @return mixed|null  Value to store, or null to skip this entry.
+	 */
+	private function transform_license_value( array $path, $value ) {
+		$option_name       = isset( $path[0] ) ? (string) $path[0] : '';
+		$reencrypt_options = apply_filters( 'marketplace_license_reencrypt_options', [ 'socialpilot_options' ] );
+
+		// Non-re-encrypt products: keep the current store-verbatim behaviour.
+		if ( ! in_array( $option_name, (array) $reencrypt_options, true ) ) {
+			return $value;
+		}
+		if ( ! is_string( $value ) || '' === $value ) {
+			return $value;
+		}
+
+		$transport_key = $this->license_transport_key();
+		if ( '' === $transport_key ) {
+			error_log( '[Marketplace] license re-encrypt skipped: no transport key configured (' . $option_name . ')' );
+			return null;
+		}
+
+		$plaintext = $this->decrypt_transport_value( $value, $transport_key );
+		if ( ! is_string( $plaintext ) || '' === $plaintext ) {
+			error_log( '[Marketplace] license re-encrypt skipped: transport decrypt failed (' . $option_name . ')' );
+			return null;
+		}
+
+		$reencrypted = $this->socialpilot_encrypt( $plaintext );
+		// Best-effort scrub of the plaintext key from memory.
+		$plaintext = str_repeat( '*', strlen( $plaintext ) );
+		unset( $plaintext );
+
+		if ( ! is_string( $reencrypted ) || '' === $reencrypted ) {
+			error_log( '[Marketplace] license re-encrypt failed (' . $option_name . ')' );
+			return null;
+		}
+		return $reencrypted;
+	}
+
+	/**
+	 * The shared transport key used to decrypt inbound license values. Sourced from the
+	 * module config (`license_transport_key`) or, as a fallback, the
+	 * ONECOM_MP_LICENSE_TRANSPORT_KEY constant. Deliberately NOT reusing SocialPilot's
+	 * own SOCIALPILOT_ENCRYPTION_KEY constant, so the plugin keeps deriving a
+	 * site-specific at-rest key. Empty string when unset (re-encryption is then skipped).
+	 *
+	 * @return string
+	 */
+	private function license_transport_key(): string {
+		$key = isset( $this->config['license_transport_key'] ) ? (string) $this->config['license_transport_key'] : '';
+		if ( '' === $key && defined( 'ONECOM_MP_LICENSE_TRANSPORT_KEY' ) ) {
+			$key = (string) ONECOM_MP_LICENSE_TRANSPORT_KEY;
+		}
+		return $key;
+	}
+
+	/**
+	 * Decrypt a shared-transport license value: base64( IV[16] ‖ ciphertext ), AES-256-CBC.
+	 * Mirrors the backend envelope (openssl passphrase normalization applies on both sides).
+	 *
+	 * @param string $encoded    base64 of IV + ciphertext.
+	 * @param string $shared_key Shared transport key.
+	 * @return string|false Plaintext, or false on failure.
+	 */
+	private function decrypt_transport_value( string $encoded, string $shared_key ) {
+		if ( ! function_exists( 'openssl_decrypt' ) ) {
+			return false;
+		}
+		$raw = base64_decode( $encoded, true );
+		if ( false === $raw ) {
+			return false;
+		}
+		$iv_len = openssl_cipher_iv_length( 'aes-256-cbc' );
+		if ( false === $iv_len || strlen( $raw ) <= $iv_len ) {
+			return false;
+		}
+		$iv         = substr( $raw, 0, $iv_len );
+		$ciphertext = substr( $raw, $iv_len );
+		return openssl_decrypt( $ciphertext, 'aes-256-cbc', $shared_key, OPENSSL_RAW_DATA, $iv );
+	}
+
+	/**
+	 * Encrypt a plaintext key with SocialPilot's own site-local scheme. Prefers the
+	 * plugin's SocialPilot_Encrypt::encrypt() (guarantees exact key derivation + envelope,
+	 * available once the plugin is active); falls back to replicating its scheme when the
+	 * class isn't loaded (constant if defined, else salt-derived key).
+	 *
+	 * @param string $plaintext
+	 * @return string|false base64( IV ‖ ciphertext ), or false on failure.
+	 */
+	private function socialpilot_encrypt( string $plaintext ) {
+		if ( class_exists( 'SocialPilot_Encrypt' ) ) {
+			try {
+				$encrypted = \SocialPilot_Encrypt::encrypt( $plaintext );
+				if ( is_string( $encrypted ) && '' !== $encrypted ) {
+					return $encrypted;
+				}
+			} catch ( \Throwable $e ) {
+				error_log( '[Marketplace] SocialPilot_Encrypt::encrypt failed, using fallback: ' . $e->getMessage() );
+			}
+		}
+
+		if ( ! function_exists( 'openssl_encrypt' ) ) {
+			return false;
+		}
+		// Replicate SocialPilot_Encrypt::get_encryption_key(): explicit constant, else a
+		// 32-char (=32-byte) salt-derived key. Keep this in sync with the plugin's scheme.
+		$site_key = defined( 'SOCIALPILOT_ENCRYPTION_KEY' )
+			? (string) SOCIALPILOT_ENCRYPTION_KEY
+			: wp_hash( 'socialpilot_' . AUTH_KEY . AUTH_SALT, 'nonce' );
+		$iv        = openssl_random_pseudo_bytes( 16 );
+		$encrypted = openssl_encrypt( $plaintext, 'aes-256-cbc', $site_key, OPENSSL_RAW_DATA, $iv );
+		if ( false === $encrypted ) {
+			return false;
+		}
+		return base64_encode( $iv . $encrypted );
 	}
 
 	/**
