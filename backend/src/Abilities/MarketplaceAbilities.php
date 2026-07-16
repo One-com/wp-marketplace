@@ -355,7 +355,9 @@ class MarketplaceAbilities {
 						if ( is_wp_error( $subs ) ) {
 							return $subs;
 						}
-						return [ 'subscriptions' => is_array( $subs ) ? array_values( $subs ) : [] ];
+						$subs = is_array( $subs ) ? array_values( $subs ) : [];
+						$subs = array_map( static fn( $s ) => is_array( $s ) ? self::sanitize_subscription( $s ) : $s, $subs );
+						return [ 'subscriptions' => $subs ];
 					},
 					'meta'                => self::tool_meta( [ 'readonly' => true ] ),
 				] );
@@ -465,14 +467,31 @@ class MarketplaceAbilities {
 				continue;
 			}
 			if ( '' !== $subscription_id && (string) ( $sub['subscriptionId'] ?? '' ) === $subscription_id ) {
-				return [ 'subscription' => $sub ];
+				return [ 'subscription' => self::sanitize_subscription( $sub ) ];
 			}
 			if ( '' !== $product_id && (string) ( $sub['productId'] ?? '' ) === $product_id ) {
-				return [ 'subscription' => $sub ];
+				return [ 'subscription' => self::sanitize_subscription( $sub ) ];
 			}
 		}
 
 		return new \WP_Error( 'not_found', __( 'No matching subscription was found.', 'onecom-wp' ) );
+	}
+
+	/**
+	 * Redact fields that don't apply to a subscription's state before returning it
+	 * over MCP. An expired or canceled subscription won't renew, so its renewal date
+	 * (`renewsAt`) is removed — mirroring the UI, which only shows "Renews at" for a
+	 * subscription that actually has a future renewal. The expiry date is left intact.
+	 *
+	 * @param array $sub Raw subscription object.
+	 * @return array
+	 */
+	private static function sanitize_subscription( array $sub ): array {
+		$status = strtolower( (string) ( $sub['status'] ?? '' ) );
+		if ( in_array( $status, [ 'expired', 'canceled', 'cancelled' ], true ) ) {
+			unset( $sub['renewsAt'] );
+		}
+		return $sub;
 	}
 
 	/**
