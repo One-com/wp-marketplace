@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  *   - Shared, brand-agnostic ACTIONS — install/activate/deactivate/delete operate
  *     on the one shared site. Registered ONCE under canonical slugs
- *     (`marketplace/...`), deduplicated via wp_get_ability() so that when the
+ *     (`marketplace/...`), deduplicated via wp_has_ability() so that when the
  *     module is embedded in multiple host plugins (one.com + RankMath) on the same
  *     site, only the first copy registers. This is what lets a second host "just
  *     inject" the same abilities without re-implementing them.
@@ -87,7 +87,7 @@ class MarketplaceAbilities {
 			$tools = ( isset( $config['tools'] ) && is_array( $config['tools'] ) ) ? $config['tools'] : [];
 			foreach ( self::ability_ids( $brand ) as $id ) {
 				// Only add slugs that actually registered (registry is the source of truth).
-				if ( wp_get_ability( $id ) ) {
+				if ( wp_has_ability( $id ) ) {
 					$tools[] = $id;
 				}
 			}
@@ -149,7 +149,7 @@ class MarketplaceAbilities {
 	 * Register the ability category. Deduplicated across embedded copies.
 	 */
 	public static function register_category(): void {
-		if ( function_exists( 'wp_get_ability_category' ) && wp_get_ability_category( self::CATEGORY ) ) {
+		if ( function_exists( 'wp_has_ability_category' ) && wp_has_ability_category( self::CATEGORY ) ) {
 			return;
 		}
 		wp_register_ability_category( self::CATEGORY, [
@@ -160,10 +160,10 @@ class MarketplaceAbilities {
 
 	/**
 	 * Register the shared, brand-agnostic action abilities. First embedded copy to
-	 * run wins; later copies short-circuit on the wp_get_ability() guard.
+	 * run wins; later copies short-circuit on the wp_has_ability() guard.
 	 */
 	private static function register_actions(): void {
-		if ( wp_get_ability( 'marketplace/install-plugin' ) ) {
+		if ( wp_has_ability( 'marketplace/install-plugin' ) ) {
 			return; // Already registered by another embedded copy this request.
 		}
 
@@ -247,7 +247,7 @@ class MarketplaceAbilities {
 		if ( null !== $catalog_provider ) {
 			// List catalog plugins.
 			$slug = "{$brand}-marketplace/list-plugins";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'List %s marketplace plugins', 'onecom-wp' ), $brand ),
 					'description'         => __( 'List plugins available in the marketplace catalog. Each entry includes its categories, whether it is featured, install/activation state, and the download URL needed to install it.', 'onecom-wp' ),
@@ -266,7 +266,7 @@ class MarketplaceAbilities {
 
 			// Details about a single product.
 			$slug = "{$brand}-marketplace/get-product";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'Get %s product details', 'onecom-wp' ), $brand ),
 					'description'         => __( 'Get full catalog details for a single marketplace product by slug, including its install/activation state and download URL.', 'onecom-wp' ),
@@ -311,7 +311,7 @@ class MarketplaceAbilities {
 
 			// Installed products ("My Products").
 			$slug = "{$brand}-marketplace/list-installed";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'List installed %s products', 'onecom-wp' ), $brand ),
 					'description'         => __( 'List the marketplace products that are already installed on this site ("My Products"), with their activation state.', 'onecom-wp' ),
@@ -340,7 +340,7 @@ class MarketplaceAbilities {
 		$subscription_brands = apply_filters( 'marketplace_subscription_brands', [ self::RANKMATH_BRAND ] );
 		if ( null !== $subscriptions_provider && in_array( $brand, (array) $subscription_brands, true ) ) {
 			$slug = "{$brand}-marketplace/list-subscriptions";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'List %s subscriptions', 'onecom-wp' ), $brand ),
 					'description'         => __( 'List the current marketplace product subscriptions for this site ("My Subscriptions").', 'onecom-wp' ),
@@ -366,7 +366,7 @@ class MarketplaceAbilities {
 			$detail_brands = apply_filters( 'marketplace_subscription_detail_brands', [ self::RANKMATH_BRAND ] );
 			if ( in_array( $brand, (array) $detail_brands, true ) ) {
 				$slug = "{$brand}-marketplace/get-subscription";
-				if ( ! wp_get_ability( $slug ) ) {
+				if ( ! wp_has_ability( $slug ) ) {
 					wp_register_ability( $slug, [
 						'label'               => sprintf( __( 'Get a %s subscription', 'onecom-wp' ), $brand ),
 						'description'         => __( 'Get details for a single subscription — including status and renewal/expiry date — by subscription id or product slug.', 'onecom-wp' ),
@@ -395,7 +395,7 @@ class MarketplaceAbilities {
 		// Refresh products: clear the marketplace caches and re-fetch from the API.
 		if ( null !== $refresh_provider ) {
 			$slug = "{$brand}-marketplace/refresh-products";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'Refresh %s products', 'onecom-wp' ), $brand ),
 					'description'         => __( 'Clear the marketplace cache (catalog + subscriptions transients) and re-fetch the catalog fresh from the API. Returns the refreshed plugin list.', 'onecom-wp' ),
