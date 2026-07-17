@@ -1290,6 +1290,14 @@ class MarketplaceController {
 			return;
 		}
 
+		// Encrypt sensitive values (e.g. the SocialPilot API key) with the target plugin's
+		// at-rest scheme the moment we receive them, so plaintext is never written to the
+		// DB — not to the staged pending option, nor to the plugin's own option.
+		$license_data = $this->encrypt_license_data_for_storage( $license_data );
+		if ( empty( $license_data ) ) {
+			return;
+		}
+
 		if ( $this->is_plugin_active_by_slug( $slug ) ) {
 			$this->apply_license_data( $license_data );
 			return;
@@ -1422,13 +1430,12 @@ class MarketplaceController {
 	 * database, driven entirely by the API response — new plugins need no module
 	 * code, only the right `licenseData` in their response. Each entry is:
 	 *
-	 *     { "key": [ "<option_name>", "<nested>", ... ], "value": "<encrypted-in-transit>" }
+	 *     { "key": [ "<option_name>", "<nested>", ... ], "value": "<storage-ready>" }
 	 *
-	 * The first `key` element is the wp_option name; the rest is the nested path
-	 * within that option's array. Values are transformed by transform_license_value()
-	 * before being written: most are stored verbatim (the target plugin decrypts on
-	 * read), but SocialPilot's key is decrypted from the shared transport envelope and
-	 * re-encrypted with the plugin's own site-local scheme (see transform_license_value).
+	 * The first `key` element is the wp_option name; the rest is the nested path within
+	 * that option's array. Values are written verbatim: sensitive ones (e.g. SocialPilot's
+	 * key) were already encrypted at stage time (see encrypt_license_data_for_storage), so
+	 * the plaintext never reaches this point.
 	 *
 	 * @param array $license_data Map/list of { key: string[], value: mixed } entries.
 	 */
@@ -1437,107 +1444,53 @@ class MarketplaceController {
 			if ( ! is_array( $entry ) || empty( $entry['key'] ) || ! is_array( $entry['key'] ) || ! array_key_exists( 'value', $entry ) ) {
 				continue;
 			}
-			$path  = array_values( $entry['key'] );
-			$value = $this->transform_license_value( $path, $entry['value'] );
-			// A null transform means "skip" (e.g. transport decrypt failed) — never write
-			// a bad value, which the target plugin would silently read as an empty key.
-			if ( null === $value ) {
-				continue;
-			}
-			$this->set_option_by_path( $path, $value );
+			$this->set_option_by_path( array_values( $entry['key'] ), $entry['value'] );
 		}
 	}
 
 	/**
-	 * Transform a license value before storage.
+	 * Encrypt sensitive license values at stage time so the plaintext key never lands in
+	 * the DB — not even the staged pending option. The API delivers the SocialPilot key
+	 * as plaintext over authenticated HTTPS; here we immediately encrypt it with
+	 * SocialPilot's own at-rest scheme (site-local, salt-derived) and keep only the
+	 * ciphertext. Which options need this is filterable via
+	 * `marketplace_license_reencrypt_options` (default: `socialpilot_options`); other
+	 * products' values are left untouched (stored verbatim). If encryption fails the entry
+	 * is DROPPED rather than persisted as plaintext.
 	 *
-	 * Default: store verbatim (the target plugin decrypts on read). For products whose
-	 * option is in the re-encrypt set (default: SocialPilot's `socialpilot_options`,
-	 * filterable via `marketplace_license_reencrypt_options`), the backend sends the key
-	 * encrypted with a shared *transport* key; we decrypt it and re-encrypt it with the
-	 * plugin's own *site-local* scheme so the at-rest secret is site-specific, never the
-	 * fleet-wide transport key.
-	 *
-	 * @param array $path  [ option_name, ...nested_keys ].
-	 * @param mixed $value Incoming value.
-	 * @return mixed|null  Value to store, or null to skip this entry.
+	 * @param array $license_data Map/list of { key: string[], value: mixed } entries.
+	 * @return array Same structure, with sensitive values replaced by ciphertext.
 	 */
-	private function transform_license_value( array $path, $value ) {
-		$option_name       = isset( $path[0] ) ? (string) $path[0] : '';
+	private function encrypt_license_data_for_storage( array $license_data ): array {
 		$reencrypt_options = apply_filters( 'marketplace_license_reencrypt_options', [ 'socialpilot_options' ] );
 
-		// Non-re-encrypt products: keep the current store-verbatim behaviour.
-		if ( ! in_array( $option_name, (array) $reencrypt_options, true ) ) {
-			return $value;
-		}
-		if ( ! is_string( $value ) || '' === $value ) {
-			return $value;
-		}
+		foreach ( $license_data as $k => $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['key'] ) || ! is_array( $entry['key'] ) || ! array_key_exists( 'value', $entry ) ) {
+				continue;
+			}
+			$option_name = (string) ( $entry['key'][0] ?? '' );
+			if ( ! in_array( $option_name, (array) $reencrypt_options, true ) ) {
+				continue; // Not sensitive — store verbatim.
+			}
+			$value = $entry['value'];
+			if ( ! is_string( $value ) || '' === $value ) {
+				continue;
+			}
 
-		$transport_key = $this->license_transport_key();
-		if ( '' === $transport_key ) {
-			error_log( '[Marketplace] license re-encrypt skipped: no transport key configured (' . $option_name . ')' );
-			return null;
-		}
+			$encrypted = $this->socialpilot_encrypt( $value );
+			// Scrub the plaintext from the array + local before continuing.
+			$license_data[ $k ]['value'] = '';
+			$value                       = '';
 
-		$plaintext = $this->decrypt_transport_value( $value, $transport_key );
-		if ( ! is_string( $plaintext ) || '' === $plaintext ) {
-			error_log( '[Marketplace] license re-encrypt skipped: transport decrypt failed (' . $option_name . ')' );
-			return null;
+			if ( is_string( $encrypted ) && '' !== $encrypted ) {
+				$license_data[ $k ]['value'] = $encrypted;
+			} else {
+				// Encryption failed: drop the entry rather than store a plaintext/empty key.
+				error_log( '[Marketplace] license encryption failed; dropped entry for ' . $option_name );
+				unset( $license_data[ $k ] );
+			}
 		}
-
-		$reencrypted = $this->socialpilot_encrypt( $plaintext );
-		// Best-effort scrub of the plaintext key from memory.
-		$plaintext = str_repeat( '*', strlen( $plaintext ) );
-		unset( $plaintext );
-
-		if ( ! is_string( $reencrypted ) || '' === $reencrypted ) {
-			error_log( '[Marketplace] license re-encrypt failed (' . $option_name . ')' );
-			return null;
-		}
-		return $reencrypted;
-	}
-
-	/**
-	 * The shared transport key used to decrypt inbound license values. Sourced from the
-	 * module config (`license_transport_key`) or, as a fallback, the
-	 * ONECOM_MP_LICENSE_TRANSPORT_KEY constant. Deliberately NOT reusing SocialPilot's
-	 * own SOCIALPILOT_ENCRYPTION_KEY constant, so the plugin keeps deriving a
-	 * site-specific at-rest key. Empty string when unset (re-encryption is then skipped).
-	 *
-	 * @return string
-	 */
-	private function license_transport_key(): string {
-		$key = isset( $this->config['license_transport_key'] ) ? (string) $this->config['license_transport_key'] : '';
-		if ( '' === $key && defined( 'ONECOM_MP_LICENSE_TRANSPORT_KEY' ) ) {
-			$key = (string) ONECOM_MP_LICENSE_TRANSPORT_KEY;
-		}
-		return $key;
-	}
-
-	/**
-	 * Decrypt a shared-transport license value: base64( IV[16] ‖ ciphertext ), AES-256-CBC.
-	 * Mirrors the backend envelope (openssl passphrase normalization applies on both sides).
-	 *
-	 * @param string $encoded    base64 of IV + ciphertext.
-	 * @param string $shared_key Shared transport key.
-	 * @return string|false Plaintext, or false on failure.
-	 */
-	private function decrypt_transport_value( string $encoded, string $shared_key ) {
-		if ( ! function_exists( 'openssl_decrypt' ) ) {
-			return false;
-		}
-		$raw = base64_decode( $encoded, true );
-		if ( false === $raw ) {
-			return false;
-		}
-		$iv_len = openssl_cipher_iv_length( 'aes-256-cbc' );
-		if ( false === $iv_len || strlen( $raw ) <= $iv_len ) {
-			return false;
-		}
-		$iv         = substr( $raw, 0, $iv_len );
-		$ciphertext = substr( $raw, $iv_len );
-		return openssl_decrypt( $ciphertext, 'aes-256-cbc', $shared_key, OPENSSL_RAW_DATA, $iv );
+		return $license_data;
 	}
 
 	/**
