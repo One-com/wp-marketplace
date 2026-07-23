@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  *   - Shared, brand-agnostic ACTIONS — install/activate/deactivate/delete operate
  *     on the one shared site. Registered ONCE under canonical slugs
- *     (`marketplace/...`), deduplicated via wp_get_ability() so that when the
+ *     (`marketplace/...`), deduplicated via wp_has_ability() so that when the
  *     module is embedded in multiple host plugins (one.com + RankMath) on the same
  *     site, only the first copy registers. This is what lets a second host "just
  *     inject" the same abilities without re-implementing them.
@@ -61,15 +61,20 @@ class MarketplaceAbilities {
 		$refresh_provider = isset( $config['refresh_provider'] ) && is_callable( $config['refresh_provider'] )
 			? $config['refresh_provider']
 			: null;
+		// Returns the visibility context (active plugin slugs + active theme author)
+		// used to evaluate catalog `rules`; null disables catalog visibility filtering.
+		$visibility_provider = isset( $config['visibility_provider'] ) && is_callable( $config['visibility_provider'] )
+			? $config['visibility_provider']
+			: null;
 
 		if ( function_exists( 'wp_register_ability_category' ) ) {
 			add_action( 'wp_abilities_api_categories_init', [ self::class, 'register_category' ] );
 		}
 
-		add_action( 'wp_abilities_api_init', static function () use ( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider ) {
+		add_action( 'wp_abilities_api_init', static function () use ( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider, $visibility_provider ) {
 			self::register_actions();
 			if ( '' !== $brand ) {
-				self::register_reads( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider );
+				self::register_reads( $brand, $catalog_provider, $subscriptions_provider, $refresh_provider, $visibility_provider );
 			}
 		} );
 
@@ -82,7 +87,7 @@ class MarketplaceAbilities {
 			$tools = ( isset( $config['tools'] ) && is_array( $config['tools'] ) ) ? $config['tools'] : [];
 			foreach ( self::ability_ids( $brand ) as $id ) {
 				// Only add slugs that actually registered (registry is the source of truth).
-				if ( wp_get_ability( $id ) ) {
+				if ( wp_has_ability( $id ) ) {
 					$tools[] = $id;
 				}
 			}
@@ -144,7 +149,7 @@ class MarketplaceAbilities {
 	 * Register the ability category. Deduplicated across embedded copies.
 	 */
 	public static function register_category(): void {
-		if ( function_exists( 'wp_get_ability_category' ) && wp_get_ability_category( self::CATEGORY ) ) {
+		if ( function_exists( 'wp_has_ability_category' ) && wp_has_ability_category( self::CATEGORY ) ) {
 			return;
 		}
 		wp_register_ability_category( self::CATEGORY, [
@@ -155,10 +160,10 @@ class MarketplaceAbilities {
 
 	/**
 	 * Register the shared, brand-agnostic action abilities. First embedded copy to
-	 * run wins; later copies short-circuit on the wp_get_ability() guard.
+	 * run wins; later copies short-circuit on the wp_has_ability() guard.
 	 */
 	private static function register_actions(): void {
-		if ( wp_get_ability( 'marketplace/install-plugin' ) ) {
+		if ( wp_has_ability( 'marketplace/install-plugin' ) ) {
 			return; // Already registered by another embedded copy this request.
 		}
 
@@ -236,21 +241,24 @@ class MarketplaceAbilities {
 	 * @param callable|null $catalog_provider       Returns array|WP_Error (raw catalog payload).
 	 * @param callable|null $subscriptions_provider Returns array|WP_Error (list of subscriptions).
 	 * @param callable|null $refresh_provider       Clears the caches + re-fetches; returns array|WP_Error.
+	 * @param callable|null $visibility_provider    Returns { active_plugins, theme_author } for catalog rule filtering.
 	 */
-	private static function register_reads( string $brand, ?callable $catalog_provider, ?callable $subscriptions_provider, ?callable $refresh_provider = null ): void {
+	private static function register_reads( string $brand, ?callable $catalog_provider, ?callable $subscriptions_provider, ?callable $refresh_provider = null, ?callable $visibility_provider = null ): void {
 		if ( null !== $catalog_provider ) {
 			// List catalog plugins.
 			$slug = "{$brand}-marketplace/list-plugins";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'List %s marketplace plugins', 'onecom-wp' ), $brand ),
 					'description'         => __( 'List plugins available in the marketplace catalog. Each entry includes its categories, whether it is featured, install/activation state, and the download URL needed to install it.', 'onecom-wp' ),
 					'category'            => self::CATEGORY,
 					'output_schema'       => self::plugin_list_output_schema(),
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),
-					'execute_callback'    => static function () use ( $catalog_provider ) {
+					'execute_callback'    => static function () use ( $catalog_provider, $visibility_provider ) {
 						$payload = self::catalog_payload( $catalog_provider );
-						return is_wp_error( $payload ) ? $payload : [ 'plugins' => self::catalog_summaries( $payload ) ];
+						return is_wp_error( $payload )
+							? $payload
+							: [ 'plugins' => self::catalog_summaries( $payload, self::visibility_context( $visibility_provider ) ) ];
 					},
 					'meta'                => self::tool_meta( [ 'readonly' => true ] ),
 				] );
@@ -258,7 +266,7 @@ class MarketplaceAbilities {
 
 			// Details about a single product.
 			$slug = "{$brand}-marketplace/get-product";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'Get %s product details', 'onecom-wp' ), $brand ),
 					'description'         => __( 'Get full catalog details for a single marketplace product by slug, including its install/activation state and download URL.', 'onecom-wp' ),
@@ -275,7 +283,7 @@ class MarketplaceAbilities {
 						'properties' => [ 'product' => [ 'type' => 'object' ] ],
 					],
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),
-					'execute_callback'    => static function ( $input ) use ( $catalog_provider ) {
+					'execute_callback'    => static function ( $input ) use ( $catalog_provider, $visibility_provider ) {
 						$slug = (string) ( $input['slug'] ?? '' );
 						if ( '' === $slug ) {
 							return new \WP_Error( 'invalid_slug', __( 'Missing product slug.', 'onecom-wp' ) );
@@ -284,8 +292,14 @@ class MarketplaceAbilities {
 						if ( is_wp_error( $payload ) ) {
 							return $payload;
 						}
+						$visibility = self::visibility_context( $visibility_provider );
 						foreach ( self::extract_items( $payload ) as $item ) {
 							if ( isset( $item['slug'] ) && (string) $item['slug'] === $slug ) {
+								// A product gated by visibility rules isn't offered in the
+								// catalog, so it's "not found" here too (can't fetch its URL).
+								if ( ! self::should_show_item( $item, $visibility ) ) {
+									break;
+								}
 								return [ 'product' => self::augment_item( $item ) ];
 							}
 						}
@@ -297,7 +311,7 @@ class MarketplaceAbilities {
 
 			// Installed products ("My Products").
 			$slug = "{$brand}-marketplace/list-installed";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'List installed %s products', 'onecom-wp' ), $brand ),
 					'description'         => __( 'List the marketplace products that are already installed on this site ("My Products"), with their activation state.', 'onecom-wp' ),
@@ -326,7 +340,7 @@ class MarketplaceAbilities {
 		$subscription_brands = apply_filters( 'marketplace_subscription_brands', [ self::RANKMATH_BRAND ] );
 		if ( null !== $subscriptions_provider && in_array( $brand, (array) $subscription_brands, true ) ) {
 			$slug = "{$brand}-marketplace/list-subscriptions";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'List %s subscriptions', 'onecom-wp' ), $brand ),
 					'description'         => __( 'List the current marketplace product subscriptions for this site ("My Subscriptions").', 'onecom-wp' ),
@@ -341,7 +355,9 @@ class MarketplaceAbilities {
 						if ( is_wp_error( $subs ) ) {
 							return $subs;
 						}
-						return [ 'subscriptions' => is_array( $subs ) ? array_values( $subs ) : [] ];
+						$subs = is_array( $subs ) ? array_values( $subs ) : [];
+						$subs = array_map( static fn( $s ) => is_array( $s ) ? self::sanitize_subscription( $s ) : $s, $subs );
+						return [ 'subscriptions' => $subs ];
 					},
 					'meta'                => self::tool_meta( [ 'readonly' => true ] ),
 				] );
@@ -352,7 +368,7 @@ class MarketplaceAbilities {
 			$detail_brands = apply_filters( 'marketplace_subscription_detail_brands', [ self::RANKMATH_BRAND ] );
 			if ( in_array( $brand, (array) $detail_brands, true ) ) {
 				$slug = "{$brand}-marketplace/get-subscription";
-				if ( ! wp_get_ability( $slug ) ) {
+				if ( ! wp_has_ability( $slug ) ) {
 					wp_register_ability( $slug, [
 						'label'               => sprintf( __( 'Get a %s subscription', 'onecom-wp' ), $brand ),
 						'description'         => __( 'Get details for a single subscription — including status and renewal/expiry date — by subscription id or product slug.', 'onecom-wp' ),
@@ -381,7 +397,7 @@ class MarketplaceAbilities {
 		// Refresh products: clear the marketplace caches and re-fetch from the API.
 		if ( null !== $refresh_provider ) {
 			$slug = "{$brand}-marketplace/refresh-products";
-			if ( ! wp_get_ability( $slug ) ) {
+			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
 					'label'               => sprintf( __( 'Refresh %s products', 'onecom-wp' ), $brand ),
 					'description'         => __( 'Clear the marketplace cache (catalog + subscriptions transients) and re-fetch the catalog fresh from the API. Returns the refreshed plugin list.', 'onecom-wp' ),
@@ -394,12 +410,12 @@ class MarketplaceAbilities {
 						],
 					],
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),
-					'execute_callback'    => static function () use ( $refresh_provider ) {
+					'execute_callback'    => static function () use ( $refresh_provider, $visibility_provider ) {
 						$payload = self::catalog_payload( $refresh_provider );
 						if ( is_wp_error( $payload ) ) {
 							return $payload;
 						}
-						return [ 'refreshed' => true, 'plugins' => self::catalog_summaries( $payload ) ];
+						return [ 'refreshed' => true, 'plugins' => self::catalog_summaries( $payload, self::visibility_context( $visibility_provider ) ) ];
 					},
 					// Not read-only (clears cache) but not destructive — just drops caches
 					// and re-fetches. Idempotent: refreshing again yields the same state.
@@ -451,14 +467,31 @@ class MarketplaceAbilities {
 				continue;
 			}
 			if ( '' !== $subscription_id && (string) ( $sub['subscriptionId'] ?? '' ) === $subscription_id ) {
-				return [ 'subscription' => $sub ];
+				return [ 'subscription' => self::sanitize_subscription( $sub ) ];
 			}
 			if ( '' !== $product_id && (string) ( $sub['productId'] ?? '' ) === $product_id ) {
-				return [ 'subscription' => $sub ];
+				return [ 'subscription' => self::sanitize_subscription( $sub ) ];
 			}
 		}
 
 		return new \WP_Error( 'not_found', __( 'No matching subscription was found.', 'onecom-wp' ) );
+	}
+
+	/**
+	 * Redact fields that don't apply to a subscription's state before returning it
+	 * over MCP. An expired or canceled subscription won't renew, so its renewal date
+	 * (`renewsAt`) is removed — mirroring the UI, which only shows "Renews at" for a
+	 * subscription that actually has a future renewal. The expiry date is left intact.
+	 *
+	 * @param array $sub Raw subscription object.
+	 * @return array
+	 */
+	private static function sanitize_subscription( array $sub ): array {
+		$status = strtolower( (string) ( $sub['status'] ?? '' ) );
+		if ( in_array( $status, [ 'expired', 'canceled', 'cancelled' ], true ) ) {
+			unset( $sub['renewsAt'] );
+		}
+		return $sub;
 	}
 
 	/**
@@ -509,7 +542,10 @@ class MarketplaceAbilities {
 	}
 
 	/**
-	 * The raw catalog item with live install/activation state attached (full detail).
+	 * The catalog item with live install/activation state attached (full detail),
+	 * minus the internal/technical metadata the marketplace UI never renders. The
+	 * `productMeta` blob and any top-level `meta` are stripped so the MCP product
+	 * response mirrors what the UI exposes instead of dumping the raw catalog item.
 	 *
 	 * @param array $item
 	 * @return array
@@ -517,22 +553,99 @@ class MarketplaceAbilities {
 	private static function augment_item( array $item ): array {
 		$slug              = (string) ( $item['slug'] ?? '' );
 		$installed         = '' !== $slug && PluginService::is_installed( $slug );
+		unset( $item['productMeta'], $item['meta'] );
 		$item['installed'] = $installed;
 		$item['activated'] = $installed ? PluginService::is_active( $slug ) : false;
 		return $item;
 	}
 
 	/**
+	 * Resolve the visibility context (active plugin slugs + active theme author)
+	 * used to evaluate a catalog item's `rules`. Returns null when no provider is
+	 * wired, which disables filtering (show everything).
+	 *
+	 * @param callable|null $visibility_provider
+	 * @return array|null { active_plugins: string[], theme_author: string } or null.
+	 */
+	private static function visibility_context( ?callable $visibility_provider ): ?array {
+		if ( null === $visibility_provider ) {
+			return null;
+		}
+		$ctx = call_user_func( $visibility_provider );
+		if ( ! is_array( $ctx ) ) {
+			return null;
+		}
+		return [
+			'active_plugins' => isset( $ctx['active_plugins'] ) && is_array( $ctx['active_plugins'] ) ? $ctx['active_plugins'] : [],
+			'theme_author'   => isset( $ctx['theme_author'] ) ? (string) $ctx['theme_author'] : '',
+		];
+	}
+
+	/**
+	 * Whether a catalog item should be visible, mirroring the frontend's
+	 * shouldShowPlugin(). Items may declare `rules` gating them to sites where a
+	 * required plugin is active (mustHavePlugins — any match) or the active theme
+	 * is by a given author (mustHaveThemesByAuthor, e.g. Superb addons on Superb
+	 * themes). Items without rules — or when no visibility context is given — are
+	 * always visible.
+	 *
+	 * @param array      $item       Raw catalog item.
+	 * @param array|null $visibility { active_plugins: string[], theme_author: string } or null.
+	 * @return bool
+	 */
+	private static function should_show_item( array $item, ?array $visibility ): bool {
+		if ( null === $visibility ) {
+			return true;
+		}
+		$rules = $item['rules'] ?? null;
+		if ( empty( $rules ) || ! is_array( $rules ) ) {
+			return true;
+		}
+
+		// mustHavePlugins: visible if ANY listed plugin is active (empty list = no requirement).
+		if ( ! empty( $rules['mustHavePlugins'] ) && is_array( $rules['mustHavePlugins'] ) ) {
+			$active = $visibility['active_plugins'] ?? [];
+			$has    = false;
+			foreach ( $rules['mustHavePlugins'] as $required ) {
+				if ( in_array( $required, $active, true ) ) {
+					$has = true;
+					break;
+				}
+			}
+			if ( ! $has ) {
+				return false;
+			}
+		}
+
+		// mustHaveThemesByAuthor: visible only if the active theme's author matches.
+		if ( ! empty( $rules['mustHaveThemesByAuthor'] ) && is_string( $rules['mustHaveThemesByAuthor'] ) ) {
+			if ( ( $visibility['theme_author'] ?? '' ) !== $rules['mustHaveThemesByAuthor'] ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Trimmed {slug,name,download_url,installed,activated} summaries for every catalog
 	 * item that has a slug — the shape used by the list abilities.
 	 *
-	 * @param mixed $payload
+	 * When $visibility is provided, items hidden by their `rules` are dropped
+	 * (mirrors the UI's catalog visibility). Pass null to keep every item — e.g.
+	 * list-installed shows what's physically installed regardless of rules.
+	 *
+	 * @param mixed      $payload
+	 * @param array|null $visibility { active_plugins, theme_author } or null to skip filtering.
 	 * @return array<int, array<string, mixed>>
 	 */
-	private static function catalog_summaries( $payload ): array {
+	private static function catalog_summaries( $payload, ?array $visibility = null ): array {
 		$out = [];
 		foreach ( self::extract_items( $payload ) as $item ) {
 			if ( empty( $item['slug'] ) ) {
+				continue;
+			}
+			if ( null !== $visibility && ! self::should_show_item( $item, $visibility ) ) {
 				continue;
 			}
 			$slug      = (string) $item['slug'];
@@ -553,8 +666,11 @@ class MarketplaceAbilities {
 	}
 
 	/**
-	 * Normalise a catalog item's `categories` (array of strings or {slug,title}
-	 * objects) into a flat list of category slugs/titles.
+	 * Normalise a catalog item's `categories` (array of strings or
+	 * {id,slug,title,description} objects) into a flat list of human-readable
+	 * labels. Prefer the display `title` (what the UI shows) over `slug`: a
+	 * category's slug can lag its renamed label (e.g. slug "e-commerce" →
+	 * title "Sales"), so slug-first would surface stale names to MCP clients.
 	 *
 	 * @param array $item
 	 * @return string[]
@@ -566,7 +682,7 @@ class MarketplaceAbilities {
 		}
 		$out = [];
 		foreach ( $cats as $c ) {
-			$val = is_array( $c ) ? ( $c['slug'] ?? $c['title'] ?? '' ) : $c;
+			$val = is_array( $c ) ? ( $c['title'] ?? $c['name'] ?? $c['slug'] ?? '' ) : $c;
 			$val = (string) $val;
 			if ( '' !== $val ) {
 				$out[] = $val;
