@@ -74,15 +74,15 @@ const SsoLoginLink = ({ subscriptionId, iconUrl, plugin = null, className = "" }
   };
 
   return (
-    <button
-      type="button"
-      className={`gv-button gv-button-secondary gv-button-sm sso-login-link ${className}`.trim()}
+    <a
+      href="#"
+      className={`gv-action sso-login-link ${className}`.trim()}
       onClick={handleSso}
-      disabled={loading}
+      aria-disabled={loading}
     >
       <span>{loading ? (uiI18n?.labels?.loading || "Loading…") : label}</span>
       {!loading && iconUrl && <gv-icon aria-hidden="true" src={iconUrl}></gv-icon>}
-    </button>
+    </a>
   );
 };
 

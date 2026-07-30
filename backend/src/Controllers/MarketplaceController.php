@@ -1234,7 +1234,11 @@ class MarketplaceController {
 				$this->config['payload'] ?? [],
 				[
 					'action'        => 'wp-marketplace-track-status',
-					'resource_type' => $resource_type,
+					// The status endpoint dispatches on resource_type (it echoed our
+					// 'procurement' back as data.type and returned status, not the SSO URL).
+					// Select the SSO operation via resource_type; also send `type` in case the
+					// backend keys on that instead.
+					'resource_type' => 'get_sso_url',
 					'type'          => 'get_sso_url',
 					'resource_id'   => $subscription_id,
 				]
@@ -1244,13 +1248,21 @@ class MarketplaceController {
 			}
 
 			$sso_result = $this->get_model()->request( $sso_payload, 'POST' );
+			error_log( '[Marketplace][SSO-DIAG] response: ' . wp_json_encode( $sso_result ) ); // TEMP: remove after diagnosing
 			if ( is_wp_error( $sso_result ) ) {
 				wp_send_json_error( [ 'message' => $sso_result->get_error_message() ] );
 			}
 			if ( isset( $sso_result['error'] ) && $sso_result['error'] ) {
 				wp_send_json_error( $sso_result );
 			}
-			$sso_url = $sso_result['data']['ssoUrl'] ?? '';
+			// Tolerate common response shapes: data.ssoUrl (documented), top-level ssoUrl,
+			// double-nested data.data.ssoUrl, and snake_case / generic url keys.
+			$sso_url = $sso_result['data']['ssoUrl']
+				?? $sso_result['ssoUrl']
+				?? $sso_result['data']['data']['ssoUrl']
+				?? $sso_result['data']['sso_url']
+				?? $sso_result['data']['url']
+				?? '';
 			if ( '' === $sso_url ) {
 				wp_send_json_error( [ 'message' => 'No SSO URL returned.' ] );
 			}

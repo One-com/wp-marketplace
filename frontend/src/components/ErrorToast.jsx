@@ -75,6 +75,7 @@ export default function ErrorToast({ plugin: propPlugin }) {
                             {isDeleteError && formatMessage(uiI18n?.notifications?.pluginDeletionFailed || "Couldn't delete plugin.", pluginName)}
                             {isBuyNowError && (uiI18n?.notifications?.procurementFailed || "Couldn't complete the purchase. Please try again.")}
                             {isCancelSubscriptionError && (uiI18n?.notifications?.cancelSubscriptionFailed || "Couldn't cancel the subscription. Please try again later.")}
+                            {errorState.type === 'sso_login' && (uiI18n?.notifications?.somethingWentWrong || 'Something went wrong. Please try again later.')}
                         </>)
                     }
                 </div>
