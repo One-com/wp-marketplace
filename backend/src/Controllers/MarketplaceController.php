@@ -1233,9 +1233,10 @@ class MarketplaceController {
 			$sso_payload = array_merge(
 				$this->config['payload'] ?? [],
 				[
-					'action'      => 'wp-marketplace-track-status',
-					'type'        => 'get_sso_url',
-					'resource_id' => $subscription_id,
+					'action'        => 'wp-marketplace-track-status',
+					'resource_type' => $resource_type,
+					'type'          => 'get_sso_url',
+					'resource_id'   => $subscription_id,
 				]
 			);
 			if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
