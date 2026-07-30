@@ -1549,7 +1549,7 @@ class MarketplaceController {
 
 		// Top-level option.
 		if ( empty( $path ) ) {
-			return update_option( $option_name, $value );
+			return $this->update_option_verbatim( $option_name, $value );
 		}
 
 		// Nested value inside the option's array; create intermediate containers as needed.
@@ -1569,7 +1569,33 @@ class MarketplaceController {
 		$cursor[ $last ] = $value;
 		unset( $cursor );
 
-		return update_option( $option_name, $data );
+		return $this->update_option_verbatim( $option_name, $data );
+	}
+
+	/**
+	 * Write an option verbatim, suppressing its registered sanitize_callback for this
+	 * one write. License values are already in their final at-rest form, so a plugin's
+	 * sanitizer must not re-process them — e.g. SocialPilot registers a sanitize callback
+	 * (via register_setting) that re-encrypts `api_key` on EVERY update_option, which
+	 * would double-encrypt the value we stored (SocialPilot then decrypts once and gets
+	 * ciphertext, not the key). We save/restore the exact hook so nothing else is affected.
+	 *
+	 * @param string $option
+	 * @param mixed  $value
+	 * @return bool
+	 */
+	private function update_option_verbatim( string $option, $value ): bool {
+		global $wp_filter;
+		$hook  = "sanitize_option_{$option}";
+		$saved = $wp_filter[ $hook ] ?? null;
+		if ( null !== $saved ) {
+			unset( $wp_filter[ $hook ] );
+		}
+		$ok = update_option( $option, $value );
+		if ( null !== $saved ) {
+			$wp_filter[ $hook ] = $saved;
+		}
+		return $ok;
 	}
 
 	/**
