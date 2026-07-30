@@ -11,7 +11,8 @@ import MaintenanceState from "./MaintenanceState";
 import WpVersionErrorState from "./WpVersionErrorState";
 import {trackButtonClick, trackPageView, trackPluginDetailVisit, trackEvent} from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
-import { getLatestSubscription, getAjaxAction } from "../utils/common.utils";
+import { getLatestSubscription, getAjaxAction, isSsoEnabledPlugin } from "../utils/common.utils";
+import SsoLoginLink from "./SsoLoginLink";
 import { startPolling } from "../utils/pollingHelper";
 import { formatDate } from "../utils/dateFormatter";
 
@@ -1048,6 +1049,16 @@ export default function Addons() {
                             ) : latestSubscription?.status === 'active' ? (
                               <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
                             ) : null}
+                            {isSsoEnabledPlugin(plugin.slug)
+                              && latestSubscription?.subscriptionId
+                              && (latestSubscription.status === 'active' || isCancelledButValid) && (
+                              <SsoLoginLink
+                                subscriptionId={latestSubscription.subscriptionId}
+                                plugin={plugin}
+                                iconUrl={`${iconBase}open_in_new.svg`}
+                                className="gv-mt-sm"
+                              />
+                            )}
                           </>
                         ) : (
                           <p>-</p>

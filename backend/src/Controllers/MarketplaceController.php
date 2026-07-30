@@ -1226,6 +1226,36 @@ class MarketplaceController {
 			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
 		}
 
+		// SSO login: ask the status endpoint for a fresh single-sign-on URL for this
+		// subscription and return only the link (the frontend opens it in a new tab).
+		$type = sanitize_text_field( wp_unslash( $_POST['type'] ?? '' ) );
+		if ( 'get_sso_url' === $type ) {
+			$sso_payload = array_merge(
+				$this->config['payload'] ?? [],
+				[
+					'action'      => 'wp-marketplace-track-status',
+					'type'        => 'get_sso_url',
+					'resource_id' => $subscription_id,
+				]
+			);
+			if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+				unset( $sso_payload['action'] );
+			}
+
+			$sso_result = $this->get_model()->request( $sso_payload, 'POST' );
+			if ( is_wp_error( $sso_result ) ) {
+				wp_send_json_error( [ 'message' => $sso_result->get_error_message() ] );
+			}
+			if ( isset( $sso_result['error'] ) && $sso_result['error'] ) {
+				wp_send_json_error( $sso_result );
+			}
+			$sso_url = $sso_result['data']['ssoUrl'] ?? '';
+			if ( '' === $sso_url ) {
+				wp_send_json_error( [ 'message' => 'No SSO URL returned.' ] );
+			}
+			wp_send_json_success( [ 'ssoUrl' => esc_url_raw( $sso_url ) ] );
+		}
+
 		$payload = array_merge(
 			$this->config['payload'] ?? [],
 			[

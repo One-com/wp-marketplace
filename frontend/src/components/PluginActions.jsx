@@ -3,7 +3,8 @@ import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick, trackEvent } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { startPolling } from "../utils/pollingHelper";
-import { getAjaxAction } from "../utils/common.utils";
+import { getAjaxAction, isSsoEnabledPlugin } from "../utils/common.utils";
+import SsoLoginLink from "./SsoLoginLink";
 import { formatDate } from "../utils/dateFormatter";
 import PurchaseModal from "./PurchaseModal";
 
@@ -83,6 +84,17 @@ export default function PluginActions({ plugin }) {
     const activeSubscription = isPremiumOnNonOnecom && plugin.productId && subscriptionsList?.length
         ? subscriptionsList.find(
             s => s.productId === plugin.productId && (s.status === 'active' || s.status === 'canceled' || s.status === 'pending_cancellation') && s.accessDetails?.downloadUrl
+        )
+        : null;
+
+    // SSO login: shown for SSO-capable products (e.g. SocialPilot) purchased through the
+    // marketplace — i.e. with an active (or canceled-but-still-valid) subscription for this
+    // productId. Matching on the subscription is what distinguishes the purchased product
+    // from the free plugin, which can share the same slug.
+    const ssoSubscription = isSsoEnabledPlugin(plugin.slug) && plugin.productId && subscriptionsList?.length
+        ? subscriptionsList.find(
+            s => s.productId === plugin.productId && s.subscriptionId
+                && (s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date()))
         )
         : null;
 
@@ -554,6 +566,7 @@ export default function PluginActions({ plugin }) {
                 </button>
             ) : plugin.installed ? (
                 plugin.activated ? (
+                    <>
                     <button
                         type="button"
                         className="gv-button gv-button-primary"
@@ -562,6 +575,15 @@ export default function PluginActions({ plugin }) {
                        <span>{uiI18n?.labels?.manage || 'Manage'}</span>
                         <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_right.svg`}></gv-icon>
                     </button>
+                    {ssoSubscription && (
+                        <SsoLoginLink
+                            subscriptionId={ssoSubscription.subscriptionId}
+                            plugin={plugin}
+                            iconUrl={`${iconBase}icons/open_in_new.svg`}
+                            className="gv-mt-sm"
+                        />
+                    )}
+                    </>
                 ) : (
                     <button
                         className="gv-button gv-button-primary"
