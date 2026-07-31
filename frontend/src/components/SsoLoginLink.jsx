@@ -25,7 +25,14 @@ const SsoLoginLink = ({ subscriptionId, iconUrl, plugin = null, className = "" }
   const label = uiI18n?.labels?.ssoLogin || "Log in";
 
   const handleSso = async (e) => {
-    if (e) e.preventDefault();
+    if (e) {
+      e.preventDefault();
+      // Clicking opens a new tab, so focus lingers on the link and Gravity's
+      // focus-visible outline would stay boxed around it. Blur it right away.
+      if (e.currentTarget && typeof e.currentTarget.blur === "function") {
+        e.currentTarget.blur();
+      }
+    }
     if (loading || !subscriptionId || !wpConfig?.ajaxUrl) return;
 
     setLoading(true);
