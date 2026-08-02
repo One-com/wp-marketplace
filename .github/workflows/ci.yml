@@ -203,8 +203,29 @@ jobs:
           test -f composer.json || exit 1
           test -f frontend/package.json || exit 1
           test -f readme.md || exit 1
+          test -f CHANGELOG.md || exit 1
 
           echo "✅ Package structure validation passed"
+
+      - name: Validate version consistency
+        run: |
+          # The single mechanism that keeps the version in sync (WPIN-8835):
+          # composer.json is the source of truth; Marketplace::VERSION must match
+          # it, and the UI reads that constant. Divergence fails the build here.
+          COMPOSER_VERSION=$(jq -r '.version' composer.json)
+          CONST_VERSION=$(grep -oE "const VERSION\s*=\s*'[^']+'" backend/src/marketplace.php | grep -oE "'[^']+'" | tr -d "'")
+
+          if [ -z "$CONST_VERSION" ]; then
+            echo "::error::Could not find Marketplace::VERSION constant in backend/src/marketplace.php"
+            exit 1
+          fi
+
+          if [ "$COMPOSER_VERSION" != "$CONST_VERSION" ]; then
+            echo "::error::Version mismatch — composer.json ($COMPOSER_VERSION) != Marketplace::VERSION ($CONST_VERSION). Bump both together."
+            exit 1
+          fi
+
+          echo "✅ Version consistency validated: $COMPOSER_VERSION"
 
   release:
     name: Create Release

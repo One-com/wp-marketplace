@@ -13,6 +13,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class Marketplace {
 	/**
+	 * Module version. `composer.json`'s `version` field is the single source of
+	 * truth (tag-driven releases read it); this constant is bumped in the same
+	 * release PR and the `package-validation` CI job fails if the two diverge.
+	 * A compiled constant — not a runtime composer.json read — because under
+	 * Mozart embedding composer.json is not guaranteed to ship beside the class.
+	 */
+	public const VERSION = '2.0.6';
+
+	/**
 	 * Boots the Marketplace with given config.
 	 *
 	 * MCP: the module registers its abilities (shared `marketplace/*` actions +

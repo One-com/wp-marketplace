@@ -151,6 +151,11 @@ export const MarketplaceProvider = ({
         ? window.marketplaceConfig.wpVersion
         : "";
 
+    // Marketplace module version (Marketplace::VERSION, localized by PHP)
+    const version = typeof window !== "undefined" && window.marketplaceConfig?.version
+        ? window.marketplaceConfig.version
+        : "";
+
     useEffect(() => {
         const persistedNotice = sessionStorage.getItem('mp_success_notice');
         if (persistedNotice) {
@@ -803,6 +808,7 @@ export const MarketplaceProvider = ({
         shouldShowPlugin,
         isWpVersionSupported,
         wpVersion,
+        version,
         activePlugins,
         activeThemeAuthor,
         pendingProcurements,

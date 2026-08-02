@@ -1,6 +1,7 @@
 <?php
 namespace Groupone\Marketplace\Controllers;
 
+use Groupone\Marketplace\Marketplace;
 use Groupone\Marketplace\Models\MarketplaceModel;
 use Groupone\Marketplace\Services\PluginService;
 use Groupone\Marketplace\Abilities\MarketplaceAbilities;
@@ -485,6 +486,7 @@ class MarketplaceController {
 			],
 			'enableDefaultStyles'  => empty( $this->config['custom_css'] ),
 			'assetsBaseUrl'        => $base_url,
+			'version'              => Marketplace::VERSION,
 			'wpVersion'            => $wp_version,
 			'activePlugins'        => $active_plugins,
 			'activeThemeAuthor'    => $active_theme_author,

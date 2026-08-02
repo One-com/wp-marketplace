@@ -17,6 +17,7 @@
 
 # Documentation
 /readme.md                          export-ignore
+/CHANGELOG.md                       export-ignore
 /CLAUDE.md                          export-ignore
 /ADDONS_USAGE.md                    export-ignore
 /GRAVITY_TILES_USAGE.md             export-ignore
