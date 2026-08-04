@@ -1049,7 +1049,8 @@ export default function Addons() {
                             ) : latestSubscription?.status === 'active' ? (
                               <p>{uiI18n?.labels?.renewsOn || 'Renews'}: {latestSubsDate}</p>
                             ) : null}
-                            {isSsoEnabledPlugin(plugin.slug)
+                            {plugin.activated
+                              && isSsoEnabledPlugin(plugin.slug)
                               && latestSubscription?.subscriptionId
                               && (latestSubscription.status === 'active' || isCancelledButValid) && (
                               <SsoLoginLink
