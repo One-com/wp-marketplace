@@ -1248,7 +1248,6 @@ class MarketplaceController {
 			}
 
 			$sso_result = $this->get_model()->request( $sso_payload, 'POST' );
-			error_log( '[Marketplace][SSO-DIAG] response: ' . wp_json_encode( $sso_result ) ); // TEMP: remove after diagnosing
 			if ( is_wp_error( $sso_result ) ) {
 				wp_send_json_error( [ 'message' => $sso_result->get_error_message() ] );
 			}
