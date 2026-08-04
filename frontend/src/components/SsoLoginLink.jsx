@@ -22,7 +22,7 @@ const SsoLoginLink = ({ subscriptionId, iconUrl, plugin = null, className = "" }
   const { wpConfig, setErrorState, uiI18n } = useMarketplace();
   const [loading, setLoading] = useState(false);
 
-  const label = uiI18n?.labels?.ssoLogin || "Log in";
+  const label = uiI18n?.logInButton || "Log in";
 
   const handleSso = async (e) => {
     if (e) {
