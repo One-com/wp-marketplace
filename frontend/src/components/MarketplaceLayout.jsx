@@ -21,8 +21,8 @@ const MarketplaceLayout = ({ children, className = "" }) => {
                     {/* Rendered in the shared layout so the module version shows on
                         both the marketplace and addons screens (WPIN-8835). */}
                     {version && (
-                        <p className="marketplace-version gv-caption-sm gv-text-secondary gv-text-center gv-mt-lg">
-                            v{version}
+                        <p className="marketplace-version gv-caption-lg gv-text-on-alternative gv-text-right gv-mt-lg">
+                            Marketplace v{version}
                         </p>
                     )}
                 </div>
