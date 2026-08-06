@@ -12,6 +12,8 @@ section that matches the `composer.json` bump and the `Marketplace::VERSION` con
 
 ## [Unreleased]
 
+## [2.0.7] - 2026-08-06
+
 ### Added
 - Module version is now exposed at PHP runtime via the `Marketplace::VERSION`
   constant, localized into `window.marketplaceConfig.version`, and rendered in the
@@ -22,7 +24,5 @@ section that matches the `composer.json` bump and the `Marketplace::VERSION` con
 
 ## [2.0.6] - 2026-08-02
 
-### Added
-- Baseline release. Version tracking (PHP constant, changelog, UI display) was
-  introduced against this version; entries prior to 2.0.6 are not backfilled —
-  see the Git tag history for earlier changes.
+- Prior baseline. Changes before 2.0.6 are tracked via the Git tag history and
+  are not backfilled here.
