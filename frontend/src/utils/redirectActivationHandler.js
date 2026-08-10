@@ -2,9 +2,20 @@ import { trackButtonClick } from "./mixpanelTracking";
 import { getAjaxAction } from "./common.utils";
 
 /**
- * Handles the special case of Imagify plugin activation which involves a 302 redirect.
+ * Handles the activation of plugins whose activation hook issues a redirect
+ * (or otherwise terminates PHP without returning a JSON response).
+ *
+ * Dispatched from `handlePluginAction` when the catalog flags the plugin
+ * with `redirectsOnActivate: true`. The flow is:
+ *   1. Fire-and-forget the activation request (swallow the inevitable error).
+ *   2. Poll the `active/{slug}` endpoint to confirm the activation landed.
+ *   3. On confirmation, surface the success notice and trigger a controlled
+ *      reload so the marketplace reflects the now-installed plugin.
+ *
+ * Set `plugin.redirectsOnActivate = true` in the marketplace catalog API
+ * response for any plugin known to redirect on activation.
  */
-export const handleImagifyActivation = async ({
+export const handleRedirectActivation = async ({
     plugin,
     apiBaseUrl,
     useWPHandlers,
@@ -29,14 +40,17 @@ export const handleImagifyActivation = async ({
         url = url + (url.includes('?') ? '&' : '?') + downloadParam;
     }
 
-    // Allow React to render loading overlay, then execute Imagify flow
+    // Allow React to render loading overlay, then execute redirect-aware flow
     setTimeout(async () => {
-        // Initiate the activation request (don't wait for response due to 302 redirect)
+        // Initiate the activation request (don't wait for response — the plugin will
+        // redirect and the fetch will reject as a network error, but PHP-side activation
+        // has already started.)
         try {
             await fetch(url, { method: "POST" });
         } catch (err) {
-            // Imagify returns a 302 redirect which fetch rejects as a network error.
-            // The request still reaches the server, so swallow the error and let polling confirm activation.
+            // Redirecting plugins return 302 which fetch rejects as a network error.
+            // The request still reaches the server, so swallow the error and let polling
+            // confirm activation.
         }
 
         // Poll for activation status
@@ -49,7 +63,7 @@ export const handleImagifyActivation = async ({
                 const data = await response.json();
 
                 if (data && data.activated) {
-                    // Track successful Imagify activation
+                    // Track successful redirect-based activation
                     trackButtonClick({
                         buttonName: 'Activate',
                         buttonAction: 'product_activate',
@@ -57,7 +71,7 @@ export const handleImagifyActivation = async ({
                         context: {
                             action: action,
                             result: 'success',
-                            special_case: 'imagify_redirect',
+                            special_case: 'redirect_activation',
                         }
                     });
 
@@ -110,7 +124,7 @@ export const handleImagifyActivation = async ({
                     context: {
                         action: action,
                         result: 'error',
-                        error_message: 'Imagify activation timeout after polling',
+                        error_message: 'Redirect-based activation timeout after polling',
                     }
                 });
 
