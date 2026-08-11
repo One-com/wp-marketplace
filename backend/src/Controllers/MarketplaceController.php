@@ -953,6 +953,10 @@ class MarketplaceController {
 	public function ajax_subscribe() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => 'Permission denied' ] );
+		}
+
 		$product_id     = sanitize_text_field( $_POST['productId'] ?? '' );
 		$price_amount   = floatval( $_POST['priceAmount'] ?? 0 );
 		$price_currency = sanitize_text_field( $_POST['priceCurrency'] ?? '' );
@@ -1013,6 +1017,10 @@ class MarketplaceController {
 	 */
 	public function ajax_track_status() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => 'Permission denied' ] );
+		}
 
 		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
 		$resource_type   = sanitize_text_field( $_POST['resourceType'] ?? 'procurement' );
@@ -1428,38 +1436,42 @@ class MarketplaceController {
 		if ( null !== $saved ) {
 			unset( $wp_filter[ $hook ] );
 		}
-		$ok = update_option( $option, $value );
-		if ( null !== $saved ) {
-			$wp_filter[ $hook ] = $saved;
+		// finally: always restore the sanitize hook, even if update_option() throws —
+		// otherwise it stays removed for the rest of the request.
+		try {
+			return update_option( $option, $value );
+		} finally {
+			if ( null !== $saved ) {
+				$wp_filter[ $hook ] = $saved;
+			}
 		}
-		return $ok;
 	}
 
 	/**
-	 * Guard which options the license writer may touch. Blocks core/critical WordPress
-	 * options so a compromised API response can't take over the site. Hosts can tighten
-	 * further (e.g. to an allowlist) via the 'marketplace_license_writable_option' filter.
+	 * Guard which options the license writer may touch. Allowlist-based: only options a
+	 * product explicitly opts into may be written, so a compromised API response can't
+	 * name an arbitrary option (a denylist can't guarantee this — it always misses cases
+	 * like sidebars_widgets, theme_mods_*, uninstall_plugins, third-party options).
 	 *
 	 * @param string $option_name
 	 * @return bool
 	 */
 	private function is_writable_option( string $option_name ): bool {
-		global $wpdb;
-
-		$blocked = [
-			'siteurl', 'home', 'blogname', 'blogdescription', 'admin_email', 'new_admin_email',
-			'users_can_register', 'default_role', 'template', 'stylesheet', 'current_theme',
-			'active_plugins', 'active_sitewide_plugins', 'WPLANG', 'cron', 'user_roles',
-			$wpdb->prefix . 'user_roles', 'auth_key', 'auth_salt', 'mailserver_url',
-			'mailserver_login', 'mailserver_pass', 'upload_path', 'db_version', 'secret',
-			'recently_activated',
-		];
-
-		$allowed = ! in_array( $option_name, $blocked, true );
+		/**
+		 * Allowlist of options the license provisioner may write. Defaults to SocialPilot's
+		 * option (the sole consumer today); onboard a new product by adding its option here.
+		 * Mirrors the default of `marketplace_license_reencrypt_options`.
+		 *
+		 * @param string[] $allowed_options
+		 */
+		$allowed_options = (array) apply_filters(
+			'marketplace_license_writable_options',
+			[ 'socialpilot_options' ]
+		);
+		$allowed = in_array( $option_name, $allowed_options, true );
 
 		/**
-		 * Filter whether a given option may be written by the license provisioner.
-		 * Return false to block a name, or implement a strict allowlist.
+		 * Per-name veto retained so a host can further block a specific allowlisted name.
 		 *
 		 * @param bool   $allowed
 		 * @param string $option_name
