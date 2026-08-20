@@ -3,7 +3,8 @@ import { useMarketplace } from "../context/MarketplaceContext";
 import { trackPluginAction, trackButtonClick, trackEvent } from "../utils/mixpanelTracking";
 import { getPluginRedirectUrl, navigateToPluginUrl } from "../utils/redirectUrlHelper";
 import { startPolling } from "../utils/pollingHelper";
-import { getAjaxAction } from "../utils/common.utils";
+import { getAjaxAction, isSsoEnabledPlugin } from "../utils/common.utils";
+import SsoLoginLink from "./SsoLoginLink";
 import { formatDate } from "../utils/dateFormatter";
 import PurchaseModal from "./PurchaseModal";
 
@@ -86,6 +87,17 @@ export default function PluginActions({ plugin }) {
         )
         : null;
 
+    // SSO login: shown for SSO-capable products (e.g. SocialPilot) purchased through the
+    // marketplace — i.e. with an active (or canceled-but-still-valid) subscription for this
+    // productId. Matching on the subscription is what distinguishes the purchased product
+    // from the free plugin, which can share the same slug.
+    const ssoSubscription = isSsoEnabledPlugin(plugin.slug) && plugin.productId && subscriptionsList?.length
+        ? subscriptionsList.find(
+            s => s.productId === plugin.productId && s.subscriptionId
+                && (s.status === 'active' || (s.status === 'canceled' && s.expiresAt && new Date(s.expiresAt) > new Date()))
+        )
+        : null;
+
     // Check if we should show "Buy now" button for premium plugins on non-onecom brands
     // Skip "Buy now" if user already has an active subscription with a download URL,
     // or if subscription dates are already known (e.g. cancellation in progress — keep showing the indicator)
@@ -148,7 +160,9 @@ export default function PluginActions({ plugin }) {
             ajaxUrl,
             nonce: wpConfig.nonce,
             action: getAjaxAction('track_status'),
-            params: { subscriptionId },
+            // slug is carried so the backend can stage this plugin's license (keyed by
+            // slug) to write on activation. It's our own request param, not from the API.
+            params: { subscriptionId, slug },
             interval: 10000,
             onResult: async (result) => {
                 if (!result.success) return false; // keep polling
@@ -399,6 +413,7 @@ export default function PluginActions({ plugin }) {
             const formData = new URLSearchParams({
                 action: getAjaxAction('subscribe'),
                 nonce: wpConfig.nonce,
+                slug: plugin.slug || '',
                 productId: plugin.productId || '',
                 priceAmount: priceData.amount || '',
                 priceCurrency: priceData.currency || '',
@@ -551,6 +566,7 @@ export default function PluginActions({ plugin }) {
                 </button>
             ) : plugin.installed ? (
                 plugin.activated ? (
+                    <>
                     <button
                         type="button"
                         className="gv-button gv-button-primary"
@@ -559,6 +575,15 @@ export default function PluginActions({ plugin }) {
                        <span>{uiI18n?.labels?.manage || 'Manage'}</span>
                         <gv-icon aria-hidden="true" src={`${iconBase}icons/arrow_right.svg`}></gv-icon>
                     </button>
+                    {ssoSubscription && (
+                        <SsoLoginLink
+                            subscriptionId={ssoSubscription.subscriptionId}
+                            plugin={plugin}
+                            iconUrl={`${iconBase}icons/open_in_new.svg`}
+                            className="gv-mt-sm"
+                        />
+                    )}
+                    </>
                 ) : (
                     <button
                         className="gv-button gv-button-primary"

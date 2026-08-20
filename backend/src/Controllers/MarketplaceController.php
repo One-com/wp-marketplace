@@ -809,6 +809,13 @@ class MarketplaceController {
 		$slug = isset( $_REQUEST['slug'] ) ? sanitize_key( wp_unslash( $_REQUEST['slug'] ) ) : '';
 
 		$result = PluginService::activate( $slug );
+
+		// After a successful activation the plugin's own options exist; write any license
+		// details we staged for this slug so they merge into the plugin's own option.
+		if ( ! empty( $result['success'] ) ) {
+			$this->apply_pending_license( $slug );
+		}
+
 		$this->send_service_result( $result );
 	}
 
@@ -948,6 +955,10 @@ class MarketplaceController {
 	public function ajax_subscribe() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => 'Permission denied' ] );
+		}
+
 		$product_id     = sanitize_text_field( $_POST['productId'] ?? '' );
 		$price_amount   = floatval( $_POST['priceAmount'] ?? 0 );
 		$price_currency = sanitize_text_field( $_POST['priceCurrency'] ?? '' );
@@ -989,6 +1000,16 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
+		// Immediate-active purchases return the license inline — stage it here (it is
+		// written on activation, see ajax_activate_plugin). Slug is carried on our own
+		// request. The pending -> active poll path is handled in ajax_track_status.
+		$slug         = sanitize_key( wp_unslash( $_POST['slug'] ?? '' ) );
+		$status       = $result['data']['status'] ?? '';
+		$license_data = $result['data']['license']['licenseData'] ?? null;
+		if ( 'active' === $status && '' !== $slug && is_array( $license_data ) && ! empty( $license_data ) ) {
+			$this->stage_license( $slug, $license_data );
+		}
+
 		wp_send_json_success( $result );
 	}
 
@@ -999,11 +1020,57 @@ class MarketplaceController {
 	public function ajax_track_status() {
 		check_ajax_referer( 'marketplace_nonce', 'nonce' );
 
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => 'Permission denied' ] );
+		}
+
 		$subscription_id = sanitize_text_field( $_POST['subscriptionId'] ?? '' );
 		$resource_type   = sanitize_text_field( $_POST['resourceType'] ?? 'procurement' );
 
 		if ( empty( $subscription_id ) ) {
 			wp_send_json_error( [ 'message' => 'Missing subscriptionId.' ] );
+		}
+
+		// SSO login: ask the status endpoint for a fresh single-sign-on URL for this
+		// subscription and return only the link (the frontend opens it in a new tab).
+		$type = sanitize_text_field( wp_unslash( $_POST['type'] ?? '' ) );
+		if ( 'get_sso_url' === $type ) {
+			$sso_payload = array_merge(
+				$this->config['payload'] ?? [],
+				[
+					'action'        => 'wp-marketplace-track-status',
+					// The status endpoint dispatches on resource_type (it echoed our
+					// 'procurement' back as data.type and returned status, not the SSO URL).
+					// Select the SSO operation via resource_type; also send `type` in case the
+					// backend keys on that instead.
+					'resource_type' => 'get_sso_url',
+					'type'          => 'get_sso_url',
+					'resource_id'   => $subscription_id,
+				]
+			);
+			if ( 'onecom' === ( $this->config['brand'] ?? '' ) ) {
+				unset( $sso_payload['action'] );
+			}
+
+			$sso_result = $this->get_model()->request( $sso_payload, 'POST' );
+			if ( is_wp_error( $sso_result ) ) {
+				wp_send_json_error( [ 'message' => $sso_result->get_error_message() ] );
+			}
+			if ( isset( $sso_result['error'] ) && $sso_result['error'] ) {
+				wp_send_json_error( $sso_result );
+			}
+			// Tolerate common response shapes: data.ssoUrl (documented), top-level ssoUrl,
+			// double-nested data.data.ssoUrl, and snake_case / generic url keys.
+			$sso_url = $sso_result['data']['ssoUrl']
+				?? $sso_result['ssoUrl']
+				?? $sso_result['data']['data']['ssoUrl']
+				?? $sso_result['data']['sso_url']
+				?? $sso_result['data']['url']
+				?? '';
+			if ( '' === $sso_url ) {
+				wp_send_json_error( [ 'message' => 'No SSO URL returned.' ] );
+			}
+			wp_send_json_success( [ 'ssoUrl' => esc_url_raw( $sso_url ) ] );
 		}
 
 		$payload = array_merge(
@@ -1030,7 +1097,388 @@ class MarketplaceController {
 			wp_send_json_error( $result );
 		}
 
+		// Data-driven license provisioning: once the procurement is active, STAGE the
+		// license for this plugin. It's written to the DB only after the plugin is
+		// activated (see ajax_activate_plugin -> apply_pending_license), so the plugin's
+		// own activation routine can't overwrite it. The slug is carried on our own
+		// request (not from the external API) — see the FE track-status call.
+		$slug         = sanitize_key( wp_unslash( $_POST['slug'] ?? '' ) );
+		$status       = $result['data']['status'] ?? '';
+		$license_data = $result['data']['license']['licenseData'] ?? null;
+		if ( 'active' === $status && '' !== $slug && is_array( $license_data ) && ! empty( $license_data ) ) {
+			$this->stage_license( $slug, $license_data );
+		}
+
 		wp_send_json_success( $result );
+	}
+
+	/**
+	 * Option name holding staged (pending) licenses, keyed by plugin slug.
+	 */
+	private function pending_licenses_option(): string {
+		$brand = $this->config['brand'] ?? '';
+		return "{$brand}_marketplace_pending_licenses";
+	}
+
+	/**
+	 * Stage a plugin's license for provisioning on activation.
+	 *
+	 * We do NOT write to the target option here — some plugins reinitialise their
+	 * options in their activation routine, which would clobber an early write. Instead
+	 * we persist the licenseData keyed by slug and apply it right after the plugin is
+	 * activated (see apply_pending_license). If the plugin is already active, apply now
+	 * (its activation routine has already run, and activation won't fire again).
+	 *
+	 * @param string $slug         Plugin slug (our correlation key).
+	 * @param array  $license_data Response licenseData map.
+	 */
+	private function stage_license( string $slug, array $license_data ): void {
+		if ( '' === $slug || empty( $license_data ) ) {
+			return;
+		}
+
+		// Encrypt sensitive values (e.g. the SocialPilot API key) with the target plugin's
+		// at-rest scheme the moment we receive them, so plaintext is never written to the
+		// DB — not to the staged pending option, nor to the plugin's own option.
+		$license_data = $this->encrypt_license_data_for_storage( $license_data );
+		if ( empty( $license_data ) ) {
+			return;
+		}
+
+		if ( $this->is_plugin_active_by_slug( $slug ) ) {
+			$this->apply_license_data( $license_data );
+			return;
+		}
+
+		$option  = $this->pending_licenses_option();
+		$pending = get_option( $option, [] );
+		if ( ! is_array( $pending ) ) {
+			$pending = [];
+		}
+		$pending[ $slug ] = $license_data;
+		update_option( $option, $pending, false );
+	}
+
+	/**
+	 * Apply (and clear) a staged license for the given slug. Called from
+	 * ajax_activate_plugin right after the plugin is activated.
+	 *
+	 * @param string $slug
+	 */
+	private function apply_pending_license( string $slug ): void {
+		if ( '' === $slug ) {
+			return;
+		}
+		$option  = $this->pending_licenses_option();
+		$pending = get_option( $option, [] );
+		if ( ! is_array( $pending ) || empty( $pending[ $slug ] ) || ! is_array( $pending[ $slug ] ) ) {
+			return;
+		}
+
+		$this->apply_license_data( $pending[ $slug ] );
+
+		unset( $pending[ $slug ] );
+		update_option( $option, $pending, false );
+	}
+
+	/**
+	 * Stage licenses for every active subscription that carries licenseData. Slugs are
+	 * resolved from productId via the cached catalog.
+	 *
+	 * @param mixed $subscriptions
+	 */
+	private function stage_licenses_from_subscriptions( $subscriptions ): void {
+		if ( ! is_array( $subscriptions ) ) {
+			return;
+		}
+		$map = null;
+		foreach ( $subscriptions as $sub ) {
+			if ( ! is_array( $sub ) || 'active' !== ( $sub['status'] ?? '' ) ) {
+				continue;
+			}
+			$license = $sub['licenseData'] ?? null;
+			if ( ! is_array( $license ) || empty( $license ) ) {
+				continue;
+			}
+			$product_id = (string) ( $sub['productId'] ?? '' );
+			if ( '' === $product_id ) {
+				continue;
+			}
+			if ( null === $map ) {
+				$map = $this->product_id_to_slug_map();
+			}
+			$slug = $map[ $product_id ] ?? '';
+			if ( '' !== $slug ) {
+				$this->stage_license( $slug, $license );
+			}
+		}
+	}
+
+	/**
+	 * Build a productId => slug map from the cached marketplace catalog. Best-effort:
+	 * returns an empty map if the catalog isn't cached (the track-status path still
+	 * stages by the slug carried on its request).
+	 *
+	 * @return array<string,string>
+	 */
+	private function product_id_to_slug_map(): array {
+		$brand   = $this->config['brand'] ?? '';
+		$catalog = get_site_transient( "{$brand}_marketplace_catalog" );
+		if ( ! is_array( $catalog ) ) {
+			return [];
+		}
+
+		$items = [];
+		if ( ! empty( $catalog['data']['catalog'] ) && is_array( $catalog['data']['catalog'] ) ) {
+			$items = $catalog['data']['catalog'];
+		} elseif ( isset( $catalog['data'] ) && is_array( $catalog['data'] ) && array_values( $catalog['data'] ) === $catalog['data'] ) {
+			$items = $catalog['data'];
+		} elseif ( ! empty( $catalog['data']['ui_json'] ) && is_array( $catalog['data']['ui_json'] ) ) {
+			$items = $catalog['data']['ui_json'];
+		} else {
+			$sections = $catalog['data']['sections'] ?? $catalog['sections'] ?? [];
+			if ( is_array( $sections ) ) {
+				foreach ( $sections as $section ) {
+					if ( ! empty( $section['items'] ) && is_array( $section['items'] ) ) {
+						$items = array_merge( $items, $section['items'] );
+					}
+				}
+			}
+		}
+
+		$map = [];
+		foreach ( $items as $item ) {
+			if ( is_array( $item ) && ! empty( $item['slug'] ) && ! empty( $item['productId'] ) ) {
+				$map[ (string) $item['productId'] ] = (string) $item['slug'];
+			}
+		}
+		return $map;
+	}
+
+	/**
+	 * Whether the plugin resolved from a slug is currently active.
+	 *
+	 * @param string $slug
+	 * @return bool
+	 */
+	private function is_plugin_active_by_slug( string $slug ): bool {
+		if ( '' === $slug ) {
+			return false;
+		}
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		$plugin_file = $this->resolve_plugin_file_by_slug( $slug );
+		return ! empty( $plugin_file ) && function_exists( 'is_plugin_active' ) && is_plugin_active( $plugin_file );
+	}
+
+	/**
+	 * Data-driven license provisioning.
+	 *
+	 * Writes license values returned by the purchase/procurement API into the WP
+	 * database, driven entirely by the API response — new plugins need no module
+	 * code, only the right `licenseData` in their response. Each entry is:
+	 *
+	 *     { "key": [ "<option_name>", "<nested>", ... ], "value": "<storage-ready>" }
+	 *
+	 * The first `key` element is the wp_option name; the rest is the nested path within
+	 * that option's array. Values are written verbatim: sensitive ones (e.g. SocialPilot's
+	 * key) were already encrypted at stage time (see encrypt_license_data_for_storage), so
+	 * the plaintext never reaches this point.
+	 *
+	 * @param array $license_data Map/list of { key: string[], value: mixed } entries.
+	 */
+	private function apply_license_data( array $license_data ): void {
+		foreach ( $license_data as $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['key'] ) || ! is_array( $entry['key'] ) || ! array_key_exists( 'value', $entry ) ) {
+				continue;
+			}
+			$this->set_option_by_path( array_values( $entry['key'] ), $entry['value'] );
+		}
+	}
+
+	/**
+	 * Encrypt sensitive license values at stage time so the plaintext key never lands in
+	 * the DB — not even the staged pending option. The API delivers the SocialPilot key
+	 * as plaintext over authenticated HTTPS; here we immediately encrypt it with
+	 * SocialPilot's own at-rest scheme (site-local, salt-derived) and keep only the
+	 * ciphertext. Which options need this is filterable via
+	 * `marketplace_license_reencrypt_options` (default: `socialpilot_options`); other
+	 * products' values are left untouched (stored verbatim). If encryption fails the entry
+	 * is DROPPED rather than persisted as plaintext.
+	 *
+	 * @param array $license_data Map/list of { key: string[], value: mixed } entries.
+	 * @return array Same structure, with sensitive values replaced by ciphertext.
+	 */
+	private function encrypt_license_data_for_storage( array $license_data ): array {
+		$reencrypt_options = apply_filters( 'marketplace_license_reencrypt_options', [ 'socialpilot_options' ] );
+
+		foreach ( $license_data as $k => $entry ) {
+			if ( ! is_array( $entry ) || empty( $entry['key'] ) || ! is_array( $entry['key'] ) || ! array_key_exists( 'value', $entry ) ) {
+				continue;
+			}
+			$option_name = (string) ( $entry['key'][0] ?? '' );
+			if ( ! in_array( $option_name, (array) $reencrypt_options, true ) ) {
+				continue; // Not sensitive — store verbatim.
+			}
+			$value = $entry['value'];
+			if ( ! is_string( $value ) || '' === $value ) {
+				continue;
+			}
+
+			$encrypted = $this->socialpilot_encrypt( $value );
+			// Scrub the plaintext from the array + local before continuing.
+			$license_data[ $k ]['value'] = '';
+			$value                       = '';
+
+			if ( is_string( $encrypted ) && '' !== $encrypted ) {
+				$license_data[ $k ]['value'] = $encrypted;
+			} else {
+				// Encryption failed: drop the entry rather than store a plaintext/empty key.
+				error_log( '[Marketplace] license encryption failed; dropped entry for ' . $option_name );
+				unset( $license_data[ $k ] );
+			}
+		}
+		return $license_data;
+	}
+
+	/**
+	 * Encrypt a plaintext key with SocialPilot's own site-local scheme. Prefers the
+	 * plugin's SocialPilot_Encrypt::encrypt() (guarantees exact key derivation + envelope,
+	 * available once the plugin is active); falls back to replicating its scheme when the
+	 * class isn't loaded (constant if defined, else salt-derived key).
+	 *
+	 * @param string $plaintext
+	 * @return string|false base64( IV ‖ ciphertext ), or false on failure.
+	 */
+	private function socialpilot_encrypt( string $plaintext ) {
+		if ( class_exists( 'SocialPilot_Encrypt' ) ) {
+			try {
+				$encrypted = \SocialPilot_Encrypt::encrypt( $plaintext );
+				if ( is_string( $encrypted ) && '' !== $encrypted ) {
+					return $encrypted;
+				}
+			} catch ( \Throwable $e ) {
+				error_log( '[Marketplace] SocialPilot_Encrypt::encrypt failed, using fallback: ' . $e->getMessage() );
+			}
+		}
+
+		if ( ! function_exists( 'openssl_encrypt' ) ) {
+			return false;
+		}
+		// Replicate SocialPilot_Encrypt::get_encryption_key(): explicit constant, else a
+		// 32-char (=32-byte) salt-derived key. Keep this in sync with the plugin's scheme.
+		$site_key = defined( 'SOCIALPILOT_ENCRYPTION_KEY' )
+			? (string) SOCIALPILOT_ENCRYPTION_KEY
+			: wp_hash( 'socialpilot_' . AUTH_KEY . AUTH_SALT, 'nonce' );
+		$iv        = openssl_random_pseudo_bytes( 16 );
+		$encrypted = openssl_encrypt( $plaintext, 'aes-256-cbc', $site_key, OPENSSL_RAW_DATA, $iv );
+		if ( false === $encrypted ) {
+			return false;
+		}
+		return base64_encode( $iv . $encrypted );
+	}
+
+	/**
+	 * Set a value at an option path: the first element is the option name, the rest is
+	 * the nested array path inside it. Guarded so an API response can't overwrite core
+	 * WordPress options.
+	 *
+	 * @param array $path  [ option_name, ...nested_keys ]
+	 * @param mixed $value Value to store (verbatim).
+	 * @return bool Whether the option was updated.
+	 */
+	private function set_option_by_path( array $path, $value ): bool {
+		$option_name = (string) array_shift( $path );
+
+		if ( '' === $option_name || ! $this->is_writable_option( $option_name ) ) {
+			error_log( '[Marketplace] license write blocked for option: ' . $option_name );
+			return false;
+		}
+
+		// Top-level option.
+		if ( empty( $path ) ) {
+			return $this->update_option_verbatim( $option_name, $value );
+		}
+
+		// Nested value inside the option's array; create intermediate containers as needed.
+		$data = get_option( $option_name, [] );
+		if ( ! is_array( $data ) ) {
+			$data = [];
+		}
+
+		$cursor = &$data;
+		$last   = array_pop( $path );
+		foreach ( $path as $segment ) {
+			if ( ! isset( $cursor[ $segment ] ) || ! is_array( $cursor[ $segment ] ) ) {
+				$cursor[ $segment ] = [];
+			}
+			$cursor = &$cursor[ $segment ];
+		}
+		$cursor[ $last ] = $value;
+		unset( $cursor );
+
+		return $this->update_option_verbatim( $option_name, $data );
+	}
+
+	/**
+	 * Write an option verbatim, suppressing its registered sanitize_callback for this
+	 * one write. License values are already in their final at-rest form, so a plugin's
+	 * sanitizer must not re-process them — e.g. SocialPilot registers a sanitize callback
+	 * (via register_setting) that re-encrypts `api_key` on EVERY update_option, which
+	 * would double-encrypt the value we stored (SocialPilot then decrypts once and gets
+	 * ciphertext, not the key). We save/restore the exact hook so nothing else is affected.
+	 *
+	 * @param string $option
+	 * @param mixed  $value
+	 * @return bool
+	 */
+	private function update_option_verbatim( string $option, $value ): bool {
+		global $wp_filter;
+		$hook  = "sanitize_option_{$option}";
+		$saved = $wp_filter[ $hook ] ?? null;
+		if ( null !== $saved ) {
+			unset( $wp_filter[ $hook ] );
+		}
+		// finally: always restore the sanitize hook, even if update_option() throws —
+		// otherwise it stays removed for the rest of the request.
+		try {
+			return update_option( $option, $value );
+		} finally {
+			if ( null !== $saved ) {
+				$wp_filter[ $hook ] = $saved;
+			}
+		}
+	}
+
+	/**
+	 * Guard which options the license writer may touch. Allowlist-based: only options a
+	 * product explicitly opts into may be written, so a compromised API response can't
+	 * name an arbitrary option (a denylist can't guarantee this — it always misses cases
+	 * like sidebars_widgets, theme_mods_*, uninstall_plugins, third-party options).
+	 *
+	 * @param string $option_name
+	 * @return bool
+	 */
+	private function is_writable_option( string $option_name ): bool {
+		/**
+		 * Allowlist of options the license provisioner may write. Defaults to SocialPilot's
+		 * option (the sole consumer today); onboard a new product by adding its option here.
+		 * Mirrors the default of `marketplace_license_reencrypt_options`.
+		 *
+		 * @param string[] $allowed_options
+		 */
+		$allowed_options = (array) apply_filters(
+			'marketplace_license_writable_options',
+			[ 'socialpilot_options' ]
+		);
+		$allowed = in_array( $option_name, $allowed_options, true );
+
+		/**
+		 * Per-name veto retained so a host can further block a specific allowlisted name.
+		 *
+		 * @param bool   $allowed
+		 * @param string $option_name
+		 */
+		return (bool) apply_filters( 'marketplace_license_writable_option', $allowed, $option_name );
 	}
 
 	/**
@@ -1109,6 +1557,11 @@ class MarketplaceController {
 			// Preserve the legacy shape: API-error responses forwarded the full result.
 			$data = $list->get_error_data();
 			wp_send_json_error( is_array( $data ) ? $data : [ 'message' => $list->get_error_message() ] );
+		}
+
+		// Stage license data carried on active subscriptions so it's written on activation.
+		if ( ! empty( $list ) && is_array( $list ) ) {
+			$this->stage_licenses_from_subscriptions( $list );
 		}
 
 		wp_send_json_success( $list );

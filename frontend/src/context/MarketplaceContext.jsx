@@ -133,6 +133,10 @@ export const MarketplaceProvider = ({
     // Use ref to track reload timeout so it can be cancelled if user navigates
     const reloadTimeoutRef = useRef(null);
 
+    // In-flight promise for the subscriptions fetch — de-dupes concurrent calls (e.g. the
+    // page mount effect and PluginActions both fetching on a premium product page).
+    const subscriptionsFetchRef = useRef(null);
+
     const brand = typeof window !== "undefined" && window.marketplaceConfig?.brand;
     const isOnecomBrand = brand === "onecom";
 
@@ -366,34 +370,49 @@ export const MarketplaceProvider = ({
     // backed by host-plugin transients, so skip the marketplace-API list for that brand.
     const fetchPartnerSubscriptions = useCallback(async () => {
         if (isOnecomBrand) return;
-        try {
-            const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
-            if (!ajaxUrl) {
-                console.error('ajaxUrl is missing');
-                return;
-            }
 
-            const formData = new URLSearchParams({
-                action: getAjaxAction('get_subscriptions_list'),
-                nonce: window.marketplaceConfig?.wpConfig?.nonce,
-            });
-
-            const response = await fetch(ajaxUrl, {
-                method: 'POST',
-                body: formData,
-            });
-
-            const result = await response.json();
-
-            if (!result.success) {
-                setSubscriptionsList([]);
-                return;
-            }
-            setSubscriptionsList(result?.data || []);
-        } catch (error) {
-            console.error('Error during fetch subscription list', error);
-            setSubscriptionsList([]);
+        // De-dupe: if a fetch is already in flight, return that promise instead of firing a
+        // second identical request (page mount + PluginActions both fetch on a premium
+        // product page and would otherwise race two get_subscriptions_list calls).
+        if (subscriptionsFetchRef.current) {
+            return subscriptionsFetchRef.current;
         }
+
+        const run = (async () => {
+            try {
+                const ajaxUrl = typeof window !== "undefined" && window.marketplaceConfig?.wpConfig?.ajaxUrl;
+                if (!ajaxUrl) {
+                    console.error('ajaxUrl is missing');
+                    return;
+                }
+
+                const formData = new URLSearchParams({
+                    action: getAjaxAction('get_subscriptions_list'),
+                    nonce: window.marketplaceConfig?.wpConfig?.nonce,
+                });
+
+                const response = await fetch(ajaxUrl, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (!result.success) {
+                    setSubscriptionsList([]);
+                    return;
+                }
+                setSubscriptionsList(result?.data || []);
+            } catch (error) {
+                console.error('Error during fetch subscription list', error);
+                setSubscriptionsList([]);
+            } finally {
+                subscriptionsFetchRef.current = null;
+            }
+        })();
+
+        subscriptionsFetchRef.current = run;
+        return run;
     }, [isOnecomBrand]);
 
     // Handle "Cancel Subscription" action
