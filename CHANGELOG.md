@@ -12,6 +12,40 @@ section that matches the `composer.json` bump and the `Marketplace::VERSION` con
 
 ## [Unreleased]
 
+## [2.0.8-beta.2] - 2026-08-20
+
+Pre-release. `2.0.8-beta.1` shipped the same changes but was tagged without a
+changelog entry and left `Marketplace::VERSION` at `2.0.7`; this release fixes
+that divergence.
+
+### Added
+- MCP ability telemetry (`MarketplaceAbilitiesTracking`): one Mixpanel event per
+  marketplace ability executed over MCP, using the same property schema as the
+  admin-UI tracker so both sources can be compared in one report. `item_source`
+  distinguishes `MCP` from UI-driven events.
+- `MixpanelClient::track_batch()` — events queued during a request are sent in a
+  single `/track` call instead of one request each.
+
+### Changed
+- **Breaking (MCP clients):** the `{brand}-marketplace/list-plugins` ability is
+  renamed to `list-products`, and its `event_action` from `plugins_listed` to
+  `products_listed`. No alias is registered, so clients referencing the old tool
+  name must be updated.
+- `item_category` on product-scoped ability events now carries the product's real
+  catalog category instead of a literal `plugin`, resolved slug-first exactly as
+  the frontend does.
+- Telemetry property names aligned to the frontend tracker: `application` (was
+  `application_name`), `result` (was `status`), plus `hit_type`, `product_slug`,
+  `product_name` and `error_message`. `is_sandbox` is no longer sent.
+
+### Fixed
+- MCP telemetry now respects `data_consent_status`; it previously tracked
+  unconditionally while the frontend refused to initialise Mixpanel without it.
+- CI: allow the `dealerdirect/phpcodesniffer-composer-installer` Composer plugin,
+  which Composer 2.2+ blocks by default. The `PHP Lint & CodeSniffer` matrix
+  failed while installing PHPCS, which in turn skipped `Package Validation` and
+  its version-consistency guard.
+
 ## [2.0.7] - 2026-08-06
 
 ### Added

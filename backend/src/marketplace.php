@@ -19,7 +19,7 @@ final class Marketplace {
 	 * A compiled constant — not a runtime composer.json read — because under
 	 * Mozart embedding composer.json is not guaranteed to ship beside the class.
 	 */
-	public const VERSION = '2.0.7';
+	public const VERSION = '2.0.8-beta.2';
 
 	/**
 	 * Boots the Marketplace with given config.
