@@ -236,17 +236,23 @@ bump composer.json version → open PR → merge to master
 
 ### How to cut a release
 
-1. In a branch, bump the `version` field in [`composer.json`](composer.json),
-   following [semver](https://semver.org/) (e.g. `2.0.3` → `2.1.0`).
-2. Open a PR and merge it to `master`.
-3. On merge, the **Auto Tag Release** workflow
+1. In a branch, bump the version in **both** places — they must match or CI fails
+   (see the `package-validation` version-consistency guard):
+   - the `version` field in [`composer.json`](composer.json), following
+     [semver](https://semver.org/) (e.g. `2.0.3` → `2.1.0`); and
+   - the `Marketplace::VERSION` constant in
+     [`backend/src/marketplace.php`](backend/src/marketplace.php).
+2. Update [`CHANGELOG.md`](CHANGELOG.md): move the `Unreleased` items into a new
+   dated section for the version you are cutting.
+3. Open a PR and merge it to `master`.
+4. On merge, the **Auto Tag Release** workflow
    ([`.github/workflows/auto-tag.yml`](.github/workflows/auto-tag.yml)) reads the
    version from `composer.json`, and if no matching tag exists it creates and
    pushes an annotated tag `vX.Y.Z`.
-4. Packagist, connected to this repo via GitHub webhook, picks up the new tag and
+5. Packagist, connected to this repo via GitHub webhook, picks up the new tag and
    makes the version installable with `composer require groupone/marketplace`.
    No manual Packagist steps are needed.
-5. The `release` job in
+6. The `release` job in
    [`.github/workflows/ci.yml`](.github/workflows/ci.yml) triggers on the new tag
    and builds the GitHub Release archive (`wp-marketplace-X.Y.Z.zip`).
 
