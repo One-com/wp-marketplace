@@ -231,8 +231,15 @@ class MarketplaceController {
 
 		add_action( 'rest_api_init', [ $this, 'register_rest_routes' ] );
 
-		// MCP usage telemetry for marketplace abilities.
-		MarketplaceAbilitiesTracking::boot( $this->config );
+		// MCP usage telemetry for marketplace abilities. The token is resolved
+		// here so both the frontend and the MCP tracker report into the same
+		// Mixpanel project without duplicating the sandbox/production switch.
+		MarketplaceAbilitiesTracking::boot(
+			array_merge(
+				$this->config,
+				[ 'mixpanel' => [ 'token' => $this->get_mixpanel_token() ] ]
+			)
+		);
 
 		// Register marketplace MCP abilities (no-op if the Abilities API isn't present).
 		// The catalog provider reuses the same transient-cached fetch as the REST endpoint.
@@ -579,7 +586,7 @@ class MarketplaceController {
 
 	/**
 	 * Fetch the marketplace catalog (transient-cached, brand-specific).
-	 * Shared by the REST endpoint (get_plugins) and the MCP list-plugins ability,
+	 * Shared by the REST endpoint (get_plugins) and the MCP list-products ability,
 	 * so the upstream fetch + 15-minute cache logic lives in one place.
 	 *
 	 * @param bool $is_cached Set by reference to whether the result came from cache.
