@@ -21,9 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *     site, only the first copy registers. This is what lets a second host "just
  *     inject" the same abilities without re-implementing them.
  *
- *   - Per-brand CATALOG — `list-plugins` returns brand-specific data (different API
+ *   - Per-brand CATALOG — `list-products` returns brand-specific data (different API
  *     / curated list per brand), so it is registered under a brand-prefixed slug
- *     (`{brand}-marketplace/list-plugins`). Each host registers its own; no
+ *     (`{brand}-marketplace/list-products`). Each host registers its own; no
  *     collision, no shared state.
  *
  * @see MCP_ABILITIES_DESIGN.md
@@ -111,7 +111,7 @@ class MarketplaceAbilities {
 			'marketplace/delete-plugin',
 		];
 		if ( '' !== $brand ) {
-			$ids[] = "{$brand}-marketplace/list-plugins";
+			$ids[] = "{$brand}-marketplace/list-products";
 			$ids[] = "{$brand}-marketplace/get-product";
 			$ids[] = "{$brand}-marketplace/list-installed";
 			$ids[] = "{$brand}-marketplace/refresh-products";
@@ -175,7 +175,7 @@ class MarketplaceAbilities {
 				'type'       => 'object',
 				'properties' => [
 					'slug'         => [ 'type' => 'string', 'description' => __( 'Plugin slug (used for idempotency).', 'onecom-wp' ) ],
-					'download_url' => [ 'type' => 'string', 'description' => __( 'Package URL from the marketplace catalog (list-plugins).', 'onecom-wp' ) ],
+					'download_url' => [ 'type' => 'string', 'description' => __( 'Package URL from the marketplace catalog (list-products).', 'onecom-wp' ) ],
 				],
 				'required'   => [ 'slug', 'download_url' ],
 			],
@@ -246,11 +246,11 @@ class MarketplaceAbilities {
 	private static function register_reads( string $brand, ?callable $catalog_provider, ?callable $subscriptions_provider, ?callable $refresh_provider = null, ?callable $visibility_provider = null ): void {
 		if ( null !== $catalog_provider ) {
 			// List catalog plugins.
-			$slug = "{$brand}-marketplace/list-plugins";
+			$slug = "{$brand}-marketplace/list-products";
 			if ( ! wp_has_ability( $slug ) ) {
 				wp_register_ability( $slug, [
-					'label'               => sprintf( __( 'List %s marketplace plugins', 'onecom-wp' ), $brand ),
-					'description'         => __( 'List plugins available in the marketplace catalog. Each entry includes its categories, whether it is featured, install/activation state, and the download URL needed to install it.', 'onecom-wp' ),
+					'label'               => sprintf( __( 'List %s marketplace products', 'onecom-wp' ), $brand ),
+					'description'         => __( 'List products available in the marketplace catalog. Each entry includes its categories, whether it is featured, install/activation state, and the download URL needed to install it.', 'onecom-wp' ),
 					'category'            => self::CATEGORY,
 					'output_schema'       => self::plugin_list_output_schema(),
 					'permission_callback' => static fn() => current_user_can( 'install_plugins' ),

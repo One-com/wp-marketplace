@@ -16,7 +16,7 @@ final class Marketplace {
 	 * Boots the Marketplace with given config.
 	 *
 	 * MCP: the module registers its abilities (shared `marketplace/*` actions +
-	 * per-brand `{brand}-marketplace/list-plugins` catalog) with meta.mcp.public = true
+	 * per-brand `{brand}-marketplace/list-products` catalog) with meta.mcp.public = true
 	 * during boot (see MarketplaceController::init -> MarketplaceAbilities::register).
 	 * That is the entire integration — any host that runs an MCP default server
 	 * exposes them automatically, with no host-side wiring. Nothing to inject here.

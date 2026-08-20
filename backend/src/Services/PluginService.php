@@ -57,6 +57,8 @@ class PluginService {
 		}
 		set_transient( $lock_key, time(), 120 );
 
+		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
 		require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
 
 		$upgrader = new \Plugin_Upgrader( new \Automatic_Upgrader_Skin() );
@@ -197,6 +199,7 @@ class PluginService {
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
 
 		$result = delete_plugins( [ $plugin_file ] );
 
