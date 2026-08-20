@@ -41,6 +41,10 @@ that divergence.
 ### Fixed
 - MCP telemetry now respects `data_consent_status`; it previously tracked
   unconditionally while the frontend refused to initialise Mixpanel without it.
+- CI: allow the `dealerdirect/phpcodesniffer-composer-installer` Composer plugin,
+  which Composer 2.2+ blocks by default. The `PHP Lint & CodeSniffer` matrix
+  failed while installing PHPCS, which in turn skipped `Package Validation` and
+  its version-consistency guard.
 
 ## [2.0.7] - 2026-08-06
 

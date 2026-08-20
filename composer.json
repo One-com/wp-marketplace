@@ -27,6 +27,11 @@
   "require": {
     "php": ">=7.4"
   },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    }
+  },
   "autoload": {
     "psr-4": {
       "Groupone\\Marketplace\\": "backend/src/"
