@@ -161,10 +161,90 @@ class MarketplaceAbilitiesTracking {
 
 	/**
 	 * Is the current request an MCP call?
+	 *
+	 * A union of signals, because no single one is universally present:
+	 *
+	 * - `Mcp-Session-Id` / `MCP-Protocol-Version` headers — authoritative when
+	 *   sent, but both optional. The session header exists only if the server
+	 *   issued one at `initialize`, and the protocol header only entered the spec
+	 *   in the 2025-06-18 revision. ChatGPT (`openai-mcp/1.0.0`) sends neither;
+	 *   it carries its own `X-OpenAI-Session` instead.
+	 * - `Accept: text/event-stream` — the streamable-HTTP transport requires
+	 *   clients to accept both `application/json` and `text/event-stream` on
+	 *   POST, so it is present exactly where the headers above are not.
+	 * - A request path that resolves to an MCP endpoint (`…/<ns>/mcp`).
+	 *
+	 * Only ever consulted from `wp_after_execute_ability`, so the request is
+	 * already known to be an ability execution. The non-MCP callers there are our
+	 * own admin-ajax UI and the plain REST abilities route, neither of which sends
+	 * `text/event-stream` nor posts to an `/mcp` path — so widening detection this
+	 * way does not misattribute UI traffic.
 	 */
 	public static function is_mcp_request(): bool {
-		$is_mcp = ( ! empty( $_SERVER['HTTP_MCP_SESSION_ID'] ) || ! empty( $_SERVER['HTTP_MCP_PROTOCOL_VERSION'] ) );
+		$is_mcp = self::has_mcp_transport_headers()
+			|| self::accepts_event_stream()
+			|| self::is_mcp_endpoint_path();
+
 		return (bool) apply_filters( 'onecom_abilities_is_mcp_request', $is_mcp );
+	}
+
+	/**
+	 * The two MCP transport headers, when the client bothers to send them.
+	 */
+	private static function has_mcp_transport_headers(): bool {
+		return ! empty( $_SERVER['HTTP_MCP_SESSION_ID'] ) || ! empty( $_SERVER['HTTP_MCP_PROTOCOL_VERSION'] );
+	}
+
+	/**
+	 * Does the client accept an SSE stream? Mandatory for streamable-HTTP MCP POSTs.
+	 */
+	private static function accepts_event_stream(): bool {
+		if ( empty( $_SERVER['HTTP_ACCEPT'] ) ) {
+			return false;
+		}
+
+		$accept = strtolower( sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT'] ) ) );
+
+		return false !== strpos( $accept, 'text/event-stream' );
+	}
+
+	/**
+	 * Does the request target an MCP endpoint?
+	 *
+	 * Covers pretty REST permalinks (`/wp-json/<ns>/mcp`), the `?rest_route=`
+	 * fallback, and `X-Original-URL` for proxies that rewrite `REQUEST_URI`
+	 * (group.one's Varnish tier does). Worst case a spoofed header mislabels one
+	 * telemetry event, which grants a caller nothing.
+	 */
+	private static function is_mcp_endpoint_path(): bool {
+		foreach ( [ 'REQUEST_URI', 'HTTP_X_ORIGINAL_URL' ] as $key ) {
+			if ( empty( $_SERVER[ $key ] ) ) {
+				continue;
+			}
+
+			$raw   = sanitize_text_field( wp_unslash( $_SERVER[ $key ] ) );
+			$query = (string) wp_parse_url( $raw, PHP_URL_QUERY );
+			$path  = (string) wp_parse_url( $raw, PHP_URL_PATH );
+
+			// `?rest_route=/easy-mcp-ai/v1/mcp` when pretty permalinks are off.
+			if ( '' !== $query ) {
+				$args = [];
+				wp_parse_str( $query, $args );
+				if ( ! empty( $args['rest_route'] ) ) {
+					$path = (string) $args['rest_route'];
+				}
+			}
+
+			if ( '' === $path ) {
+				continue;
+			}
+
+			if ( 'mcp' === strtolower( basename( untrailingslashit( $path ) ) ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
