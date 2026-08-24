@@ -12,6 +12,12 @@ section that matches the `composer.json` bump and the `Marketplace::VERSION` con
 
 ## [Unreleased]
 
+### Changed
+- The MCP ability Mixpanel event is now named `MCP Ability Executed` (was
+  `MCP Ability executed`) so every word is capitalised, matching the other event
+  names. Mixpanel treats event names as case-sensitive, so reports and funnels
+  built on the old name need updating.
+
 ## [2.0.8-beta.2] - 2026-08-20
 
 Pre-release. `2.0.8-beta.1` shipped the same changes but was tagged without a

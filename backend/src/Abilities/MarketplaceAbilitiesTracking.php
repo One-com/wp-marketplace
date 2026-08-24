@@ -382,7 +382,7 @@ class MarketplaceAbilitiesTracking {
 			$props = array_merge( $common, $event, [ 'item_source' => self::ITEM_SOURCE ] );
 
 			$events[] = [
-				'event'      => 'MCP Ability executed',
+				'event'      => 'MCP Ability Executed',
 				'properties' => self::without_empty( $props ),
 			];
 		}
