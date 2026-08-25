@@ -12,11 +12,20 @@ section that matches the `composer.json` bump and the `Marketplace::VERSION` con
 
 ## [Unreleased]
 
+## [2.0.8] - 2026-08-25
+
+First stable release of the 2.0.8 line, superseding `2.0.8-beta.1` and
+`2.0.8-beta.2`.
+
 ### Changed
+- The module version is now shown top-right above the marketplace banner instead
+  of at the foot of the page, in the smallest caption size and muted text so it
+  reads as metadata. It no longer appears on the addons screen.
 - The MCP ability Mixpanel event is now named `MCP Ability Executed` (was
   `MCP Ability executed`) so every word is capitalised, matching the other event
   names. Mixpanel treats event names as case-sensitive, so reports and funnels
   built on the old name need updating.
+
 ### Fixed
 - MCP ability telemetry no longer misses clients that omit the optional MCP
   transport headers. `is_mcp_request()` required `Mcp-Session-Id` or
