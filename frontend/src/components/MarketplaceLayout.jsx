@@ -2,10 +2,8 @@ import React from "react";
 import LoadingOverlay from "./LoadingOverlay";
 import DeleteModal from "./DeleteModal";
 import CancelSubscriptionModal from "./CancelSubscriptionModal";
-import { useMarketplace } from "../context/MarketplaceContext";
 
 const MarketplaceLayout = ({ children, className = "" }) => {
-    const { version } = useMarketplace();
     return (
         <>
             <LoadingOverlay />
@@ -18,13 +16,6 @@ const MarketplaceLayout = ({ children, className = "" }) => {
             <div className="gv-activated">
                 <div className={`marketplace-container gv-layout-product gv-w-max-container gv-mx-auto gv-p-fluid ${className}`}>
                     {children}
-                    {/* Rendered in the shared layout so the module version shows on
-                        both the marketplace and addons screens (WPIN-8835). */}
-                    {version && (
-                        <p className="marketplace-version gv-caption-lg gv-text-on-alternative gv-text-right gv-mt-lg">
-                            Marketplace v{version}
-                        </p>
-                    )}
                 </div>
             </div>
         </>
