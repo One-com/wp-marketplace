@@ -12,6 +12,14 @@ section that matches the `composer.json` bump and the `Marketplace::VERSION` con
 
 ## [Unreleased]
 
+### Fixed
+- MCP ability telemetry no longer misses clients that omit the optional MCP
+  transport headers. `is_mcp_request()` required `Mcp-Session-Id` or
+  `MCP-Protocol-Version`; ChatGPT (`openai-mcp/1.0.0`) sends neither, so its
+  ability executions produced no Mixpanel event at all while other clients worked.
+  Detection now also accepts `Accept: text/event-stream` (mandatory for
+  streamable-HTTP MCP POSTs) and a request path resolving to an MCP endpoint.
+
 ## [2.0.8-beta.2] - 2026-08-20
 
 Pre-release. `2.0.8-beta.1` shipped the same changes but was tagged without a
