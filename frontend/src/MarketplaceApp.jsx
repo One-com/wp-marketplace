@@ -20,19 +20,26 @@ const MarketplaceContent = () => {
     const isSupportedWpVersion = isWpVersionSupported('6.2');
     const isDetailPage = !!currentPluginSlug;
     const isMaintenance = maintenanceState?.isOn;
+    const showBanner = !isDetailPage && !catalogError && !isMaintenance && isSupportedWpVersion;
 
     return (
         <MarketplaceLayout className="gv-surface-dim">
-            {/* Version stamp sits above the banner, top-right: deliberately quiet
-                (smallest caption, muted text) so it reads as metadata, not content.
-                Marketplace only — the addons screen does not show it. */}
-            {version && (
-                <p className="marketplace-version gv-caption-sm gv-text-on-alternative gv-text-right gv-my-0">
-                    Marketplace v{version}
-                </p>
+            {/* Stamp and banner share one grid item on purpose. `.gv-layout-product`
+                is a grid with a fluid gap (48px from 1440px up), so as siblings they
+                were forced a full section-gap apart. Nesting them keeps that gap
+                between page sections while letting the stamp sit just above the
+                banner. The stamp is deliberately quiet — smallest caption, muted
+                text — so it reads as metadata. Marketplace only; not on addons. */}
+            {(version || showBanner) && (
+                <div>
+                    {version && (
+                        <p className="marketplace-version gv-caption-sm gv-text-on-alternative gv-text-right gv-mt-0 gv-mb-sm">
+                            Marketplace v{version}
+                        </p>
+                    )}
+                    {showBanner && <ProductBanner loading={catalogLoading} />}
+                </div>
             )}
-
-            {!isDetailPage && !catalogError && !isMaintenance && isSupportedWpVersion && <ProductBanner loading={catalogLoading} />}
             {!isDetailPage && !catalogError && !isMaintenance && !allPluginsActivated && isSupportedWpVersion && <FeaturedCarousel loading={catalogLoading} />}
 
             <Marketplace />

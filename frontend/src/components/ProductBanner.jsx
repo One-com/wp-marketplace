@@ -6,12 +6,8 @@ const ProductBanner = ({ loading = false }) => {
     const leftBannerUrl = 'https://wpaddon-static.group-cdn.one/images/wp/marketplace/banners/top-header-left-banner.png';
     const rightBannerUrl = 'https://wpaddon-static.group-cdn.one/images/wp/marketplace/banners/top-header-right-banner.png';
 
-    // gv-pt-lg (24px) rather than gv-pt-fluid (48px on desktop): the version stamp
-    // now sits directly above this banner, and the fluid padding left a conspicuous
-    // gap between the two. The container's own gv-p-fluid still provides the page's
-    // top breathing room.
     return (
-        <header className="gv-product-header gv-product-banner gv-pt-lg gv-items-stretch gv-justify-between gv-gap-lg gv-max-mob-pt-md">
+        <header className="gv-product-header gv-product-banner gv-pt-fluid gv-items-stretch gv-justify-between gv-gap-lg gv-max-mob-pt-md">
             <div className={`gv-left-banner ${loading ? 'gv-h-full gv-w-full' : ''}`}>
                 {loading ? (
                     <div className="gv-card-image gv-h-full">
