@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { trackButtonClick, initializeMixpanel, enableMixpanel, disableMixpanel } from '../utils/mixpanelTracking';
 import { isWpVersionSupported as isWpVersionSupportedHelper } from '../utils/wpVersionHelper';
-import { handleRedirectActivation, confirmActivationByPolling, isRedirectOnActivate } from '../utils/redirectActivationHandler';
+import { handleRedirectActivation } from '../utils/redirectActivationHandler';
 import { getAjaxAction } from '../utils/common.utils';
 
 const MarketplaceContext = createContext(null);
@@ -468,19 +468,17 @@ export const MarketplaceProvider = ({
     // Handle plugin actions (install, activate, deactivate)
     // downloadUrl (4th arg) overrides plugin.download for install; omit to keep existing behaviour
     const handlePluginAction = useCallback(async (action, plugin, source = '', downloadUrl = '') => {
-        // Some plugins (e.g. Imagify) issue a wp_redirect inside their activation path,
-        // so the browser follows the 302 and hands us the redirect target's HTML instead
-        // of our JSON payload. Those go through the polling-based handler.
-        const isRedirectActivation = action === 'activate' && isRedirectOnActivate(plugin);
+        // Some plugins (e.g. Imagify) issue a wp_redirect inside their activation hook,
+        // which terminates PHP before a JSON response can be returned. The marketplace
+        // catalog flags these via `redirectsOnActivate: true` so we can route them
+        // through the polling-based handler instead of treating the inevitable network
+        // error as a failure.
+        const isRedirectActivation = action === 'activate' && plugin.redirectsOnActivate === true;
 
         setPluginInAction(prev => ({ ...prev, [plugin.slug]: action }));
 
         // Use ref to track if action was successful (to prevent finally block from clearing pluginInAction)
         let actionSuccessful = false;
-
-        // Set when an unparseable activation response is handed off to polling, so the
-        // finally block leaves the loading state in place for the poller to own.
-        let deferredToPolling = false;
 
         // Set loading state for overlay using API response keys
         const pluginName = plugin.name || plugin.slug;
@@ -510,8 +508,7 @@ export const MarketplaceProvider = ({
         }
 
         try {
-            // apiBaseUrl is already trailing-slashed by the backend localization.
-            let url = `${apiBaseUrl}${action}/${plugin.slug}`;
+            let url = `${apiBaseUrl}/${action}/${plugin.slug}`;
 
             // prefer explicit downloadUrl arg, fall back to plugin.download, then empty string
             const downloadParam = `download_url=${encodeURIComponent(downloadUrl || plugin.download || '')}`;
@@ -525,33 +522,7 @@ export const MarketplaceProvider = ({
             }
 
             const res = await fetch(url, { method: "POST" });
-            const rawBody = await res.text();
-
-            let result;
-            try {
-                result = JSON.parse(rawBody);
-            } catch (parseError) {
-                // A non-JSON body means PHP never got to send our payload — almost always
-                // a plugin redirecting during activation, which the browser follows for us.
-                // The activation itself may well have landed, so confirm by polling rather
-                // than reporting a failure for a plugin the catalog didn't flag.
-                if (action === 'activate') {
-                    deferredToPolling = true;
-                    confirmActivationByPolling({
-                        plugin,
-                        apiBaseUrl,
-                        source,
-                        setLoadingAction,
-                        setLoadingPlugin,
-                        setPluginInAction,
-                        setSuccessState,
-                        setErrorState,
-                        reloadTimeoutRef,
-                    });
-                    return;
-                }
-                throw parseError;
-            }
+            const result = await res.json();
 
             if (result.success) {
                 setPlugins(prev =>
@@ -792,17 +763,14 @@ export const MarketplaceProvider = ({
                 });
             }
         } finally {
-            // When handed off to polling, that flow owns the loading/in-action state.
-            if (!deferredToPolling) {
-                // Only clear pluginInAction if action was not successful
-                // For successful actions (activate/deactivate), keep it true until page reload
-                if (!actionSuccessful) {
-                    setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
-                }
-                // Clear loading state
-                setLoadingAction('');
-                setLoadingPlugin('');
+            // Only clear pluginInAction if action was not successful
+            // For successful actions (activate/deactivate), keep it true until page reload
+            if (!actionSuccessful) {
+                setPluginInAction(prev => ({ ...prev, [plugin.slug]: false }));
             }
+            // Clear loading state
+            setLoadingAction('');
+            setLoadingPlugin('');
         }
     }, [apiBaseUrl, useWPHandlers, wpConfig, uiI18n]);
 
